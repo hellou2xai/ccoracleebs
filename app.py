@@ -22,6 +22,8 @@ from flask import (
     Response,
     stream_with_context,
     session,
+    redirect,
+    url_for,
 )
 from flask_cors import CORS
 
@@ -124,6 +126,41 @@ def inject_globals():
         "pg_connected": pg_connected,
         "app_ready": APP_READY,
     }
+
+
+# ─── Authentication ──────────────────────────────────────────────────────────
+
+STATIC_USER = os.environ.get("LOGIN_USER", "Admin")
+STATIC_PASS = os.environ.get("LOGIN_PASS", "admin123")
+
+
+@app.before_request
+def require_login():
+    """Redirect unauthenticated users to login page."""
+    allowed = ("login", "static")
+    if request.endpoint in allowed:
+        return
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username", "")
+        password = request.form.get("password", "")
+        if username == STATIC_USER and password == STATIC_PASS:
+            session["logged_in"] = True
+            session.permanent = True
+            return redirect(url_for("index"))
+        return render_template("login.html", error=True)
+    return render_template("login.html")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 
 
 # ─── Page Routes ──────────────────────────────────────────────────────────────

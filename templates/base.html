@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}Oracle EBS Support Agent{% endblock %}</title>
+  <title>{% block title %}U2xAI EBS Agentic Apps{% endblock %}</title>
 
   <!-- Favicon inline SVG -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>" />
@@ -27,8 +27,8 @@
     <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('index') }}">
       <span class="brand-icon"><i class="fa-solid fa-database"></i></span>
       <span class="brand-text">
-        <span class="brand-title">Oracle EBS</span>
-        <span class="brand-sub">Support Agent</span>
+        <span class="brand-title">U2xAI EBS</span>
+        <span class="brand-sub">Agentic Apps</span>
       </span>
     </a>
 
@@ -66,6 +66,11 @@
       <button class="btn-theme-toggle" id="btnThemeToggle" title="Toggle light/dark mode">
         <i class="fa-solid fa-sun" id="themeIcon"></i>
       </button>
+
+      <!-- Logout -->
+      <a href="{{ url_for('logout') }}" class="btn-theme-toggle" title="Sign out">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </a>
 
       <!-- Sidebar toggle (mobile) -->
       <button class="btn btn-sm btn-icon d-md-none" id="sidebarToggle" title="Toggle sidebar">
