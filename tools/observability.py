@@ -20,6 +20,7 @@ Event schema (dict):
 from __future__ import annotations
 
 import json
+import os
 import queue
 import threading
 import time
@@ -37,6 +38,63 @@ _subscribers: List["queue.Queue[Dict[str, Any]]"] = []
 # Aggregate counters keyed by agent_id
 _agent_state: Dict[str, Dict[str, Any]] = {}
 
+# Persistence file — survives worker restarts within a deploy
+_PERSIST_DIR = os.environ.get("OBS_PERSIST_DIR", "/tmp")
+_PERSIST_FILE = os.path.join(_PERSIST_DIR, "obs_events.json")
+_PERSIST_STATE_FILE = os.path.join(_PERSIST_DIR, "obs_state.json")
+_dirty = False
+
+
+def _load_persisted() -> None:
+    """Load ring buffer and agent state from disk on startup."""
+    global _dirty
+    try:
+        if os.path.exists(_PERSIST_FILE):
+            with open(_PERSIST_FILE, "r") as f:
+                events = json.load(f)
+            for ev in events[-_RING_MAX:]:
+                _ring.append(ev)
+    except Exception:
+        pass
+    try:
+        if os.path.exists(_PERSIST_STATE_FILE):
+            with open(_PERSIST_STATE_FILE, "r") as f:
+                state = json.load(f)
+            _agent_state.update(state)
+    except Exception:
+        pass
+    _dirty = False
+
+
+def _save_persisted() -> None:
+    """Write ring buffer and agent state to disk."""
+    global _dirty
+    if not _dirty:
+        return
+    try:
+        with open(_PERSIST_FILE, "w") as f:
+            json.dump(list(_ring), f, default=str)
+        with open(_PERSIST_STATE_FILE, "w") as f:
+            json.dump(_agent_state, f, default=str)
+        _dirty = False
+    except Exception:
+        pass
+
+
+def _persist_loop() -> None:
+    """Background thread that flushes to disk every 5 seconds."""
+    while True:
+        time.sleep(5)
+        with _lock:
+            _save_persisted()
+
+
+# Load on import, start background persistence thread
+with _lock:
+    _load_persisted()
+_persist_thread = threading.Thread(target=_persist_loop, daemon=True)
+_persist_thread.start()
+
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="milliseconds")
@@ -44,10 +102,12 @@ def _now() -> str:
 
 def emit(event: Dict[str, Any]) -> Dict[str, Any]:
     """Emit an event into the ring buffer and to all live subscribers."""
+    global _dirty
     event = {"ts": _now(), **event}
     with _lock:
         _ring.append(event)
         _update_agent_state(event)
+        _dirty = True
         dead = []
         for q in _subscribers:
             try:
