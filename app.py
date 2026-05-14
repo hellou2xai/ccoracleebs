@@ -30,7 +30,7 @@ from flask_cors import CORS
 # ─── Application Factory ──────────────────────────────────────────────────────
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", os.urandom(32).hex())
+app.secret_key = os.environ.get("SECRET_KEY", "u2xai-ebs-default-secret-key-change-me")
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=8)
 app.config["JSON_SORT_KEYS"] = False
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
