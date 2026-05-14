@@ -6,7 +6,7 @@
 
 ## About U2xAI
 
-**U2xAI** is a technology consulting firm that specializes in integrating **Anthropic's Claude Code** with enterprise Oracle ERP systems. We bring deep expertise across the full Oracle stack — E-Business Suite, Fusion Cloud, and database technologies — combined with cutting-edge AI to transform how organizations manage, troubleshoot, and operate their mission-critical ERP platforms.
+**U2xAI** is an **AI-native ERP startup** that specializes in integrating **Anthropic's Claude Code** with enterprise Oracle ERP systems. We are building the future of ERP operations — where AI agents don't just assist, they actively diagnose, resolve, and automate across your Oracle environment. With deep expertise across the full Oracle stack — E-Business Suite, Fusion Cloud, and database technologies — we are reimagining how organizations manage, troubleshoot, and operate their mission-critical ERP platforms.
 
 ### What We Do
 
