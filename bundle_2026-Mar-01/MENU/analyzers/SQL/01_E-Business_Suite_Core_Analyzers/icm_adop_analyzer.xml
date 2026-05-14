@@ -1,0 +1,34 @@
+<hybrid_analyzer><ha_attributes>
+<title>ICM ADOP Analyzer</title>
+<type>Analyzer</type>
+<short_name>ICMADOPHA</short_name>
+<product_line>EBS</product_line>
+<product_family>EBS ATG</product_family>
+<product_area>EBS - Patching Community - ATG</product_area>
+<owner>DAVID.HEISLER@ORACLE.COM</owner>
+<application>Application Object Library</application>
+<version>200.74</version>
+<last_generated>2026/01/27</last_generated>
+<description>ICM Applications DBA Online Patching Analyzer Hybrid</description>
+<doc_id>2379656.1</doc_id>
+<file_name>icm_adop_analyzer</file_name>
+<version_image_name>icm_adop_latest_version.gif</version_image_name>
+<download_attachment_name>SCRIPT</download_attachment_name>
+<community_link><![CDATA[https://community.oracle.com/mosc/discussion/4163472]]></community_link>
+<whats_new><![CDATA[<p>ICM ADOP Analyzer is a java program that is run using a shell script.&nbsp; See Note&nbsp;2379656.1 for detailed instructions.</p><p>Able to execute scripts, parse log files and collect their outputs</p><p>Able to collect logs and files for review, everything is collected and zipped into a single uploadable zip file.</p>]]></whats_new>
+<framework_version>6.27.1</framework_version>
+<analyzer_id>2074</analyzer_id>
+<apex_host>ASEPROD</apex_host>
+<apex_app_files>https://aseobs.oraclecorp.com/ords/r/ebsap_psd/303/files/static/v223/</apex_app_files>
+<apex_ws_files>https://aseobs.oraclecorp.com/ords/r/ebsap_psd/files/static/v46/</apex_ws_files>
+</ha_attributes>
+<ha_bundle>
+<condition/>
+<condition_fail/>
+</ha_bundle>
+<ha_init>
+<tier>CP|MT</tier>
+<dbconn>YES</dbconn>
+<compatible_apps_release>12.2</compatible_apps_release>
+</ha_init>
+</hybrid_analyzer>

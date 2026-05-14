@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.fortify.client.api</groupId>
+  <artifactId>fortify-client-api</artifactId>
+  <version>6.0.2.RELEASE</version>
+  <packaging>pom</packaging>
+  <name>fortify-client-api</name>
+  <description>Utility classes for working with the REST API interfaces provided by the various Fortify products</description>
+  <url>https://github.com/fortify-ps/fortify-client-api</url>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>rsenden</id>
+      <name>Ruud Senden</name>
+      <email>ruud.senden@microfocus.com</email>
+      <organization>Micro Focus Fortify</organization>
+      <organizationUrl>https://www.microfocus.com/en-us/cyberres/application-security</organizationUrl>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:https://github.com/fortify-ps/fortify-client-api.git</connection>
+    <developerConnection>scm:git:https://github.com/fortify-ps/fortify-client-api.git</developerConnection>
+    <url>https://github.com/fortify-ps/fortify-client-api</url>
+  </scm>
+</project>

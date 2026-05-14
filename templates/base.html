@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Oracle EBS Support Agent{% endblock %}</title>
+
+  <!-- Favicon inline SVG -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>" />
+
+  <!-- Bootstrap 5 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+
+<!-- ─── Top Navigation ─────────────────────────────────────────────────── -->
+<nav class="navbar navbar-dark navbar-top" id="topNav">
+  <div class="container-fluid px-3">
+
+    <!-- Brand -->
+    <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('index') }}">
+      <span class="brand-icon"><i class="fa-solid fa-database"></i></span>
+      <span class="brand-text">
+        <span class="brand-title">Oracle EBS</span>
+        <span class="brand-sub">Support Agent</span>
+      </span>
+    </a>
+
+    <!-- Right: status badges + session -->
+    <div class="d-flex align-items-center gap-2">
+      <!-- Oracle status -->
+      {% if oracle_demo %}
+      <span class="status-badge status-demo">
+        <i class="fa-solid fa-circle-dot fa-xs me-1"></i>Oracle: Demo Mode
+      </span>
+      {% else %}
+      <span class="status-badge status-live">
+        <i class="fa-solid fa-circle fa-xs me-1"></i>Oracle: Connected
+      </span>
+      {% endif %}
+
+      <!-- PostgreSQL status -->
+      {% if pg_connected %}
+      <span class="status-badge status-live d-none d-lg-inline-flex">
+        <i class="fa-solid fa-circle fa-xs me-1"></i>PG: Connected
+      </span>
+      {% else %}
+      <span class="status-badge status-warn d-none d-lg-inline-flex">
+        <i class="fa-solid fa-circle-dot fa-xs me-1"></i>PG: Memory
+      </span>
+      {% endif %}
+
+      <!-- Session ID display -->
+      <span class="session-pill d-none d-xl-inline-flex" id="sessionPill">
+        <i class="fa-regular fa-id-card fa-xs me-1"></i>
+        <span id="sessionIdDisplay">—</span>
+      </span>
+
+      <!-- Theme toggle -->
+      <button class="btn-theme-toggle" id="btnThemeToggle" title="Toggle light/dark mode">
+        <i class="fa-solid fa-sun" id="themeIcon"></i>
+      </button>
+
+      <!-- Sidebar toggle (mobile) -->
+      <button class="btn btn-sm btn-icon d-md-none" id="sidebarToggle" title="Toggle sidebar">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ─── Layout Wrapper ─────────────────────────────────────────────────── -->
+<div class="layout-wrapper">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- Primary App Menu -->
+    <nav class="sidebar-section sidebar-nav">
+      <div class="sidebar-section-title">
+        <i class="fa-solid fa-bars fa-xs me-1"></i>Menu
+      </div>
+      <a href="{{ url_for('index') }}" class="side-link {% if request.endpoint == 'index' %}active{% endif %}">
+        <i class="fa-solid fa-comments side-link-icon"></i><span>Chat</span>
+      </a>
+      <a href="{{ url_for('dashboard') }}" class="side-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+        <i class="fa-solid fa-grid-2 side-link-icon"></i><span>Agents</span>
+      </a>
+      <a href="{{ url_for('fusion') }}" class="side-link {% if request.endpoint == 'fusion' %}active{% endif %}">
+        <i class="fa-solid fa-robot side-link-icon"></i><span>EBS Apps</span>
+      </a>
+      <a href="{{ url_for('payables') }}" class="side-link {% if request.endpoint == 'payables' %}active{% endif %}">
+        <i class="fa-solid fa-file-invoice-dollar side-link-icon"></i><span>Payables</span>
+      </a>
+      <a href="{{ url_for('payables_agents_page') }}" class="side-link {% if request.endpoint == 'payables_agents_page' %}active{% endif %}">
+        <i class="fa-solid fa-people-group side-link-icon"></i><span>AP Agents</span>
+      </a>
+      <a href="{{ url_for('observability_page') }}" class="side-link {% if request.endpoint == 'observability_page' %}active{% endif %}">
+        <i class="fa-solid fa-wave-square side-link-icon"></i><span>Observability</span>
+      </a>
+      <a href="{{ url_for('process_mining_page') }}" class="side-link {% if request.endpoint == 'process_mining_page' %}active{% endif %}">
+        <i class="fa-solid fa-diagram-project side-link-icon"></i><span>Process Mining</span>
+      </a>
+      <a href="{{ url_for('mcp_console_page') }}" class="side-link {% if request.endpoint == 'mcp_console_page' %}active{% endif %}">
+        <i class="fa-solid fa-plug-circle-bolt side-link-icon"></i><span>MCP</span>
+      </a>
+      <a href="{{ url_for('jira_page') }}" class="side-link {% if request.endpoint == 'jira_page' %}active{% endif %}">
+        <i class="fa-brands fa-jira side-link-icon"></i><span>JIRA</span>
+      </a>
+    </nav>
+
+    <!-- EBS Instance / Connection -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">
+        <i class="fa-solid fa-server fa-xs me-1"></i>EBS Instance
+      </div>
+      <div class="instance-info">
+        <div class="instance-row">
+          <span class="instance-label">Host</span>
+          <span class="instance-value" id="connHostDisplay">{{ oracle_host }}</span>
+        </div>
+        <div class="instance-row">
+          <span class="instance-label">Mode</span>
+          <span class="instance-value" id="connModeDisplay">
+            {% if oracle_demo %}
+            <span class="dot dot-warn"></span> Demo
+            {% else %}
+            <span class="dot dot-ok"></span> Live
+            {% endif %}
+          </span>
+        </div>
+        <div class="instance-row">
+          <span class="instance-label">Version</span>
+          <span class="instance-value" id="ebsVersionSidebar">12.2.x</span>
+        </div>
+      </div>
+
+      <!-- Connection action buttons -->
+      <div class="d-grid gap-1 mt-2">
+        <button class="btn-connect-oracle" id="btnConnectOracle"
+                data-bs-toggle="modal" data-bs-target="#oracleConnectModal">
+          <i class="fa-solid fa-plug fa-sm me-2"></i>Connect to Oracle
+        </button>
+        <button class="btn-demo-mode" id="btnDemoMode" onclick="switchDemoMode()">
+          <i class="fa-solid fa-flask fa-sm me-2"></i>Use Demo Mode
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-title d-flex align-items-center justify-content-between">
+        <span><i class="fa-solid fa-bolt fa-xs me-1"></i>Quick Actions</span>
+        <button class="btn-qa-edit" id="btnEditQuickActions" title="Add/remove actions"
+                data-bs-toggle="modal" data-bs-target="#quickActionsModal">
+          <i class="fa-solid fa-pen-to-square fa-xs"></i>
+        </button>
+      </div>
+      <!-- Rendered dynamically from JS (localStorage + defaults) -->
+      <div class="quick-actions d-grid gap-1" id="quickActionsList"></div>
+    </div>
+
+    <!-- Recent Sessions -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">
+        <i class="fa-solid fa-clock-rotate-left fa-xs me-1"></i>Recent Sessions
+      </div>
+      <div id="recentSessionsList">
+        {% if recent_sessions %}
+          {% for s in recent_sessions %}
+          <a href="{{ url_for('report', session_id=s.session_id) }}" class="session-link">
+            <span class="session-id-short">{{ s.session_id[:8] }}…</span>
+            <span class="session-time">
+              {% if s.created_at %}
+                {{ s.created_at[:10] }}
+              {% endif %}
+            </span>
+          </a>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted small px-1">No sessions yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Bottom links -->
+    <div class="sidebar-bottom">
+      <a href="{{ url_for('api_system_health') }}" target="_blank" class="sidebar-meta-link">
+        <i class="fa-solid fa-stethoscope fa-xs me-1"></i>Health API
+      </a>
+      <span class="sidebar-meta-link">v{{ app_version }}</span>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content" id="mainContent">
+    {% block content %}{% endblock %}
+  </main>
+
+</div><!-- /.layout-wrapper -->
+
+<!-- ─── Oracle Connect Modal ────────────────────────────────────────────── -->
+<div class="modal fade" id="oracleConnectModal" tabindex="-1" aria-labelledby="oracleConnectModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content oracle-modal">
+
+      <div class="modal-header oracle-modal-header">
+        <div class="d-flex align-items-center gap-2">
+          <span class="oracle-modal-icon"><i class="fa-solid fa-database"></i></span>
+          <div>
+            <h5 class="modal-title mb-0" id="oracleConnectModalLabel">Connect to Oracle EBS</h5>
+            <small class="text-muted">Pre-filled from environment — update if needed</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4">
+
+        <!-- Alert area -->
+        <div id="connAlert" class="conn-alert d-none mb-3"></div>
+
+        <form id="oracleConnectForm" autocomplete="off">
+          <div class="row g-3">
+
+            <div class="col-8">
+              <label class="form-label conn-label">Host / IP</label>
+              <input type="text" class="form-control conn-input" id="connHost" placeholder="apps.example.com" />
+            </div>
+            <div class="col-4">
+              <label class="form-label conn-label">Port</label>
+              <input type="number" class="form-control conn-input" id="connPort" placeholder="1521" />
+            </div>
+
+            <div class="col-6">
+              <label class="form-label conn-label">Service Name</label>
+              <input type="text" class="form-control conn-input" id="connServiceName" placeholder="EBSDB" />
+            </div>
+            <div class="col-6">
+              <label class="form-label conn-label">SID</label>
+              <input type="text" class="form-control conn-input" id="connSid" placeholder="EBSDB" />
+            </div>
+
+            <div class="col-6">
+              <label class="form-label conn-label">Username</label>
+              <input type="text" class="form-control conn-input" id="connUser" placeholder="apps" />
+            </div>
+            <div class="col-6">
+              <label class="form-label conn-label">Password</label>
+              <div class="input-group">
+                <input type="password" class="form-control conn-input" id="connPassword" placeholder="••••••••" />
+                <button type="button" class="btn btn-outline-secondary conn-eye-btn"
+                        onclick="togglePasswordVisibility()">
+                  <i class="fa-solid fa-eye" id="connPasswordEyeIcon"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label conn-label">
+                Oracle Client Directory
+                <span class="conn-optional">(optional)</span>
+              </label>
+              <input type="text" class="form-control conn-input" id="connClientDir"
+                     placeholder="C:\oracle\instantclient_23_0" />
+            </div>
+
+          </div><!-- /row -->
+        </form>
+
+      </div><!-- /modal-body -->
+
+      <div class="modal-footer oracle-modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-warning btn-sm" onclick="switchDemoMode()" data-bs-dismiss="modal">
+          <i class="fa-solid fa-flask me-1"></i>Demo Mode
+        </button>
+        <button type="button" class="btn btn-connect-submit" id="btnSubmitConnect" onclick="submitOracleConnect()">
+          <i class="fa-solid fa-plug me-1"></i>Connect
+          <span class="spinner-border spinner-border-sm ms-2 d-none" id="connSpinner"></span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ─── Quick Actions Edit Modal ──────────────────────────────────────────── -->
+<div class="modal fade" id="quickActionsModal" tabindex="-1" aria-labelledby="qaModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content oracle-modal">
+
+      <div class="modal-header oracle-modal-header">
+        <div class="d-flex align-items-center gap-2">
+          <span class="oracle-modal-icon"><i class="fa-solid fa-bolt"></i></span>
+          <div>
+            <h5 class="modal-title mb-0" id="qaModalLabel">Customize Quick Actions</h5>
+            <small class="text-muted">Pin built-in actions or individual agents to the sidebar</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-0" style="max-height:70vh;overflow-y:auto">
+
+        <!-- Built-in actions -->
+        <div class="p-3 border-bottom">
+          <div class="fw-semibold small mb-2" style="color:var(--text-muted)">
+            <i class="fa-solid fa-star fa-xs me-1"></i>BUILT-IN ACTIONS
+          </div>
+          <div id="qaBuiltinList" class="d-flex flex-wrap gap-2"></div>
+        </div>
+
+        <!-- Agent search -->
+        <div class="p-3">
+          <div class="fw-semibold small mb-2" style="color:var(--text-muted)">
+            <i class="fa-solid fa-robot fa-xs me-1"></i>AGENTS (117)
+          </div>
+          <input type="text" id="qaAgentSearch" class="form-control form-control-sm mb-2"
+                 placeholder="Search agents by name or module…">
+          <div id="qaAgentList" style="max-height:280px;overflow-y:auto">
+            <div class="text-muted small text-center py-3">Loading agents…</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer oracle-modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-outline-danger btn-sm" onclick="resetQuickActions()">
+          <i class="fa-solid fa-rotate-left me-1"></i>Reset to Defaults
+        </button>
+        <button type="button" class="btn btn-connect-submit" data-bs-dismiss="modal" onclick="saveQuickActions()">
+          <i class="fa-solid fa-floppy-disk me-1"></i>Save
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Marked.js for markdown rendering -->
+<script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+<!-- Main app JS -->
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+{% block scripts %}{% endblock %}
+
+<script>
+  // Sidebar toggle for mobile
+  document.getElementById('sidebarToggle')?.addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('sidebar-open');
+  });
+  // Load health info into sidebar
+  fetch('/api/system/health').then(r => r.json()).then(d => {
+    const el = document.getElementById('ebsVersionSidebar');
+    if (el) el.textContent = d.ebs_version || '12.2.x';
+  }).catch(() => {});
+
+  // Pre-fill Oracle connect modal when it opens
+  document.getElementById('oracleConnectModal')?.addEventListener('show.bs.modal', () => {
+    fetch('/api/oracle/credentials').then(r => r.json()).then(creds => {
+      document.getElementById('connHost').value        = creds.host         || '';
+      document.getElementById('connPort').value        = creds.port         || 1521;
+      document.getElementById('connServiceName').value = creds.service_name || '';
+      document.getElementById('connSid').value         = creds.sid          || '';
+      document.getElementById('connUser').value        = creds.user         || 'apps';
+      document.getElementById('connClientDir').value   = creds.client_dir   || '';
+      document.getElementById('connPassword').value    = creds.password     || '';
+      document.getElementById('connAlert').classList.add('d-none');
+    }).catch(() => {});
+  });
+</script>
+</body>
+</html>

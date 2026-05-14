@@ -1,0 +1,145 @@
+
+# $Id: PSD_DOWNLOAD_BUNDLE.ldt 200.00 8:37 AM 4/18/2018 kjharris bburbage$
+# -- End Entity Definitions -- 
+
+BEGIN EXECUTABLE "PSD_DL_BUNDLE_EXE" "FND"
+  OWNER = "Oracle Proactive Support"
+  LAST_UPDATE_DATE = "2018/03/02"
+  EXECUTION_METHOD_CODE = "K"
+  EXECUTION_FILE_NAME = "BundleUpdate"
+  EXECUTION_FILE_PATH = "oracle.support.proactive.atg.bundle"
+  USER_EXECUTABLE_NAME = "PSD_DL_BUNDLE_EXE"
+  DESCRIPTION = "Java Program to Download the Analyzer Bundle from 1939637.1"
+END EXECUTABLE
+
+BEGIN VALUE_SET "150 Characters Optional"
+  OWNER = "Oracle Proactive Support"
+  LAST_UPDATE_DATE = "2012/07/18 00:00:00"
+  VALIDATION_TYPE = "N"
+  PROTECTED_FLAG = "N"
+  SECURITY_ENABLED_FLAG = "N"
+  LONGLIST_FLAG = "N"
+  FORMAT_TYPE = "C"
+  MAXIMUM_SIZE = "150"
+  ALPHANUMERIC_ALLOWED_FLAG = "Y"
+  UPPERCASE_ONLY_FLAG = "N"
+  NUMERIC_MODE_ENABLED_FLAG = "N"
+  DESCRIPTION = "150 Characters Optional"
+
+END VALUE_SET
+
+BEGIN VALUE_SET "100 Characters"
+  OWNER = "Oracle Proactive Support"
+  LAST_UPDATE_DATE = "2010/04/28 00:00:00"
+  VALIDATION_TYPE = "N"
+  PROTECTED_FLAG = "N"
+  SECURITY_ENABLED_FLAG = "N"
+  LONGLIST_FLAG = "N"
+  FORMAT_TYPE = "C"
+  MAXIMUM_SIZE = "240"
+  ALPHANUMERIC_ALLOWED_FLAG = "Y"
+  UPPERCASE_ONLY_FLAG = "N"
+  NUMERIC_MODE_ENABLED_FLAG = "N"
+  DESCRIPTION = "100 Characters"
+
+END VALUE_SET
+
+BEGIN DESC_FLEX "FND" "$SRS$.PSD_DOWNLOAD_BUNDLE"
+  OWNER = "Oracle Proactive Support"
+  LAST_UPDATE_DATE = "2018/03/02 00:00:00"
+  TABLE_APPLICATION_SHORT_NAME = "FND"
+  APPLICATION_TABLE_NAME = "FND_SRS_MASTER"
+  CONTEXT_COLUMN_NAME = "STRUCTURE_COLUMN"
+  CONTEXT_REQUIRED_FLAG = "N"
+  CONTEXT_USER_OVERRIDE_FLAG = "N"
+  CONCATENATED_SEGMENT_DELIMITER = ":"
+  FREEZE_FLEX_DEFINITION_FLAG = "Y"
+  PROTECTED_FLAG = "S"
+  CONTEXT_OVERRIDE_VALUE_SET_NAM = ""
+  TITLE = "$SRS$.PSD_DOWNLOAD_BUNDLE"
+  FORM_CONTEXT_PROMPT = "Context Value"
+  DESCRIPTION = "Java CP to Download Analyzer Bundle from 1939637.1"
+
+  BEGIN DFF_CONTEXT "Global Data Elements"
+    OWNER = "Oracle Proactive Support"
+    LAST_UPDATE_DATE = "2018/03/02 00:00:00"
+    ENABLED_FLAG = "Y"
+    GLOBAL_FLAG = "Y"
+    DESCRIPTIVE_FLEX_CONTEXT_NAME = "Global Data Elements"
+  
+    BEGIN DFF_SEGMENT "DOWNLOAD_LOCATION" "ATTRIBUTE1"
+      OWNER = "Oracle Proactive Support"
+      LAST_UPDATE_DATE = "2018/03/02 00:00:00"
+      COLUMN_SEQ_NUM = "1"
+      ENABLED_FLAG = "Y"
+      DISPLAY_FLAG = "Y"
+      REQUIRED_FLAG = "Y"
+      SECURITY_ENABLED_FLAG = "N"
+      FLEX_VALUE_SET_NAME = "150 Characters Optional"
+      DISPLAY_SIZE = "50"
+      MAXIMUM_DESCRIPTION_LEN = "50"
+      CONCATENATION_DESCRIPTION_LEN = "25"
+      DEFAULT_TYPE = "C"
+      DEFAULT_VALUE = "/tmp"
+      SRW_PARAM = "DOWNLOAD_LOC"
+      FORM_LEFT_PROMPT = "DOWNLOAD_LOCATION"
+      FORM_ABOVE_PROMPT = "DOWNLOAD_LOCATION"
+      DESCRIPTION = "The Directory To Put the Download"
+    END DFF_SEGMENT
+    
+    BEGIN DFF_SEGMENT "INSTALL_FAMILIES" "ATTRIBUTE2"
+      OWNER = "Oracle Proactive Support"
+      LAST_UPDATE_DATE = "2018/03/02 00:00:00"
+      COLUMN_SEQ_NUM = "2"
+      ENABLED_FLAG = "Y"
+      DISPLAY_FLAG = "Y"
+      REQUIRED_FLAG = "Y"
+      SECURITY_ENABLED_FLAG = "N"
+      FLEX_VALUE_SET_NAME = "100 Characters"
+      DISPLAY_SIZE = "50"
+      MAXIMUM_DESCRIPTION_LEN = "50"
+      CONCATENATION_DESCRIPTION_LEN = "25"
+      DEFAULT_TYPE = "C"
+      DEFAULT_VALUE = "all"
+      SRW_PARAM = "INSTALL_FAMILIES"
+      FORM_LEFT_PROMPT = "INSTALL_FAMILIES"
+      FORM_ABOVE_PROMPT = "INSTALL_FAMILIES"
+      DESCRIPTION = "The Analyzer Product Families to Install or Update"
+    END DFF_SEGMENT
+    
+  END DFF_CONTEXT
+  
+END DESC_FLEX
+
+BEGIN PROGRAM "PSD_DOWNLOAD_BUNDLE" "FND"
+  OWNER = "Oracle Proactive Support"
+  LAST_UPDATE_DATE = "2018/03/02"
+  USER_CONCURRENT_PROGRAM_NAME = "PSD_DOWNLOAD_BUNDLE"
+  EXEC = "PSD_DL_BUNDLE_EXE" "FND"
+  EXECUTION_METHOD_CODE = "K"
+  ARGUMENT_METHOD_CODE = "4"
+  QUEUE_CONTROL_FLAG = "N"
+  QUEUE_METHOD_CODE = "I"
+  REQUEST_SET_FLAG = "N"
+  ENABLED_FLAG = "Y"
+  PRINT_FLAG = "N"
+  RUN_ALONE_FLAG = "N"
+  SRS_FLAG = "Y"
+  DESCRIPTION = "XXJava CP to Download Analyzer Bundle"
+  SAVE_OUTPUT_FLAG = "Y"
+  REQUIRED_STYLE = "N"
+  OUTPUT_FILE_TYPE = "TEXT"
+  RESTART = "Y"
+  NLS_COMPLIANT = "Y"
+  MLS_EXEC = "" ""
+  ENABLE_TIME_STATISTICS = "N"
+  SRS_FLEX = "FND" "$SRS$.PSD_DOWNLOAD_BUNDLE"
+  AUTO_ANNOTATION =
+ "/**\n\
+  * @param DOWNLOAD_LOCATION The Directory To Put the Download\n\
+  * @rep:paraminfo {@rep:type 150 Characters Optional} {@rep:displayed Y} {@rep:required}\n\
+  * @param INSTALL_FAMILIES The Analyzer Product Families to Install or Update\n\
+  * @rep:paraminfo {@rep:type 100 Characters} {@rep:displayed Y} {@rep:required}\n\
+  */"
+
+END PROGRAM

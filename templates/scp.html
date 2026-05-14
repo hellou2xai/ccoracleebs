@@ -1,0 +1,1231 @@
+{% extends "base.html" %}
+
+{% block title %}Supply Chain Planning Agentic App — Oracle EBS{% endblock %}
+
+{% block head_extra %}
+<style>
+/* ── SCP page layout ──────────────────────────────────────────────────── */
+.scp-layout {
+  padding: 20px 24px 60px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ── Page header ────────────────────────────────────────────────────────── */
+.scp-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.scp-page-header-left { display: flex; flex-direction: column; gap: 4px; }
+.scp-breadcrumb {
+  font-size: 12px; color: var(--text-muted);
+  display: flex; align-items: center; gap-4px;
+  text-decoration: none;
+  transition: color var(--transition);
+}
+.scp-breadcrumb:hover { color: var(--accent); }
+.scp-title {
+  font-size: 22px; font-weight: 700;
+  color: var(--text-bright); margin: 0;
+  display: flex; align-items: center; gap: 10px;
+}
+.scp-title-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, #1a7f37, #116329);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 16px;
+}
+.scp-subtitle { font-size: 13px; color: var(--text-muted); margin: 0; }
+
+.scp-header-controls {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.scp-lookback {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px; color: var(--text-primary);
+}
+.scp-lookback label { color: var(--text-muted); white-space: nowrap; }
+.scp-lookback input {
+  width: 52px; text-align: center;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px; padding: 2px 4px;
+  font-size: 12px; font-weight: 700;
+  color: var(--text-primary); outline: none;
+}
+.scp-lookback input:focus { border-color: var(--accent); }
+
+.scp-run-btn {
+  display: flex; align-items: center; gap-8px;
+  background: linear-gradient(135deg, #1a7f37, #116329);
+  border: none; border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 13px; font-weight: 600; color: #fff;
+  cursor: pointer; transition: opacity .15s, transform .1s;
+  white-space: nowrap;
+  gap: 8px;
+}
+.scp-run-btn:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
+.scp-run-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+.scp-run-btn .spinner-border { width: 14px; height: 14px; border-width: 2px; }
+
+.scp-exec-info {
+  font-size: 11px; color: var(--text-muted);
+  align-self: center;
+}
+
+/* ── Demo banner ────────────────────────────────────────────────────────── */
+.scp-demo-banner {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(154, 103, 0, .08);
+  border: 1px solid rgba(154, 103, 0, .25);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  font-size: 12px; color: var(--text-primary);
+}
+.scp-demo-badge {
+  background: #9a6700; color: #fff;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 4px;
+  letter-spacing: .05em; flex-shrink: 0;
+}
+
+/* ── KPI Grid ───────────────────────────────────────────────────────────── */
+.scp-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+@media (max-width: 1100px) { .scp-kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 700px)  { .scp-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.scp-kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px 14px;
+  display: flex; flex-direction: column; gap: 4px;
+  transition: border-top-color .3s, box-shadow .15s;
+  box-shadow: var(--shadow-sm);
+}
+.scp-kpi-card:hover { box-shadow: var(--shadow-md); }
+.scp-kpi-card.kpi-ok      { border-top-color: #1a7f37; }
+.scp-kpi-card.kpi-warn    { border-top-color: #9a6700; }
+.scp-kpi-card.kpi-critical { border-top-color: #cf222e; }
+.scp-kpi-card.kpi-info    { border-top-color: #0969da; }
+
+/* shimmer loading */
+.scp-kpi-card.loading .scp-kpi-value {
+  background: linear-gradient(90deg, var(--bg-card-2) 25%, var(--bg-hover) 50%, var(--bg-card-2) 75%);
+  background-size: 200% 100%;
+  animation: scp-shimmer 1.4s infinite;
+  border-radius: 4px; color: transparent;
+  user-select: none;
+}
+@keyframes scp-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.scp-kpi-label {
+  font-size: 10px; font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .06em;
+  margin-bottom: 2px;
+}
+.scp-kpi-value {
+  font-size: 28px; font-weight: 700;
+  color: var(--text-bright); line-height: 1.1;
+  min-height: 34px;
+}
+.scp-kpi-detail {
+  font-size: 11px; color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ── Findings bar ───────────────────────────────────────────────────────── */
+.scp-findings {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 8px; margin-bottom: 18px;
+  min-height: 30px;
+}
+.scp-findings-label {
+  font-size: 11px; font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .06em;
+  white-space: nowrap;
+}
+.scp-finding-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+  cursor: default;
+}
+.scp-finding-pill.sev-CRITICAL { background: rgba(207,34,46,.12); color: #cf222e; border: 1px solid rgba(207,34,46,.25); }
+.scp-finding-pill.sev-HIGH     { background: rgba(154,103,0,.12); color: #9a6700; border: 1px solid rgba(154,103,0,.25); }
+.scp-finding-pill.sev-MEDIUM   { background: rgba(9,105,218,.1);  color: #0969da; border: 1px solid rgba(9,105,218,.25); }
+.scp-finding-pill.sev-INFO     { background: rgba(87,96,106,.1);  color: #57606a; border: 1px solid rgba(87,96,106,.2); }
+.scp-finding-pill.sev-LOW      { background: rgba(26,127,55,.1);  color: #1a7f37; border: 1px solid rgba(26,127,55,.2); }
+
+/* ── Tabs ───────────────────────────────────────────────────────────────── */
+.scp-tabs {
+  display: flex; align-items: center; gap: 2px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.scp-tabs::-webkit-scrollbar { display: none; }
+.scp-tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 9px 16px;
+  background: transparent; border: none;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color .15s, border-color .15s;
+  white-space: nowrap;
+}
+.scp-tab:hover { color: var(--text-primary); }
+.scp-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+.scp-tab-count {
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 10px; font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.scp-tab.active .scp-tab-count {
+  background: rgba(26,127,55,.12);
+  border-color: rgba(26,127,55,.25);
+  color: #1a7f37;
+}
+.scp-tab-count.err { background: rgba(207,34,46,.12); color: #cf222e; border-color: rgba(207,34,46,.25); }
+
+/* ── Tab panes ──────────────────────────────────────────────────────────── */
+.scp-pane { display: none; }
+.scp-pane.active { display: block; }
+
+/* ── Table toolbar ──────────────────────────────────────────────────────── */
+.scp-table-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px; flex-wrap: wrap; gap: 8px;
+}
+.scp-table-info {
+  font-size: 12px; color: var(--text-muted);
+}
+.scp-table-info strong { color: var(--text-primary); }
+
+.scp-csv-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 5px 12px;
+  font-size: 11px; font-weight: 600; color: var(--text-muted);
+  cursor: pointer; transition: border-color .12s, color .12s;
+}
+.scp-csv-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Data table ─────────────────────────────────────────────────────────── */
+.scp-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+}
+.scp-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 12px;
+}
+.scp-table thead th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 10px; font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .06em;
+  background: var(--bg-card-2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.scp-table tbody td {
+  padding: 9px 12px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-light);
+  white-space: nowrap;
+}
+.scp-table tbody tr:last-child td { border-bottom: none; }
+.scp-table tbody tr:hover { background: var(--bg-hover); }
+
+/* row urgency colours */
+.scp-row-urgent td { background: rgba(207,34,46,.04) !important; }
+.scp-row-urgent:hover td { background: rgba(207,34,46,.08) !important; }
+.scp-row-warn td { background: rgba(154,103,0,.04) !important; }
+.scp-row-warn:hover td { background: rgba(154,103,0,.08) !important; }
+
+/* clickable rows */
+.scp-row-click { cursor: pointer; }
+.scp-row-click:hover td { background: rgba(26,127,55,.06) !important; }
+
+/* ── Exception type badge ──────────────────────────────────────────────── */
+.exc-type-badge {
+  display: inline-block;
+  padding: 2px 8px; border-radius: 4px;
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .04em;
+  background: rgba(26,127,55,.1); color: #1a7f37;
+  border: 1px solid rgba(26,127,55,.2);
+}
+
+/* urgency badges */
+.urg-URGENT    { background: rgba(207,34,46,.12); color: #cf222e; border-color: rgba(207,34,46,.25); }
+.urg-THIS_WEEK { background: rgba(154,103,0,.12); color: #9a6700; border-color: rgba(154,103,0,.25); }
+.urg-UPCOMING  { background: rgba(26,127,55,.1);  color: #1a7f37; border-color: rgba(26,127,55,.2); }
+
+/* ── Loading / error / empty states ─────────────────────────────────────── */
+.scp-state-box {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 48px 24px;
+  text-align: center; color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+}
+.scp-state-icon { font-size: 32px; margin-bottom: 12px; opacity: .4; }
+.scp-state-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.scp-state-sub { font-size: 12px; }
+
+.scp-error-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(207,34,46,.08); color: #cf222e;
+  border: 1px solid rgba(207,34,46,.2);
+  border-radius: var(--radius); padding: 6px 12px;
+  font-size: 12px;
+}
+
+.scp-demo-notice {
+  background: rgba(154,103,0,.06);
+  border: 1px dashed rgba(154,103,0,.3);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  font-size: 12px; color: var(--text-muted);
+  text-align: center; margin-bottom: 12px;
+}
+
+/* ── AI Analysis tab ────────────────────────────────────────────────────── */
+.scp-ai-summary {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+.scp-ai-summary h6 {
+  font-size: 12px; font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .06em;
+  margin-bottom: 12px;
+}
+.scp-ai-text {
+  font-size: 14px; line-height: 1.7; color: var(--text-primary);
+}
+.scp-ai-actions {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+.scp-ask-ai-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, #6e40c9, #5a32a3);
+  border: none; border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 13px; font-weight: 600; color: #fff;
+  cursor: pointer; transition: opacity .15s;
+}
+.scp-ask-ai-btn:hover { opacity: .9; }
+.scp-ask-ai-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── Pill groups (breakdowns) ──────────────────────────────────────────── */
+.scp-pill-group {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 12px;
+}
+.scp-stat-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11px; color: var(--text-primary);
+}
+.scp-stat-pill strong { color: var(--accent); }
+
+/* ── Drill-down panel ───────────────────────────────────────────────────── */
+.scp-drill-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.35);
+  z-index: 1040;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+.scp-drill-overlay.open { opacity: 1; pointer-events: auto; }
+
+.scp-drill-panel {
+  position: fixed;
+  top: 0; right: 0;
+  width: 400px; max-width: 92vw;
+  height: 100vh;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border);
+  box-shadow: -4px 0 24px rgba(0,0,0,.15);
+  z-index: 1050;
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+}
+.scp-drill-panel.open { transform: translateX(0); }
+
+.scp-drill-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card-2);
+  flex-shrink: 0;
+}
+.scp-drill-title {
+  font-size: 15px; font-weight: 700; color: var(--text-bright);
+  display: flex; align-items: center; gap: 8px;
+}
+.scp-drill-close {
+  background: transparent; border: none;
+  font-size: 18px; color: var(--text-muted);
+  cursor: pointer; padding: 4px 8px; border-radius: 4px;
+  transition: background .12s, color .12s;
+}
+.scp-drill-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+.scp-drill-body {
+  flex: 1; overflow-y: auto; padding: 20px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+.scp-drill-section {}
+.scp-drill-section-label {
+  font-size: 10px; font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .07em;
+  margin-bottom: 6px;
+}
+.scp-drill-value {
+  font-size: 14px; color: var(--text-primary);
+  font-weight: 500;
+}
+.scp-drill-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.scp-drill-item {
+  background: var(--bg-card-2);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+.scp-drill-item-label { font-size: 10px; color: var(--text-muted); margin-bottom: 2px; text-transform: uppercase; letter-spacing: .05em; }
+.scp-drill-item-value { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+
+.scp-drill-owner {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(26,127,55,.1); color: #1a7f37;
+  border: 1px solid rgba(26,127,55,.2);
+  border-radius: 20px; padding: 3px 10px;
+  font-size: 11px; font-weight: 600;
+}
+
+.scp-action-box {
+  background: rgba(26,127,55,.05);
+  border: 1px solid rgba(26,127,55,.15);
+  border-left: 3px solid #1a7f37;
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-size: 13px; line-height: 1.6; color: var(--text-primary);
+}
+
+.scp-drill-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-card-2);
+  flex-shrink: 0;
+}
+
+/* ── Exception issue cards ─────────────────────────────────────────────── */
+.exc-issue-list {
+  display: flex; flex-direction: column; gap: 12px;
+}
+.exc-issue-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  transition: box-shadow .15s;
+}
+.exc-issue-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+.exc-issue-card.sev-CRITICAL { border-left-color: #cf222e; }
+.exc-issue-card.sev-HIGH     { border-left-color: #bc4c00; }
+.exc-issue-card.sev-MEDIUM   { border-left-color: #9a6700; }
+.exc-issue-card.sev-INFO     { border-left-color: var(--accent); }
+.exc-issue-card.sev-OK       { border-left-color: #1a7f37; }
+.exc-issue-header {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  margin-bottom: 10px;
+}
+.exc-issue-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.exc-sev-badge {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  border-radius: 20px; padding: 2px 8px; white-space: nowrap;
+}
+.exc-sev-badge.sev-CRITICAL { background: rgba(207,34,46,.12); color: #cf222e; border: 1px solid rgba(207,34,46,.25); }
+.exc-sev-badge.sev-HIGH     { background: rgba(188,76,0,.12);  color: #bc4c00; border: 1px solid rgba(188,76,0,.25); }
+.exc-sev-badge.sev-MEDIUM   { background: rgba(154,103,0,.12); color: #9a6700; border: 1px solid rgba(154,103,0,.25); }
+.exc-sev-badge.sev-INFO     { background: rgba(9,105,218,.1);  color: #0969da; border: 1px solid rgba(9,105,218,.2); }
+.exc-sev-badge.sev-OK       { background: rgba(26,127,55,.1);  color: #1a7f37; border: 1px solid rgba(26,127,55,.2); }
+.exc-issue-title {
+  font-size: 14px; font-weight: 700; color: var(--text-bright);
+  display: flex; align-items: center; gap: 8px;
+}
+.exc-issue-title i { color: var(--text-muted); font-size: 12px; }
+.exc-issue-count {
+  font-size: 22px; font-weight: 800; color: var(--text-bright);
+  line-height: 1;
+}
+.exc-issue-desc {
+  font-size: 13px; color: var(--text-primary); margin-bottom: 10px; line-height: 1.5;
+}
+.exc-issue-action-text {
+  font-size: 12px; color: var(--text-muted); line-height: 1.5;
+  border-left: 2px solid var(--border); padding-left: 10px; margin-bottom: 12px;
+}
+.exc-issue-footer {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.exc-detail-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg-card-2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 12px;
+  font-size: 12px; font-weight: 600; color: var(--text-primary);
+  cursor: pointer; transition: all .15s;
+}
+.exc-detail-btn:hover { border-color: var(--accent); color: var(--accent); }
+.exc-ok-banner {
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(26,127,55,.07); border: 1px solid rgba(26,127,55,.2);
+  border-radius: var(--radius-lg); padding: 20px 24px;
+  color: #1a7f37; font-size: 14px; font-weight: 600;
+}
+.exc-ok-banner i { font-size: 20px; }
+.exc-section-hdr {
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .08em;
+  margin: 20px 0 10px; display: flex; align-items: center; gap: 6px;
+}
+
+/* ── Inline AI chat ──────────────────────────────────────────────────────── */
+.scp-inline-chat {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex; flex-direction: column;
+  height: 480px;
+  overflow: hidden;
+}
+.scp-chat-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg-card-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .06em;
+  flex-shrink: 0;
+}
+.scp-chat-clear-btn {
+  background: none; border: 1px solid var(--border);
+  border-radius: 6px; padding: 3px 8px;
+  font-size: 11px; color: var(--text-muted); cursor: pointer;
+  transition: all .15s;
+}
+.scp-chat-clear-btn:hover { color: var(--text-primary); border-color: var(--accent); }
+.scp-chat-messages {
+  flex: 1; overflow-y: auto; padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 12px;
+  scroll-behavior: smooth;
+}
+.scp-chat-msg { display: flex; gap: 10px; align-items: flex-start; max-width: 88%; }
+.scp-chat-msg-ai { align-self: flex-start; }
+.scp-chat-msg-user { align-self: flex-end; flex-direction: row-reverse; }
+.scp-chat-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6e40c9, #5a32a3);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 11px;
+  flex-shrink: 0; margin-top: 2px;
+}
+.scp-chat-msg-user .scp-chat-avatar {
+  background: linear-gradient(135deg, #1a7f37, #116329);
+}
+.scp-chat-bubble {
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 12px 12px 12px 4px;
+  padding: 10px 14px;
+  font-size: 13px; line-height: 1.6; color: var(--text-primary);
+}
+.scp-chat-msg-user .scp-chat-bubble {
+  background: rgba(26,127,55,.1);
+  border-color: rgba(26,127,55,.2);
+  border-radius: 12px 12px 4px 12px;
+  color: var(--text-bright);
+}
+.scp-chat-bubble.streaming::after {
+  content: '\25CB';
+  animation: blink .7s infinite;
+  color: var(--accent);
+}
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+.scp-chat-input-row {
+  display: flex; gap: 8px; padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-card-2);
+  flex-shrink: 0;
+}
+.scp-chat-input-row input {
+  flex: 1;
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 14px;
+  font-size: 13px; color: var(--text-primary); outline: none;
+  transition: border-color .15s;
+}
+.scp-chat-input-row input:focus { border-color: var(--accent); }
+.scp-chat-input-row input:disabled { opacity: .5; }
+.scp-chat-send-btn {
+  background: linear-gradient(135deg, #6e40c9, #5a32a3);
+  border: none; border-radius: 8px; padding: 9px 14px;
+  color: #fff; font-size: 13px; cursor: pointer;
+  transition: opacity .15s;
+  flex-shrink: 0;
+}
+.scp-chat-send-btn:hover:not(:disabled) { opacity: .85; }
+.scp-chat-send-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── Drill-down lines button ─────────────────────────────────────────────── */
+.scp-drill-lines-btn {
+  background: rgba(26,127,55,.1); border: 1px solid rgba(26,127,55,.25);
+  color: #1a7f37; border-radius: 6px;
+  padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer;
+  transition: background .15s;
+}
+.scp-drill-lines-btn:hover:not(:disabled) { background: rgba(26,127,55,.2); }
+.scp-drill-lines-btn:disabled { opacity:.5; cursor:not-allowed; }
+.drill-lines-table {
+  width: 100%; border-collapse: collapse; font-size: 11px;
+  margin-top: 6px;
+}
+.drill-lines-table th {
+  background: var(--bg-card-2); color: var(--text-muted);
+  font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  padding: 5px 6px; border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.drill-lines-table td {
+  padding: 5px 6px; border-bottom: 1px solid var(--border);
+  color: var(--text-primary); vertical-align: middle;
+}
+.drill-lines-table tr:last-child td { border-bottom: none; }
+.drill-lines-table tr:hover td { background: var(--bg-hover); }
+
+/* ── Supply-demand balance bars ──────────────────────────────────────── */
+.balance-bar-wrap {
+  display: flex; height: 8px; border-radius: 4px;
+  overflow: hidden; background: var(--bg-card-2); margin-top: 4px; min-width: 100px;
+}
+.balance-seg-demand  { background: #cf222e; }
+.balance-seg-supply  { background: #1a7f37; }
+.balance-seg-gap     { background: #9a6700; }
+
+/* ── Status band badges ──────────────────────────────────────────────── */
+.status-OK       { background: rgba(26,127,55,.1);  color: #1a7f37; border: 1px solid rgba(26,127,55,.2);  border-radius:20px; padding:2px 8px; font-size:10px; font-weight:700; }
+.status-WARNING  { background: rgba(154,103,0,.12); color: #9a6700; border: 1px solid rgba(154,103,0,.25); border-radius:20px; padding:2px 8px; font-size:10px; font-weight:700; }
+.status-CRITICAL { background: rgba(207,34,46,.12); color: #cf222e; border: 1px solid rgba(207,34,46,.25); border-radius:20px; padding:2px 8px; font-size:10px; font-weight:700; }
+.status-INFO     { background: rgba(9,105,218,.1);  color: #0969da; border: 1px solid rgba(9,105,218,.2);  border-radius:20px; padding:2px 8px; font-size:10px; font-weight:700; }
+
+/* ── Summary pills ─────────────────────────────────────────────────────── */
+.scp-summary { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.scp-pill { display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border); border-radius:20px; padding:6px 14px; font-size:12px; }
+.scp-pill strong { color:var(--text-bright); }
+
+/* ── Scrollable tab bar ─────────────────────────────────────────────── */
+.scp-tabs { overflow-x: auto; flex-wrap: nowrap !important; }
+.scp-tabs::-webkit-scrollbar { height: 4px; }
+.scp-tabs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="scp-layout">
+
+  <!-- Page header -->
+  <div class="scp-page-header">
+    <div class="scp-page-header-left">
+      <a href="{{ url_for('fusion') }}" class="scp-breadcrumb">
+        <i class="fa-solid fa-arrow-left fa-xs me-1"></i>EBS Apps
+      </a>
+      <h1 class="scp-title">
+        <span class="scp-title-icon"><i class="fa-solid fa-cubes"></i></span>
+        Supply Chain Planning Agentic App
+      </h1>
+      <p class="scp-subtitle">Demand-supply balancing, exception management, inventory optimization, supplier collaboration</p>
+    </div>
+
+    <div class="scp-header-controls">
+      <div class="scp-lookback">
+        <label for="scpPlanSelect"><i class="fa-solid fa-clipboard-list fa-xs me-1"></i>Plan</label>
+        <select id="scpPlanSelect" style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:12px;min-width:140px;">
+          <option value="">Latest plan</option>
+        </select>
+        <button class="scp-csv-btn" style="font-size:11px;padding:2px 8px;" onclick="loadPlanList()" title="Refresh plan list">
+          <i class="fa-solid fa-rotate fa-xs"></i>
+        </button>
+      </div>
+      <div class="scp-lookback">
+        <label for="scpDaysBack"><i class="fa-solid fa-calendar-days fa-xs me-1"></i>Horizon</label>
+        <input type="number" id="scpDaysBack" value="10000" min="1" max="10000" />
+        <span>days</span>
+      </div>
+      <button class="scp-run-btn" id="scpRunBtn" onclick="runScpAnalysis()">
+        <i class="fa-solid fa-play fa-xs" id="scpRunIcon"></i>
+        <span id="scpRunLabel">Run Analysis</span>
+        <span class="spinner-border d-none" id="scpRunSpinner"></span>
+      </button>
+      <span class="scp-exec-info" id="scpExecInfo"></span>
+    </div>
+  </div>
+
+  <!-- Demo banner (hidden until run) -->
+  <div class="scp-demo-banner d-none" id="scpDemoBanner">
+    <span class="scp-demo-badge">DEMO</span>
+    <span>Running in demo mode — figures are illustrative. Connect to Oracle for live SCP data.</span>
+  </div>
+
+  <!-- KPI row -->
+  <div class="scp-kpi-grid" id="scpKpiGrid">
+
+    <div class="scp-kpi-card" id="kpiPlanAge">
+      <div class="scp-kpi-label"><i class="fa-solid fa-calendar-check fa-xs me-1"></i>Plan Freshness</div>
+      <div class="scp-kpi-value" id="kpiPlanAgeVal">—</div>
+      <div class="scp-kpi-detail" id="kpiPlanAgeDetail">Run analysis to calculate</div>
+    </div>
+
+    <div class="scp-kpi-card" id="kpiGap">
+      <div class="scp-kpi-label"><i class="fa-solid fa-triangle-exclamation fa-xs me-1"></i>Supply Gaps</div>
+      <div class="scp-kpi-value" id="kpiGapVal">—</div>
+      <div class="scp-kpi-detail" id="kpiGapDetail">Run analysis to calculate</div>
+    </div>
+
+    <div class="scp-kpi-card" id="kpiExceptions">
+      <div class="scp-kpi-label"><i class="fa-solid fa-bell fa-xs me-1"></i>Exceptions</div>
+      <div class="scp-kpi-value" id="kpiExceptionsVal">—</div>
+      <div class="scp-kpi-detail" id="kpiExceptionsDetail">Run analysis to calculate</div>
+    </div>
+
+    <div class="scp-kpi-card" id="kpiMape">
+      <div class="scp-kpi-label"><i class="fa-solid fa-chart-line fa-xs me-1"></i>Forecast MAPE</div>
+      <div class="scp-kpi-value" id="kpiMapeVal">—</div>
+      <div class="scp-kpi-detail" id="kpiMapeDetail">Run analysis to calculate</div>
+    </div>
+
+    <div class="scp-kpi-card" id="kpiSS">
+      <div class="scp-kpi-label"><i class="fa-solid fa-shield-halved fa-xs me-1"></i>SS Compliance</div>
+      <div class="scp-kpi-value" id="kpiSSVal">—</div>
+      <div class="scp-kpi-detail" id="kpiSSDetail">Run analysis to calculate</div>
+    </div>
+
+    <div class="scp-kpi-card" id="kpiDoS">
+      <div class="scp-kpi-label"><i class="fa-solid fa-boxes-stacked fa-xs me-1"></i>Days of Supply</div>
+      <div class="scp-kpi-value" id="kpiDoSVal">—</div>
+      <div class="scp-kpi-detail" id="kpiDoSDetail">Run analysis to calculate</div>
+    </div>
+
+  </div>
+
+  <!-- Findings bar -->
+  <div class="scp-findings" id="scpFindings">
+    <span class="scp-findings-label" id="scpFindingsLabel">Findings will appear after analysis</span>
+  </div>
+
+  <!-- Tab nav -->
+  <div class="scp-tabs" id="scpTabs">
+    <button class="scp-tab active" onclick="switchScpTab('overview')" id="tab-overview">
+      <i class="fa-solid fa-clipboard-list fa-xs"></i> Plan Overview
+      <span class="scp-tab-count" id="cnt-overview">—</span>
+    </button>
+    <button class="scp-tab" onclick="switchScpTab('exceptions')" id="tab-exceptions">
+      <i class="fa-solid fa-triangle-exclamation fa-xs"></i> Exceptions
+      <span class="scp-tab-count" id="cnt-exceptions">—</span>
+    </button>
+    <button class="scp-tab" onclick="switchScpTab('bytype')" id="tab-bytype">
+      <i class="fa-solid fa-layer-group fa-xs"></i> By Exception Type
+      <span class="scp-tab-count" id="cnt-bytype">—</span>
+    </button>
+    <button class="scp-tab" onclick="switchScpTab('balance')" id="tab-balance">
+      <i class="fa-solid fa-scale-balanced fa-xs"></i> Demand vs Supply
+      <span class="scp-tab-count" id="cnt-balance">—</span>
+    </button>
+    <button class="scp-tab" onclick="switchScpTab('actions')" id="tab-actions">
+      <i class="fa-solid fa-list-check fa-xs"></i> Planning Actions
+      <span class="scp-tab-count" id="cnt-actions">—</span>
+    </button>
+    <button class="scp-tab" onclick="switchScpTab('forecast')" id="tab-forecast">
+      <i class="fa-solid fa-chart-line fa-xs"></i> Forecast Accuracy
+      <span class="scp-tab-count" id="cnt-forecast">—</span>
+    </button>
+    <button class="scp-tab" onclick="switchScpTab('safetystock')" id="tab-safetystock">
+      <i class="fa-solid fa-shield-halved fa-xs"></i> Safety Stock
+      <span class="scp-tab-count" id="cnt-safetystock">—</span>
+    </button>
+    <button class="scp-tab" onclick="switchScpTab('ssanalysis')" id="tab-ssanalysis">
+      <i class="fa-solid fa-microscope fa-xs"></i> SS Analysis
+      <span class="scp-tab-count" id="cnt-ssanalysis">—</span>
+    </button>
+    <button class="scp-tab" onclick="switchScpTab('latesupply')" id="tab-latesupply">
+      <i class="fa-solid fa-clock-rotate-left fa-xs"></i> Late Supply
+      <span class="scp-tab-count" id="cnt-latesupply">—</span>
+    </button>
+    <button class="scp-tab" onclick="switchScpTab('excess')" id="tab-excess">
+      <i class="fa-solid fa-warehouse fa-xs"></i> Excess Inventory
+      <span class="scp-tab-count" id="cnt-excess">—</span>
+    </button>
+    <button class="scp-tab" onclick="switchScpTab('pegging')" id="tab-pegging">
+      <i class="fa-solid fa-link fa-xs"></i> Pegging
+      <span class="scp-tab-count" id="cnt-pegging">—</span>
+    </button>
+    <button class="scp-tab" onclick="switchScpTab('spareparts')" id="tab-spareparts">
+      <i class="fa-solid fa-wrench fa-xs"></i> Spare Parts
+      <span class="scp-tab-count" id="cnt-spareparts">—</span>
+    </button>
+    <button class="scp-tab" onclick="switchScpTab('capacity')" id="tab-capacity">
+      <i class="fa-solid fa-industry fa-xs"></i> Supplier Capacity
+      <span class="scp-tab-count" id="cnt-capacity">—</span>
+    </button>
+    <button class="scp-tab" onclick="switchScpTab('sourcing')" id="tab-sourcing">
+      <i class="fa-solid fa-truck-field fa-xs"></i> Sourcing
+      <span class="scp-tab-count" id="cnt-sourcing">—</span>
+    </button>
+    <button class="scp-tab" onclick="switchScpTab('variability')" id="tab-variability">
+      <i class="fa-solid fa-chart-area fa-xs"></i> Demand Variability
+      <span class="scp-tab-count" id="cnt-variability">—</span>
+    </button>
+    <button class="scp-tab" onclick="switchScpTab('coverage')" id="tab-coverage">
+      <i class="fa-solid fa-battery-half fa-xs"></i> Item Coverage
+      <span class="scp-tab-count" id="cnt-coverage">—</span>
+    </button>
+    <button class="scp-tab" onclick="switchScpTab('graph')" id="tab-graph">
+      <i class="fa-solid fa-diagram-project fa-xs"></i> Supply Chain Graph
+      <span class="scp-tab-count" id="cnt-graph">—</span>
+    </button>
+    <button class="scp-tab" onclick="switchScpTab('ai')" id="tab-ai">
+      <i class="fa-solid fa-robot fa-xs"></i> AI Analysis
+    </button>
+  </div>
+
+  <!-- Tab panes -->
+
+  <!-- Plan Overview -->
+  <div class="scp-pane active" id="pane-overview">
+    <div class="scp-state-box" id="overviewEmpty">
+      <div class="scp-state-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+      <div class="scp-state-title">No data yet</div>
+      <div class="scp-state-sub">Click "Run Analysis" to load plan overview data.</div>
+    </div>
+    <div id="overviewContent" class="d-none"></div>
+  </div>
+
+  <!-- Exceptions -->
+  <div class="scp-pane" id="pane-exceptions">
+    <div class="scp-state-box" id="exceptionsEmpty">
+      <div class="scp-state-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <div class="scp-state-title">No data yet</div>
+      <div class="scp-state-sub">Click "Run Analysis" to load planning exceptions.</div>
+    </div>
+    <div id="exceptionsContent" class="d-none"></div>
+  </div>
+
+  <!-- By Exception Type -->
+  <div class="scp-pane" id="pane-bytype">
+    <div class="scp-state-box" id="bytypeEmpty">
+      <div class="scp-state-icon"><i class="fa-solid fa-layer-group"></i></div>
+      <div class="scp-state-title">No data yet</div>
+      <div class="scp-state-sub">Click "Run Analysis" to see exception type breakdown.</div>
+    </div>
+    <div id="bytypeContent" class="d-none"></div>
+  </div>
+
+  <!-- Demand vs Supply -->
+  <div class="scp-pane" id="pane-balance">
+    <div class="scp-state-box" id="balanceEmpty">
+      <div class="scp-state-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+      <div class="scp-state-title">No data yet</div>
+      <div class="scp-state-sub">Click "Run Analysis" to see demand vs supply balancing.</div>
+    </div>
+    <div id="balanceContent" class="d-none"></div>
+  </div>
+
+  <!-- Planning Actions -->
+  <div class="scp-pane" id="pane-actions">
+    <div class="scp-state-box" id="actionsEmpty">
+      <div class="scp-state-icon"><i class="fa-solid fa-list-check"></i></div>
+      <div class="scp-state-title">No data yet</div>
+      <div class="scp-state-sub">Click "Run Analysis" to identify recommended planning actions.</div>
+    </div>
+    <div id="actionsContent" class="d-none"></div>
+  </div>
+
+  <!-- Forecast Accuracy -->
+  <div class="scp-pane" id="pane-forecast">
+    <div class="scp-state-box" id="forecastEmpty">
+      <div class="scp-state-icon"><i class="fa-solid fa-chart-line"></i></div>
+      <div class="scp-state-title">No data yet</div>
+      <div class="scp-state-sub">Click "Run Analysis" to measure forecast accuracy (MAPE).</div>
+    </div>
+    <div id="forecastContent" class="d-none"></div>
+  </div>
+
+  <!-- Safety Stock -->
+  <div class="scp-pane" id="pane-safetystock">
+    <div class="scp-state-box" id="safetystockEmpty">
+      <div class="scp-state-icon"><i class="fa-solid fa-shield-halved"></i></div>
+      <div class="scp-state-title">No data yet</div>
+      <div class="scp-state-sub">Click "Run Analysis" to review safety stock compliance.</div>
+    </div>
+    <div id="safetystockContent" class="d-none"></div>
+  </div>
+
+  <!-- SS Analysis -->
+  <div class="scp-pane" id="pane-ssanalysis">
+    <div class="scp-state-box" id="ssanalysisEmpty">
+      <div class="scp-state-icon"><i class="fa-solid fa-microscope"></i></div>
+      <div class="scp-state-title">No data yet</div>
+      <div class="scp-state-sub">Click "Run Analysis" to deep-dive into safety stock settings.</div>
+    </div>
+    <div id="ssanalysisContent" class="d-none"></div>
+  </div>
+
+  <!-- Late Supply -->
+  <div class="scp-pane" id="pane-latesupply">
+    <div class="scp-state-box" id="latesupplyEmpty">
+      <div class="scp-state-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+      <div class="scp-state-title">No data yet</div>
+      <div class="scp-state-sub">Click "Run Analysis" to find late or at-risk supply orders.</div>
+    </div>
+    <div id="latesupplyContent" class="d-none"></div>
+  </div>
+
+  <!-- Excess Inventory -->
+  <div class="scp-pane" id="pane-excess">
+    <div class="scp-state-box" id="excessEmpty">
+      <div class="scp-state-icon"><i class="fa-solid fa-warehouse"></i></div>
+      <div class="scp-state-title">No data yet</div>
+      <div class="scp-state-sub">Click "Run Analysis" to identify excess and obsolete inventory.</div>
+    </div>
+    <div id="excessContent" class="d-none"></div>
+  </div>
+
+  <!-- Pegging -->
+  <div class="scp-pane" id="pane-pegging">
+    <div class="scp-state-box" id="peggingEmpty">
+      <div class="scp-state-icon"><i class="fa-solid fa-link"></i></div>
+      <div class="scp-state-title">No data yet</div>
+      <div class="scp-state-sub">Click "Run Analysis" to trace demand-supply pegging chains.</div>
+    </div>
+    <div id="peggingContent" class="d-none"></div>
+  </div>
+
+  <!-- Spare Parts -->
+  <div class="scp-pane" id="pane-spareparts">
+    <div class="scp-state-box" id="sparepartsEmpty">
+      <div class="scp-state-icon"><i class="fa-solid fa-wrench"></i></div>
+      <div class="scp-state-title">No data yet</div>
+      <div class="scp-state-sub">Click "Run Analysis" to review spare parts planning status.</div>
+    </div>
+    <div id="sparepartsContent" class="d-none"></div>
+  </div>
+
+  <!-- Supplier Capacity -->
+  <div class="scp-pane" id="pane-capacity">
+    <div class="scp-state-box" id="capacityEmpty">
+      <div class="scp-state-icon"><i class="fa-solid fa-industry"></i></div>
+      <div class="scp-state-title">No data yet</div>
+      <div class="scp-state-sub">Click "Run Analysis" to assess supplier capacity constraints.</div>
+    </div>
+    <div id="capacityContent" class="d-none"></div>
+  </div>
+
+  <!-- Sourcing -->
+  <div class="scp-pane" id="pane-sourcing">
+    <div class="scp-state-box" id="sourcingEmpty">
+      <div class="scp-state-icon"><i class="fa-solid fa-truck-field"></i></div>
+      <div class="scp-state-title">No data yet</div>
+      <div class="scp-state-sub">Click "Run Analysis" to review sourcing rules and assignments.</div>
+    </div>
+    <div id="sourcingContent" class="d-none"></div>
+  </div>
+
+  <!-- Demand Variability -->
+  <div class="scp-pane" id="pane-variability">
+    <div class="scp-state-box" id="variabilityEmpty">
+      <div class="scp-state-icon"><i class="fa-solid fa-chart-area"></i></div>
+      <div class="scp-state-title">No data yet</div>
+      <div class="scp-state-sub">Click "Run Analysis" to analyze demand variability and volatility.</div>
+    </div>
+    <div id="variabilityContent" class="d-none"></div>
+  </div>
+
+  <!-- Item Coverage -->
+  <div class="scp-pane" id="pane-coverage">
+    <div class="scp-state-box" id="coverageEmpty">
+      <div class="scp-state-icon"><i class="fa-solid fa-battery-half"></i></div>
+      <div class="scp-state-title">No data yet</div>
+      <div class="scp-state-sub">Click "Run Analysis" to check item coverage and planning completeness.</div>
+    </div>
+    <div id="coverageContent" class="d-none"></div>
+  </div>
+
+  <!-- Supply Chain Graph -->
+  <div class="scp-pane" id="pane-graph">
+    <div class="scp-state-box" id="graphEmpty">
+      <i class="fa-solid fa-diagram-project" style="font-size:28px;color:var(--text-muted);margin-bottom:10px;"></i>
+      <div style="font-size:14px;font-weight:600;color:var(--text-primary);">Supply Chain Graph</div>
+      <div style="font-size:12px;color:var(--text-muted);">Run analysis to visualize the supply chain network</div>
+    </div>
+    <div id="graphContent" class="d-none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+        <button class="scp-csv-btn" onclick="loadSupplyChainGraph()" id="graphLoadBtn">
+          <i class="fa-solid fa-diagram-project fa-xs me-1"></i>Load Graph
+        </button>
+        <span style="font-size:12px;color:var(--text-muted);" id="graphStats"></span>
+        <div style="margin-left:auto;display:flex;gap:8px;font-size:11px;">
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#1a7f37;"></span> OK</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#bf8700;"></span> Tight</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#cf222e;"></span> Late</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#0969da;"></span> Item</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#8250df;"></span> Supplier</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#bf3989;"></span> Demand</span>
+        </div>
+      </div>
+      <div id="graphContainer" style="width:100%;height:600px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);"></div>
+    </div>
+  </div>
+
+  <!-- AI Analysis -->
+  <div class="scp-pane" id="pane-ai">
+    <div class="scp-state-box" id="aiEmpty">
+      <div class="scp-state-icon"><i class="fa-solid fa-robot"></i></div>
+      <div class="scp-state-title">Run analysis first</div>
+      <div class="scp-state-sub">Click "Run Analysis" to generate a summary and start the AI conversation.</div>
+    </div>
+    <div id="aiContent" class="d-none">
+
+      <!-- Summary box -->
+      <div class="scp-ai-summary" id="aiSummaryBox">
+        <h6><i class="fa-solid fa-chart-bar me-1"></i>Analysis Summary</h6>
+        <div class="scp-ai-text" id="aiSummaryText"></div>
+      </div>
+
+      <!-- Inline chat -->
+      <div class="scp-inline-chat">
+        <div class="scp-chat-header">
+          <span><i class="fa-solid fa-robot fa-xs me-1"></i>SCP Support AI</span>
+          <button class="scp-chat-clear-btn" onclick="clearScpChat()" title="Clear conversation">
+            <i class="fa-solid fa-rotate-left fa-xs"></i> Clear
+          </button>
+        </div>
+        <div class="scp-chat-messages" id="scpChatMessages">
+          <div class="scp-chat-msg scp-chat-msg-ai" id="scpChatWelcome">
+            <div class="scp-chat-avatar"><i class="fa-solid fa-robot fa-xs"></i></div>
+            <div class="scp-chat-bubble">Run the analysis above, then ask me anything about your supply chain planning data.</div>
+          </div>
+        </div>
+        <div class="scp-chat-input-row">
+          <input type="text" id="scpChatInput"
+                 placeholder="Ask about exceptions, supply gaps, forecast accuracy…"
+                 onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendScpChat();}" />
+          <button class="scp-chat-send-btn" id="scpChatSendBtn" onclick="sendScpChat()">
+            <i class="fa-solid fa-paper-plane fa-xs"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /.scp-layout -->
+
+<!-- ── Drill-down overlay + panel ──────────────────────────────────────────── -->
+<div class="scp-drill-overlay" id="drillOverlay" onclick="closeScpDrillDown()"></div>
+
+<div class="scp-drill-panel" id="drillPanel">
+  <div class="scp-drill-header">
+    <div class="scp-drill-title">
+      <i class="fa-solid fa-magnifying-glass fa-xs"></i>
+      <span id="drillItemName">Item Detail</span>
+    </div>
+    <button class="scp-drill-close" onclick="closeScpDrillDown()" title="Close">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <div class="scp-drill-body">
+
+    <!-- Item header -->
+    <div class="scp-drill-grid" id="drillItemSection">
+      <div class="scp-drill-item">
+        <div class="scp-drill-item-label">Make / Buy</div>
+        <div class="scp-drill-item-value" id="drillMakeBuy">—</div>
+      </div>
+      <div class="scp-drill-item">
+        <div class="scp-drill-item-label">Planner</div>
+        <div class="scp-drill-item-value" id="drillPlanner">—</div>
+      </div>
+      <div class="scp-drill-item">
+        <div class="scp-drill-item-label">Lead Time</div>
+        <div class="scp-drill-item-value" id="drillLeadTime">—</div>
+      </div>
+    </div>
+
+    <!-- Inventory position -->
+    <div class="scp-drill-section" id="drillExceptionSection">
+      <div class="scp-drill-section-label">Inventory Position</div>
+      <div class="scp-drill-grid">
+        <div class="scp-drill-item">
+          <div class="scp-drill-item-label">On Hand</div>
+          <div class="scp-drill-item-value" id="drillOnHand">—</div>
+        </div>
+        <div class="scp-drill-item">
+          <div class="scp-drill-item-label">Safety Stock</div>
+          <div class="scp-drill-item-value" id="drillSafetyStock">—</div>
+        </div>
+        <div class="scp-drill-item" style="grid-column:1/-1">
+          <div class="scp-drill-item-label">Net Position</div>
+          <div class="scp-drill-item-value" id="drillNetPosition">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exception details -->
+    <div class="scp-drill-section" id="drillPeggingSection">
+      <div class="scp-drill-section-label">Exception Details</div>
+      <div class="scp-drill-grid">
+        <div class="scp-drill-item">
+          <div class="scp-drill-item-label">Exception Type</div>
+          <div class="scp-drill-item-value" id="drillExceptionType">—</div>
+        </div>
+        <div class="scp-drill-item">
+          <div class="scp-drill-item-label">Quantity</div>
+          <div class="scp-drill-item-value" id="drillQuantity">—</div>
+        </div>
+        <div class="scp-drill-item" style="grid-column:1/-1">
+          <div class="scp-drill-item-label">Date Range</div>
+          <div class="scp-drill-item-value" id="drillDates">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Demand section -->
+    <div class="scp-drill-section" id="drillDemandSection" style="display:none">
+      <div class="scp-drill-section-label">Demand Details</div>
+      <div id="drillDemandContent">
+        <p style="font-size:12px;color:var(--text-muted);margin:0;">Demand pegging data will appear here.</p>
+      </div>
+    </div>
+
+    <!-- Supply section -->
+    <div class="scp-drill-section" id="drillSupplySection" style="display:none">
+      <div class="scp-drill-section-label">Supply Details</div>
+      <div id="drillSupplyContent">
+        <p style="font-size:12px;color:var(--text-muted);margin:0;">Supply pegging data will appear here.</p>
+      </div>
+    </div>
+
+    <!-- Safety Stock section -->
+    <div class="scp-drill-section" id="drillSSSection" style="display:none">
+      <div class="scp-drill-section-label">Safety Stock Analysis</div>
+      <div id="drillSSContent">
+        <p style="font-size:12px;color:var(--text-muted);margin:0;">Safety stock analysis will appear here.</p>
+      </div>
+    </div>
+
+    <!-- Spare Parts section -->
+    <div class="scp-drill-section" id="drillSpareSection" style="display:none">
+      <div class="scp-drill-section-label">Spare Parts Detail</div>
+      <div id="drillSpareContent">
+        <p style="font-size:12px;color:var(--text-muted);margin:0;">Spare parts planning data will appear here.</p>
+      </div>
+    </div>
+
+    <!-- Item Detail (demand + supply timeline, lazy-loaded) -->
+    <div class="scp-drill-section" id="scpDrillDetailSection" style="display:none">
+      <div class="scp-drill-section-label">
+        Item Timeline
+        <button class="scp-csv-btn" id="scpDrillDetailBtn" style="float:right;font-size:11px;padding:2px 10px;" onclick="loadItemDetail()">
+          <i class="fa-solid fa-clock-rotate-left fa-xs me-1"></i>Load Detail
+        </button>
+      </div>
+      <div id="scpDrillDetailContent">
+        <p style="font-size:12px;color:var(--text-muted);margin:0;">Click "Load Detail" to see demand and supply timelines for this item.</p>
+      </div>
+    </div>
+
+    <!-- Recommended action -->
+    <div class="scp-drill-section" id="drillActionSection">
+      <div class="scp-drill-section-label">Recommended Action</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="font-size:11px;color:var(--text-muted);">Owner:</span>
+        <span class="scp-drill-owner" id="drillOwner"><i class="fa-solid fa-user fa-xs me-1"></i>—</span>
+      </div>
+      <div class="scp-action-box" id="drillAction">—</div>
+    </div>
+
+  </div>
+
+  <div class="scp-drill-footer">
+    <button class="scp-csv-btn w-100 justify-content-center" style="font-size:12px;" onclick="closeScpDrillDown()">
+      <i class="fa-solid fa-xmark fa-xs"></i> Close Panel
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>window.EBS_PAGE = 'scp';</script>
+<script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+<script src="{{ url_for('static', filename='js/scp.js') }}"></script>
+{% endblock %}

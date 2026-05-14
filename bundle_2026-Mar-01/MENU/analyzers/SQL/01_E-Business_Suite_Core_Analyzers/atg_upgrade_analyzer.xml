@@ -1,0 +1,32 @@
+<hybrid_analyzer><ha_attributes>
+<title>12.2 Upgrade Analyzer</title>
+<type>Analyzer</type>
+<short_name>UGLE</short_name>
+<product_line>EBS</product_line>
+<product_family>EBS ATG</product_family>
+<product_area>EBS - Installation and Config Mgt</product_area>
+<owner>DAVID.HEISLER@ORACLE.COM</owner>
+<application>Application Object Library</application>
+<version>200.20</version>
+<last_generated>2026/02/23</last_generated>
+<doc_id>2634237.1</doc_id>
+<file_name>atg_upgrade_analyzer</file_name>
+<version_image_name>upg_ana_latest_version.gif</version_image_name>
+<community_link><![CDATA[https://community.oracle.com/thread/4324680]]></community_link>
+<whats_new><![CDATA[<p><span style="color:#172b4d;"><span style="font-family:'Calibri',sans-serif;font-size:11.0pt;">The Upgrade analyzer evaluates your E-Business suite upgrade environment to be sure that all pre-upgrade/upgrade/post upgrade requirements have been properly met so that you will experience a smooth upgrade process.</span></span></p><p><span style="font-size:medium;"><strong>Benefits</strong></span></p><ul><li><span style="font-size:small;">Immediate analysis and output of your E-Business Suite Upgrade data and progress from a particular environment</span></li><li><span style="font-size:small;">Evaluates E-Business Upgrade system data, setup and configurations based on the steps in the Release notes </span><a rel="noopener" target="_blank" title="Oracle E-Business Suite Release Notes, Release 12.2"><span style="font-size:small;">Doc ID 1320300.1</span></a><span style="font-size:small;"> as well as the main upgrade guide </span><a rel="noopener" target="_blank" title="E-Business Suite 12.2 Upgrade Guide"><span style="font-size:small;">Oracle® E-Business Suite Upgrade Guide Release 12.0 and 12.1 to 12.2</span></a></li><li><span style="font-size:small;">Provides recommended actions, displays potential errors or missed steps based on the progress of your 12.2 upgrade.</span></li><li><span style="font-size:small;">Runs as a standalone java program.</span></li></ul>]]></whats_new>
+<framework_version>6.27.1</framework_version>
+<analyzer_id>2375</analyzer_id>
+<apex_host>ASEPROD</apex_host>
+<apex_app_files>https://aseobs.oraclecorp.com/ords/r/ebsap_psd/303/files/static/v223/</apex_app_files>
+<apex_ws_files>https://aseobs.oraclecorp.com/ords/r/ebsap_psd/files/static/v46/</apex_ws_files>
+</ha_attributes>
+<ha_bundle>
+<condition/>
+<condition_fail/>
+</ha_bundle>
+<ha_init>
+<tier>CP|DB|DMZ|MT</tier>
+<dbconn>YES</dbconn>
+<compatible_apps_release>12.0|12.1|12.2</compatible_apps_release>
+</ha_init>
+</hybrid_analyzer>

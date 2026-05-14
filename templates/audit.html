@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Trail {{ session_id[:8] }} — Oracle EBS Support Agent{% endblock %}
+
+{% block content %}
+<div class="audit-layout">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">
+        <i class="fa-solid fa-scroll me-2 text-accent"></i>Audit Trail
+      </h2>
+      <p class="page-subtitle">
+        Session: <code class="font-mono">{{ session_id }}</code>
+        &mdash; {{ audit_trail | length }} entries
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('report', session_id=session_id) }}" class="btn btn-sm btn-outline-accent">
+        <i class="fa-solid fa-file-lines me-1"></i>View Report
+      </a>
+      <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-secondary">
+        <i class="fa-solid fa-comments me-1"></i>Back to Chat
+      </a>
+    </div>
+  </div>
+
+  <!-- Filter Controls -->
+  <div class="audit-controls">
+    <div class="search-bar-wrap" style="max-width:340px">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input
+        type="text"
+        id="auditSearch"
+        class="search-input"
+        placeholder="Filter by agent or action..."
+        autocomplete="off"
+      />
+    </div>
+    <div class="d-flex gap-2">
+      <select class="filter-select" id="statusFilter">
+        <option value="">All Status</option>
+        <option value="success">Success</option>
+        <option value="error">Error</option>
+      </select>
+      <select class="filter-select" id="analyzerFilter">
+        <option value="">All Agents</option>
+        {% set analyzers_seen = [] %}
+        {% for entry in audit_trail %}
+          {% if entry.analyzer_id and entry.analyzer_id not in analyzers_seen %}
+            {% set _ = analyzers_seen.append(entry.analyzer_id) %}
+            <option value="{{ entry.analyzer_id }}">{{ entry.analyzer_id }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  {% if not audit_trail %}
+  <!-- Empty state -->
+  <div class="empty-report-state">
+    <i class="fa-solid fa-file-circle-xmark fa-3x text-muted mb-3"></i>
+    <p class="text-muted">No audit entries for this session.</p>
+  </div>
+  {% else %}
+
+  <!-- Stats Row -->
+  <div class="audit-stats-row">
+    <div class="audit-stat-card">
+      <span class="audit-stat-value">{{ audit_trail | length }}</span>
+      <span class="audit-stat-label">Total Entries</span>
+    </div>
+    <div class="audit-stat-card">
+      {% set success_count = audit_trail | selectattr('status', 'equalto', 'success') | list | length %}
+      <span class="audit-stat-value text-success-soft">{{ success_count }}</span>
+      <span class="audit-stat-label">Successful</span>
+    </div>
+    <div class="audit-stat-card">
+      {% set error_count = audit_trail | length - success_count %}
+      <span class="audit-stat-value {% if error_count > 0 %}text-danger-soft{% endif %}">{{ error_count }}</span>
+      <span class="audit-stat-label">Errors</span>
+    </div>
+    <div class="audit-stat-card">
+      {% set total_ms = audit_trail | sum(attribute='duration_ms') %}
+      <span class="audit-stat-value">{{ total_ms }} ms</span>
+      <span class="audit-stat-label">Total Duration</span>
+    </div>
+    <div class="audit-stat-card">
+      {% set total_rows = audit_trail | sum(attribute='row_count') %}
+      <span class="audit-stat-value">{{ total_rows }}</span>
+      <span class="audit-stat-label">Total Rows</span>
+    </div>
+  </div>
+
+  <!-- Audit Table -->
+  <div class="report-card">
+    <div class="table-responsive">
+      <table class="data-table" id="auditTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Timestamp</th>
+            <th>Agent</th>
+            <th>Action</th>
+            <th>Duration</th>
+            <th>Rows</th>
+            <th>Summary</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="auditTableBody">
+          {% for entry in audit_trail %}
+          <tr
+            class="audit-row"
+            data-status="{{ entry.get('status', 'success') }}"
+            data-analyzer="{{ entry.get('analyzer_id', '') | lower }}"
+            data-action="{{ entry.get('action', '') | lower }}"
+          >
+            <td class="text-muted small">{{ loop.index }}</td>
+            <td class="font-mono small">{{ entry.get('created_at', '')[:19] }}</td>
+            <td>
+              {% if entry.get('analyzer_id') %}
+              <code class="small">{{ entry.analyzer_id }}</code>
+              {% else %}
+              <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td class="small">{{ entry.get('action', '—') }}</td>
+            <td class="text-muted small">
+              {% if entry.get('duration_ms') %}
+              {{ entry.duration_ms }} ms
+              {% else %}—{% endif %}
+            </td>
+            <td class="text-muted small">{{ entry.get('row_count', 0) }}</td>
+            <td class="small text-muted" style="max-width:220px">
+              <span title="{{ entry.get('result_summary', '') }}">
+                {{ (entry.get('result_summary', '') or '')[:60] }}{% if (entry.get('result_summary', '') or '') | length > 60 %}…{% endif %}
+              </span>
+            </td>
+            <td>
+              {% if entry.get('status') == 'success' %}
+              <span class="status-ok"><i class="fa-solid fa-check fa-xs me-1"></i>success</span>
+              {% else %}
+              <span class="status-err" title="{{ entry.get('error_message', '') }}">
+                <i class="fa-solid fa-xmark fa-xs me-1"></i>{{ entry.get('status', 'error') }}
+              </span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="table-footer" id="auditTableFooter">
+      Showing <span id="auditShownCount">{{ audit_trail | length }}</span> of {{ audit_trail | length }} entries
+    </div>
+  </div>
+
+  {% endif %}
+</div><!-- /.audit-layout -->
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.EBS_PAGE = 'audit';
+  window.EBS_SESSION_ID = {{ session_id | tojson }};
+
+  // Live filter
+  function applyAuditFilters() {
+    const searchVal = (document.getElementById('auditSearch')?.value || '').toLowerCase();
+    const statusVal = (document.getElementById('statusFilter')?.value || '').toLowerCase();
+    const analyzerVal = (document.getElementById('analyzerFilter')?.value || '').toLowerCase();
+    const rows = document.querySelectorAll('#auditTableBody .audit-row');
+    let shown = 0;
+    rows.forEach(row => {
+      const status = (row.dataset.status || '').toLowerCase();
+      const analyzer = (row.dataset.analyzer || '').toLowerCase();
+      const action = (row.dataset.action || '').toLowerCase();
+      const matchSearch = !searchVal || analyzer.includes(searchVal) || action.includes(searchVal);
+      const matchStatus = !statusVal || status === statusVal;
+      const matchAnalyzer = !analyzerVal || analyzer === analyzerVal;
+      const visible = matchSearch && matchStatus && matchAnalyzer;
+      row.style.display = visible ? '' : 'none';
+      if (visible) shown++;
+    });
+    const el = document.getElementById('auditShownCount');
+    if (el) el.textContent = shown;
+  }
+
+  document.getElementById('auditSearch')?.addEventListener('input', applyAuditFilters);
+  document.getElementById('statusFilter')?.addEventListener('change', applyAuditFilters);
+  document.getElementById('analyzerFilter')?.addEventListener('change', applyAuditFilters);
+
+  {% if recent_sessions %}
+  window.EBS_RECENT_SESSIONS = {{ recent_sessions | tojson }};
+  {% else %}
+  window.EBS_RECENT_SESSIONS = [];
+  {% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,138 @@
+/* ARCS: $Header: /home/cvs/cvs/RDA_8/src/scripting/lib/admin/css/alta.css,v 1.4 2014/10/30 11:54:55 RDA Exp $ */
+/* ALTA */
+
+.rda_index  { font-size:12px;
+              font-family:sans-serif;
+              white-space:nowrap;
+            }
+.rda_normal { font-size:12px;
+              font-family:sans-serif;
+            }
+.rda_lst LI { margin-left:6pt;
+              font-family:sans-serif;
+            }
+.rda_seq LI { margin-left:12pt;
+              font-family:sans-serif;
+            }
+.rda_toc A  { font-size:12px;
+              font-family:sans-serif;
+              white-space:nowrap;
+            }
+.rda_toc LI { font-size:12px;
+              font-family:sans-serif;
+              list-style-type:none;
+              white-space:nowrap;
+            }
+
+A:link      { color:#145C9E;
+              text-decoration:none;
+            }
+A:visited   { color:#72007C;
+              text-decoration:none;
+            }
+A:hover     { color:#145C9E;
+              text-decoration:underline;
+            }
+
+TABLE    { border-style:solid;
+           border-width:1px;
+           border-color:#D6DFE6;
+           border-collapse:collapse;
+           border-spacing:0px;
+           empty-cells:show;
+         }
+TD       { border-style:solid;
+           border-width:1px;
+           border-color:#EEEEEE;
+           font-size:12px;
+           font-family:sans-serif;
+           font-color:#333333;
+           padding:5px;
+         }
+TH       { border-style:solid;
+           border-width:1px;
+           border-color:#D6DFE6;
+           background-color:#F2F4F7;
+           font-size:13px;
+           font-family:sans-serif;
+           font-weight:bold;
+           padding:5px;
+         }
+TR       { vertical-align:middle;
+         }
+
+H1       { font-size:18px;
+           font-weight:bold;
+           font-family:sans-serif;
+           margin-top:14px;
+           margin-bottom:8px;
+           color:#252525;
+         }
+H2       { font-size:16px;
+           font-weight:bold;
+           font-family:sans-serif;
+           margin-top:10px;
+           margin-bottom:8px;
+           color:#252525;
+         }
+H3       { font-size:14px;
+           font-weight:bold;
+           font-family:sans-serif;
+           margin-top:10px;
+           margin-bottom:8px;
+           color:#252525;
+         }
+H4       { font-size:12px;
+           font-weight:bold;
+           font-family:sans-serif;
+           margin-top:10px;
+           margin-bottom:7px;
+           color:#252525;
+         }
+HR       { color:#D6DFE6;
+           height:1px;
+         }
+A        { font-family:sans-serif;
+         }
+P        { font-size:12px;
+           font-family:sans-serif;
+           margin:2px 0px 0px 0px;
+           padding:0px;
+         }
+PRE      { font-size:12px;
+           margin:2px 0px 0px 0px;
+           padding:0px;
+         }
+LI       { font-size:12px;
+           font-family:sans-serif;
+           padding:0px;
+         }
+OL       { margin:0px 0px 0px 28px;
+           padding:0px;
+         }
+UL       { margin:0px 0px 0px 28px;
+           padding:0px;
+         }
+
+OPTION   { font-family:sans-serif;
+           font-size:12px
+         }
+SELECT   { font-family:sans-serif;
+           font-size:12px
+         }
+INPUT    { font-family:sans-serif;
+           font-size:12px
+         }
+TEXTAREA { font-family:sans-serif;
+           font-size:12px
+         }
+
+.rda_filter { color:#993800;
+              white-space:nowrap;
+            }
+.rda_null   { font-style:Italic
+            }
+.rda_red    { color:#E00000
+            }
+.rda_blue   { color:#0000FF
+            }

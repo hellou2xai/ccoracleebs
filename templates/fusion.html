@@ -1,0 +1,615 @@
+{% extends "base.html" %}
+
+{% block title %}EBS Agentic Applications{% endblock %}
+
+{% block head_extra %}
+<style>
+  /* ── EBS Agentic Apps page ───────────────────────────────────────── */
+  .fusion-layout { padding: 20px 24px 40px; max-width: 1400px; margin: 0 auto; }
+
+  .fusion-hero {
+    background: linear-gradient(135deg, var(--accent) 0%, #6f42c1 100%);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    color: #fff;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+  }
+  .fusion-hero-left h1 { font-size: 20px; font-weight: 700; margin: 0 0 4px; }
+  .fusion-hero-left p  { font-size: 13px; opacity: .85; margin: 0; }
+  .fusion-hero-pills   { display: flex; gap: 8px; flex-wrap: wrap; }
+  .fusion-meta-pill {
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .fusion-meta-pill:hover, .fusion-meta-pill.active { background: rgba(255,255,255,.3); }
+
+  .pillar-section { margin-bottom: 32px; }
+  .pillar-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+  }
+  .pillar-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  .pillar-finance  .pillar-icon { background: rgba(9,105,218,.12);  color: #0969da; }
+  .pillar-scm      .pillar-icon { background: rgba(230,81,0,.12);   color: #e65100; }
+  .pillar-planning .pillar-icon { background: rgba(26,127,55,.12);  color: #1a7f37; }
+  .pillar-title    { font-size: 15px; font-weight: 700; }
+  .pillar-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  .app-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+
+  .app-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    transition: border-color .15s, box-shadow .15s;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .app-card:hover { border-color: var(--accent); box-shadow: var(--shadow-sm); }
+
+  .app-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .app-name { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+  .app-badge {
+    font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px;
+    text-transform: uppercase; letter-spacing: .04em; white-space: nowrap;
+  }
+  .badge-FINANCE  { background: rgba(9,105,218,.1);  color: #0969da; border: 1px solid rgba(9,105,218,.2); }
+  .badge-SCM      { background: rgba(230,81,0,.1);   color: #e65100; border: 1px solid rgba(230,81,0,.2); }
+  .badge-PLANNING { background: rgba(26,127,55,.1);  color: #1a7f37; border: 1px solid rgba(26,127,55,.2); }
+
+  .app-tagline { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+
+  .app-kpis { display: flex; flex-wrap: wrap; gap: 4px; }
+  .app-kpi-tag {
+    font-size: 10px; font-weight: 500;
+    padding: 2px 7px; border-radius: 10px;
+    background: var(--bg-card-2); color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .app-card-footer { display: flex; gap: 6px; margin-top: auto; }
+  .btn-run-app {
+    flex: 1;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .15s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-run-app:hover { opacity: .85; }
+  .btn-run-app:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-run-app .spinner-border { width: 12px; height: 12px; border-width: 2px; }
+
+  .btn-chat-app {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 7px 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+  .btn-chat-app:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Last-run status */
+  .app-status-bar {
+    display: none;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-top: 4px;
+  }
+  .app-status-ok  { background: rgba(26,127,55,.1); color: #1a7f37; }
+  .app-status-warn{ background: rgba(154,103,0,.1); color: #9a6700; }
+  .app-status-err { background: rgba(207,34,46,.1); color: #cf222e; }
+
+  /* ── Results Drawer ─────────────────────────────────────────────── */
+  .results-drawer {
+    position: fixed;
+    bottom: 0; right: 0;
+    width: min(780px, 100vw);
+    height: 70vh;
+    background: var(--bg-card);
+    border-top: 2px solid var(--accent);
+    border-left: 1px solid var(--border);
+    border-radius: 10px 0 0 0;
+    box-shadow: -4px 0 24px rgba(0,0,0,.12);
+    z-index: 1050;
+    display: flex; flex-direction: column;
+    transform: translateY(100%);
+    transition: transform .25s ease;
+  }
+  .results-drawer.open { transform: translateY(0); }
+
+  .drawer-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .drawer-title { font-size: 14px; font-weight: 700; flex: 1; }
+  .drawer-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+  .drawer-exec-time { font-size: 11px; color: var(--text-muted); }
+  .btn-drawer-close {
+    width: 28px; height: 28px;
+    border: none; background: var(--bg-card-2);
+    border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); font-size: 12px;
+    transition: background .15s;
+  }
+  .btn-drawer-close:hover { background: var(--border); }
+
+  .drawer-findings {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    padding: 10px 16px 0;
+    flex-shrink: 0;
+  }
+  .drawer-finding {
+    font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 12px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .finding-CRITICAL { background: rgba(207,34,46,.1); color: #cf222e; border: 1px solid rgba(207,34,46,.2); }
+  .finding-HIGH     { background: rgba(154,103,0,.1); color: #9a6700; border: 1px solid rgba(154,103,0,.2); }
+  .finding-MEDIUM   { background: rgba(9,105,218,.1); color: #0969da; border: 1px solid rgba(9,105,218,.2); }
+  .finding-INFO     { background: rgba(87,96,106,.08); color: #57606a; border: 1px solid rgba(87,96,106,.2); }
+
+  .drawer-query-tabs {
+    display: flex; gap: 2px;
+    padding: 8px 16px 0;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0; overflow-x: auto;
+  }
+  .drawer-query-tab {
+    font-size: 11px; font-weight: 600;
+    padding: 5px 12px; border-radius: 6px 6px 0 0;
+    cursor: pointer; border: 1px solid transparent;
+    border-bottom: none; color: var(--text-muted);
+    white-space: nowrap;
+    transition: background .1s;
+  }
+  .drawer-query-tab:hover { background: var(--bg-card-2); }
+  .drawer-query-tab.active {
+    background: var(--bg-card);
+    border-color: var(--border);
+    color: var(--text-primary);
+    margin-bottom: -1px;
+  }
+  .drawer-query-tab .tab-count {
+    font-size: 10px; background: var(--bg-card-2);
+    border-radius: 8px; padding: 0 5px; margin-left: 4px;
+  }
+
+  .drawer-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+  .drawer-query-pane { display: none; flex-direction: column; height: 100%; overflow: hidden; }
+  .drawer-query-pane.active { display: flex; }
+
+  .drawer-error { padding: 16px; color: var(--critical); font-size: 12px; }
+
+  .drawer-table-wrap {
+    flex: 1; overflow: auto;
+    padding: 0;
+  }
+  .drawer-table {
+    border-collapse: collapse;
+    font-size: 11px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    min-width: 100%;
+    white-space: nowrap;
+  }
+  .drawer-table th {
+    position: sticky; top: 0;
+    background: var(--bg-card-2);
+    color: var(--text-muted);
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .04em;
+    padding: 6px 12px;
+    border-bottom: 2px solid var(--border);
+    z-index: 1;
+  }
+  .drawer-table td {
+    padding: 5px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+    max-width: 280px; overflow: hidden; text-overflow: ellipsis;
+  }
+  .drawer-table tr:last-child td { border-bottom: none; }
+  .drawer-table tr:hover td { background: var(--bg-hover); }
+  .drawer-row-count {
+    font-size: 11px; color: var(--text-muted);
+    padding: 6px 14px; border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .drawer-empty {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 8px; color: var(--text-muted); font-size: 13px;
+  }
+
+  .drawer-loading {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    gap: 10px; color: var(--text-muted); font-size: 13px;
+  }
+
+  [data-theme="dark"] .badge-FINANCE  { background: rgba(56,139,253,.1); color: #388bfd; }
+  [data-theme="dark"] .badge-SCM      { background: rgba(255,152,0,.1);  color: #ff9800; }
+  [data-theme="dark"] .badge-PLANNING { background: rgba(63,185,80,.1);  color: #3fb950; }
+  [data-theme="dark"] .pillar-finance  .pillar-icon { background: rgba(56,139,253,.12); color: #388bfd; }
+  [data-theme="dark"] .pillar-scm      .pillar-icon { background: rgba(255,152,0,.12);  color: #ff9800; }
+  [data-theme="dark"] .pillar-planning .pillar-icon { background: rgba(63,185,80,.12);  color: #3fb950; }
+  [data-theme="dark"] .finding-HIGH    { background: rgba(210,153,34,.1); color: #d29922; }
+  [data-theme="dark"] .finding-MEDIUM  { background: rgba(56,139,253,.1); color: #388bfd; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fusion-layout">
+
+  <!-- Hero -->
+  <div class="fusion-hero">
+    <div class="fusion-hero-left">
+      <h1><i class="fa-solid fa-robot me-2"></i>Oracle EBS Agentic Applications</h1>
+      <p>Click <strong>Run Now</strong> on any app to execute live analysis against your Oracle EBS instance.</p>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-10" style="gap:10px">
+      <!-- Look-back period input -->
+      <div class="fusion-lookback" title="Data look-back window applied to all queries">
+        <label for="daysBackInput"><i class="fa-solid fa-calendar-days me-1"></i>Last</label>
+        <input type="number" id="daysBackInput" value="30" min="1" max="365">
+        <span>days</span>
+      </div>
+      <!-- Filter pills -->
+      <div class="fusion-hero-pills">
+        <span class="fusion-meta-pill active" data-filter="ALL">All Apps</span>
+        <span class="fusion-meta-pill" data-filter="FINANCE"><i class="fa-solid fa-landmark me-1"></i>Finance</span>
+        <span class="fusion-meta-pill" data-filter="SCM"><i class="fa-solid fa-truck me-1"></i>SCM</span>
+        <span class="fusion-meta-pill" data-filter="PLANNING"><i class="fa-solid fa-chart-line me-1"></i>Planning</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- App cards rendered from JS -->
+  <div id="fusionAppContainer"></div>
+
+</div><!-- /.fusion-layout -->
+
+<!-- ── Results Drawer ───────────────────────────────────────────────── -->
+<div class="results-drawer" id="resultsDrawer">
+  <div class="drawer-header">
+    <i class="fa-solid fa-database text-accent"></i>
+    <span class="drawer-title" id="drawerTitle">Results</span>
+    <span class="drawer-badge badge-FINANCE d-none" id="drawerBadge"></span>
+    <span class="drawer-exec-time d-none" id="drawerExecTime"></span>
+    <button class="btn-drawer-close" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="drawer-findings" id="drawerFindings"></div>
+  <div class="drawer-query-tabs" id="drawerQueryTabs"></div>
+  <div class="drawer-body" id="drawerBody">
+    <div class="drawer-loading" id="drawerLoading">
+      <div class="spinner-border text-accent" style="width:20px;height:20px;border-width:2px"></div>
+      <span>Running live Oracle queries…</span>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ── Data loaded from API ──────────────────────────────────────────────────
+let fusionApps = [];
+let activeFilter = 'ALL';
+
+async function loadFusionApps() {
+  try {
+    const r = await fetch('/api/fusion/apps');
+    fusionApps = await r.json();
+    renderFusionApps();
+  } catch(e) {
+    document.getElementById('fusionAppContainer').innerHTML =
+      '<p class="text-muted p-4">Failed to load apps: ' + e.message + '</p>';
+  }
+}
+
+function renderFusionApps() {
+  const container = document.getElementById('fusionAppContainer');
+  const pillars = [
+    { id: 'FINANCE',  label: 'Finance / ERP Agentic Apps',
+      sub: 'Payables · Collections · Payments · Ledger · Financial Planning',
+      icon: 'fa-landmark' },
+    { id: 'SCM',      label: 'Supply Chain Execution Agentic Apps',
+      sub: 'Source · Make · Deliver — end-to-end SCM automation',
+      icon: 'fa-truck' },
+    { id: 'PLANNING', label: 'Supply Chain Planning Agentic Apps',
+      sub: 'Demand Management · Supply Planning · S&OP · Order Promising',
+      icon: 'fa-chart-line' },
+  ];
+
+  let html = '';
+  for (const pillar of pillars) {
+    const apps = fusionApps.filter(a =>
+      a.pillar === pillar.id &&
+      (activeFilter === 'ALL' || activeFilter === pillar.id)
+    );
+    if (activeFilter !== 'ALL' && activeFilter !== pillar.id) continue;
+    if (!apps.length) continue;
+
+    const cls = pillar.id.toLowerCase();
+    html += `<div class="pillar-section pillar-${cls}">
+      <div class="pillar-header">
+        <div class="pillar-icon"><i class="fa-solid ${pillar.icon}"></i></div>
+        <div>
+          <div class="pillar-title">${pillar.label}</div>
+          <div class="pillar-subtitle">${pillar.sub}</div>
+        </div>
+      </div>
+      <div class="app-grid">`;
+
+    for (const app of apps) {
+      const kpiHtml = (app.kpis || []).map(k =>
+        `<span class="app-kpi-tag">${k}</span>`).join('');
+      html += `
+        <div class="app-card" data-app-id="${app.id}" data-pillar="${app.pillar}">
+          <div class="app-card-top">
+            <div class="app-name"><i class="fa-solid ${app.icon} me-2"></i>${app.name}</div>
+            <span class="app-badge badge-${app.pillar}">${app.pillar}</span>
+          </div>
+          <div class="app-tagline">${app.tagline}</div>
+          <div class="app-kpis">${kpiHtml}</div>
+          <div class="app-status-bar" id="status-${app.id}"></div>
+          <div class="app-card-footer">
+            <button class="btn-run-app" id="btn-${app.id}"
+                    onclick="runApp('${app.id}')">
+              <i class="fa-solid fa-play fa-xs"></i>Run Now
+            </button>
+            <button class="btn-chat-app" title="Analyze in Chat"
+                    onclick="sendToChat('${app.id}', '${app.name.replace(/'/g,"\\'")}')">
+              <i class="fa-solid fa-comments fa-xs"></i>
+            </button>
+          </div>
+        </div>`;
+    }
+    html += '</div></div>';
+  }
+  container.innerHTML = html || '<p class="text-muted p-4">No apps match the selected filter.</p>';
+}
+
+// ── Filter pills ─────────────────────────────────────────────────────────
+document.querySelectorAll('.fusion-meta-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.fusion-meta-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    activeFilter = pill.dataset.filter;
+    renderFusionApps();
+  });
+});
+
+// ── Run App ──────────────────────────────────────────────────────────────
+async function runApp(appId) {
+  const btn = document.getElementById('btn-' + appId);
+  const statusBar = document.getElementById('status-' + appId);
+  if (!btn) return;
+
+  // Read user-defined look-back window
+  const daysBackEl = document.getElementById('daysBackInput');
+  const daysBack = Math.max(1, Math.min(365, parseInt(daysBackEl?.value || '30', 10) || 30));
+
+  // Show loading state
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner-border"></div>Running…';
+
+  openDrawer('loading', appId);
+
+  try {
+    const resp = await fetch(`/api/fusion/run/${appId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ days_back: daysBack }),
+    });
+    const data = await resp.json();
+
+    if (data.error) {
+      showDrawerError(data.error);
+      setAppStatus(appId, 'error', 'Error: ' + data.error);
+    } else {
+      renderDrawerResults(data);
+      updateAppStatusFromFindings(appId, data.findings);
+    }
+  } catch(e) {
+    showDrawerError(e.message);
+    setAppStatus(appId, 'error', 'Request failed: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-play fa-xs"></i>Run Now';
+  }
+}
+
+// ── Drawer ───────────────────────────────────────────────────────────────
+function openDrawer(mode, appId) {
+  const drawer = document.getElementById('resultsDrawer');
+  const body   = document.getElementById('drawerBody');
+  const loading = document.getElementById('drawerLoading');
+  const tabs   = document.getElementById('drawerQueryTabs');
+  const findings = document.getElementById('drawerFindings');
+
+  findings.innerHTML = '';
+  tabs.innerHTML = '';
+
+  if (mode === 'loading') {
+    body.innerHTML = '';
+    body.appendChild(loading);
+    loading.style.display = 'flex';
+  }
+  drawer.classList.add('open');
+}
+
+function closeDrawer() {
+  document.getElementById('resultsDrawer').classList.remove('open');
+}
+
+function showDrawerError(msg) {
+  const body = document.getElementById('drawerBody');
+  body.innerHTML = `<div class="drawer-error"><i class="fa-solid fa-circle-exclamation me-2"></i>${msg}</div>`;
+}
+
+function renderDrawerResults(data) {
+  const drawer = document.getElementById('resultsDrawer');
+  const title  = document.getElementById('drawerTitle');
+  const badge  = document.getElementById('drawerBadge');
+  const execEl = document.getElementById('drawerExecTime');
+  const findingsEl = document.getElementById('drawerFindings');
+  const tabs   = document.getElementById('drawerQueryTabs');
+  const body   = document.getElementById('drawerBody');
+
+  title.textContent = data.app_name;
+  badge.textContent = data.demo_mode ? 'Demo' : 'Live';
+  badge.className = `drawer-badge badge-${data.pillar}`;
+  badge.classList.remove('d-none');
+  const daysLabel = data.days_back ? ` · Last ${data.days_back}d` : '';
+  execEl.textContent = `${data.execution_time_ms}ms${daysLabel}`;
+  execEl.classList.remove('d-none');
+
+  // Findings pills
+  findingsEl.innerHTML = '';
+  if (data.demo_mode) {
+    findingsEl.innerHTML = '<span class="drawer-finding finding-INFO"><i class="fa-solid fa-flask fa-xs"></i>Demo Mode — connect to Oracle for live data</span>';
+  }
+  (data.findings || []).forEach(f => {
+    const pill = document.createElement('span');
+    pill.className = `drawer-finding finding-${f.severity}`;
+    pill.innerHTML = `<i class="fa-solid fa-circle-dot fa-xs"></i>${f.severity}: ${f.description}`;
+    findingsEl.appendChild(pill);
+  });
+
+  // If no results yet
+  const qResults = data.query_results || [];
+  if (!qResults.length && data.demo_mode) {
+    body.innerHTML = `<div class="drawer-empty">
+      <i class="fa-solid fa-flask fa-2x" style="opacity:.3"></i>
+      <span>Connect to Oracle for live data queries</span>
+      <small style="color:var(--text-muted)">Use the Connect to Oracle button in the sidebar</small>
+    </div>`;
+    return;
+  }
+  if (!qResults.length) {
+    body.innerHTML = `<div class="drawer-empty"><i class="fa-solid fa-inbox fa-2x" style="opacity:.3"></i><span>No data returned</span></div>`;
+    return;
+  }
+
+  // Query tabs
+  tabs.innerHTML = '';
+  body.innerHTML = '';
+
+  qResults.forEach((qr, idx) => {
+    const countBadge = qr.error ? '!' : qr.row_count;
+    const tab = document.createElement('div');
+    tab.className = 'drawer-query-tab' + (idx === 0 ? ' active' : '');
+    tab.dataset.idx = idx;
+    tab.innerHTML = `${qr.label}<span class="tab-count">${countBadge}</span>`;
+    tab.onclick = () => switchQueryTab(idx);
+    tabs.appendChild(tab);
+
+    const pane = document.createElement('div');
+    pane.className = 'drawer-query-pane' + (idx === 0 ? ' active' : '');
+    pane.id = `qpane-${idx}`;
+
+    if (qr.error) {
+      pane.innerHTML = `<div class="drawer-error"><i class="fa-solid fa-circle-exclamation me-2"></i>${qr.error}</div>`;
+    } else if (!qr.rows || !qr.rows.length) {
+      pane.innerHTML = `<div class="drawer-empty"><i class="fa-solid fa-check-circle fa-lg" style="color:#1a7f37"></i><span>No issues found — ${qr.label}</span></div>`;
+    } else {
+      const cols = qr.columns;
+      const headerHtml = cols.map(c => `<th>${c.toUpperCase().replace(/_/g,' ')}</th>`).join('');
+      const rowsHtml = qr.rows.slice(0, 200).map(row =>
+        '<tr>' + cols.map(c => {
+          const v = row[c];
+          const s = v == null ? '' : String(v);
+          return `<td title="${s.replace(/"/g,'&quot;')}">${s.length > 60 ? s.slice(0,60)+'…' : s}</td>`;
+        }).join('') + '</tr>'
+      ).join('');
+
+      pane.innerHTML = `
+        <div class="drawer-table-wrap">
+          <table class="drawer-table">
+            <thead><tr>${headerHtml}</tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
+        <div class="drawer-row-count">
+          <i class="fa-solid fa-table fa-xs me-1"></i>
+          ${qr.row_count} row${qr.row_count !== 1 ? 's' : ''}
+          &nbsp;·&nbsp; ${qr.execution_time_ms}ms
+          ${qr.row_count > 200 ? '&nbsp;·&nbsp; showing first 200' : ''}
+        </div>`;
+    }
+    body.appendChild(pane);
+  });
+}
+
+function switchQueryTab(idx) {
+  document.querySelectorAll('.drawer-query-tab').forEach((t, i) =>
+    t.classList.toggle('active', i === idx));
+  document.querySelectorAll('.drawer-query-pane').forEach((p, i) =>
+    p.classList.toggle('active', i === idx));
+}
+
+// ── App card status ───────────────────────────────────────────────────────
+function setAppStatus(appId, level, msg) {
+  const bar = document.getElementById('status-' + appId);
+  if (!bar) return;
+  bar.style.display = 'block';
+  bar.className = 'app-status-bar app-status-' + (level === 'error' ? 'err' : level === 'warn' ? 'warn' : 'ok');
+  bar.textContent = msg;
+}
+
+function updateAppStatusFromFindings(appId, findings) {
+  if (!findings || !findings.length) {
+    setAppStatus(appId, 'ok', '✓ No issues found');
+    return;
+  }
+  const top = findings.reduce((worst, f) => {
+    const order = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1, INFO: 0 };
+    return (order[f.severity] || 0) > (order[worst.severity] || 0) ? f : worst;
+  }, findings[0]);
+  const level = ['CRITICAL','HIGH'].includes(top.severity) ? 'warn' : 'ok';
+  setAppStatus(appId, level, `${top.severity}: ${top.description.slice(0,80)}`);
+}
+
+// ── Send to Chat ──────────────────────────────────────────────────────────
+function sendToChat(appId, appName) {
+  const msg = `Run the ${appName} and show me detailed findings from the live Oracle EBS data. Include actual record counts, IDs, and actionable recommendations.`;
+  window.location.href = '/?chat=' + encodeURIComponent(msg);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+loadFusionApps();
+
+// Pre-fill chat message if redirected from fusion page
+window.addEventListener('load', () => {
+  const params = new URLSearchParams(window.location.search);
+  const chat = params.get('chat');
+  if (chat && window.location.pathname === '/') {
+    const input = document.getElementById('chatInput');
+    if (input) { input.value = chat; input.focus(); }
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,52 @@
+/* ARCS: $Header: /home/cvs/cvs/RDA_8/src/scripting/lib/admin/css/odf.css,v 1.3 2014/10/30 11:54:55 RDA Exp $ */
+
+/* RDA Index Styles */
+.rda_index {font-size:9pt;font-family:sans-serif;white-space:nowrap;}
+.rda_index A {font-family:sans-serif;}
+.rda_index A:link {color:#003366;}
+.rda_index A:visited {color:#003366;}
+.rda_index A:hover {color:#0033CC;}
+.rda_index P {font-size:9pt;font-family:sans-serif;margin:2pt 0pt 0pt 0pt;padding:0pt;}
+.rda_index H1 {font-size:15pt;font-weight:bold;font-family:sans-serif;margin-top:8pt;margin-bottom:4pt;color:#336699;}
+.rda_index H2 {font-size:13pt;font-weight:bold;font-family:sans-serif;margin-top:6pt;margin-bottom:3pt;color:#336699;}
+.rda_index H3 {font-size:11pt;font-weight:bold;font-family:sans-serif;margin-top:4pt;margin-bottom:2pt;color:#336699;}
+.rda_index H4 {font-size:9pt;font-weight:bold;font-family:sans-serif;margin-top:2pt;margin-bottom:1pt;color:#336699;}
+
+/* RDA Main Styles */
+.rda_normal {font-size:9pt;font-family:sans-serif;}
+.rda_normal A {font-family:sans-serif;}
+.rda_normal A:link {color:#003366;}
+.rda_normal A:visited {color:#003366;}
+.rda_normal A:hover {color:#0033CC;}
+.rda_normal P {font-size:9pt;font-family:sans-serif;margin:2pt 0pt 0pt 0pt;padding:0pt;}
+.rda_normal TABLE {border-style:solid;border-width:1px;border-color:#CBD8E7;border-collapse:collapse;border-spacing:0px;empty-cells:show;}
+.rda_normal TD {border-style:solid;border-width:1px;border-color:#CBD8E7;background:#FBFCFD;font-size:9pt;font-family:sans-serif;padding:2px;}
+.rda_normal TH {border-style:solid;border-width:1px;border-color:#CBD8E7;background:#ECF3F9;font-size:9pt;font-family:sans-serif;font-weight:bold;padding:2px;color:#336699;}
+.rda_normal TR {vertical-align:top;}
+.rda_normal H1 {font-size:15pt;font-weight:bold;font-family:sans-serif;margin-top:8pt;margin-bottom:4pt;color:#336699;}
+.rda_normal H2 {font-size:13pt;font-weight:bold;font-family:sans-serif;margin-top:6pt;margin-bottom:3pt;color:#336699;}
+.rda_normal H3 {font-size:11pt;font-weight:bold;font-family:sans-serif;margin-top:4pt;margin-bottom:2pt;color:#336699;}
+.rda_normal H4 {font-size:9pt;font-weight:bold;font-family:sans-serif;margin-top:2pt;margin-bottom:1pt;color:#336699;}
+.rda_normal HR {color:#CCCCCC;height:1px;}
+.rda_normal PRE {font-size:9pt;margin:2pt 0pt 0pt 0pt;padding:0pt;}
+.rda_normal LI {font-size:9pt;font-family:sans-serif;padding:0pt;}
+.rda_normal OL {margin:0pt 0pt 0pt 9pt;padding:0pt;}
+.rda_normal UL {margin:0pt 0pt 0pt 9pt;padding:0pt;}
+
+/* RDA Table of Content Styles */
+.rda_toc LI {font-size:9pt;font-family:sans-serif;list-style-type:none;white-space:nowrap;}
+.rda_toc {font-size:9pt;font-family:sans-serif;}
+.rda_toc A {font-size:9pt;font-family:sans-serif;white-space:nowrap;}
+.rda_toc A:link {color:#003366;}
+.rda_toc A:visited {color:#003366;}
+.rda_toc A:hover {color:#0033CC;}
+
+/* RDA List Styles */
+.rda_lst LI {margin-left:6pt;font-family:sans-serif;}
+.rda_seq LI {margin-left:12pt;font-family:sans-serif;}
+
+/* Other RDA Styles */
+.rda_filter {color:#993800;white-space:nowrap;}
+.rda_null {font-style:Italic;}
+.rda_red  {color:#E00000;}
+.rda_blue {color:#0000FF;}

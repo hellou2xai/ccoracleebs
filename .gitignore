@@ -1,0 +1,30 @@
+# Secrets
+.env
+.env_1
+JIRA Key.txt
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# IDE / Editor
+.claude/
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Large / non-essential files
+*.pptx
+*.log
+Invoice Note.txt
+
+# Desktop app (not needed for web deploy)
+desktop/
+
+# MCP servers (separate deployment)
+mcp_servers/

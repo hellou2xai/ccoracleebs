@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: ebs-support-agent
+    runtime: docker
+    plan: starter
+    envVars:
+      # Oracle EBS Database
+      - key: ORACLE_HOST
+        sync: false
+      # Real IP for the Oracle host (added to /etc/hosts at startup)
+      - key: ORACLE_HOST_IP
+        sync: false
+      - key: ORACLE_PORT
+        value: "1521"
+      - key: ORACLE_SID
+        sync: false
+      - key: ORACLE_SERVICE_NAME
+        sync: false
+      - key: ORACLE_USER
+        sync: false
+      - key: ORACLE_PASSWORD
+        sync: false
+      # Application
+      - key: DEMO_MODE
+        value: "false"
+      - key: BUNDLE_PATH
+        value: /app/bundle_2026-Mar-01/MENU/analyzers/SQL
+      - key: SECRET_KEY
+        generateValue: true
+      - key: LOG_LEVEL
+        value: INFO
+      # Anthropic
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # JIRA
+      - key: JIRA_BASE_URL
+        sync: false
+      - key: JIRA_EMAIL
+        sync: false
+      - key: JIRA_API_TOKEN
+        sync: false

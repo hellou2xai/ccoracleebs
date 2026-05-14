@@ -1,0 +1,36 @@
+<hybrid_analyzer><ha_attributes>
+<title>Integrated SOA Gateway (ISG) Setup Analyzer</title>
+<type>Analyzer</type>
+<short_name>ISGSETUPHA</short_name>
+<product_line>EBS</product_line>
+<product_family>EBS ATG</product_family>
+<product_area>EBS - Workflow and Integrations</product_area>
+<owner>PHILIP.MERLANO@ORACLE.COM</owner>
+<application>Application Object Library</application>
+<version>200.41</version>
+<last_generated>2026/01/27</last_generated>
+<description>SOA Gateway Setup Analyzer
+sai.munnaluri@oracle.com ISG Dev</description>
+<doc_id>2462729.1</doc_id>
+<file_name>isg_setup_analyzer</file_name>
+<version_image_name>isg_latest_version.gif</version_image_name>
+<download_attachment_name>JAVA</download_attachment_name>
+<community_link><![CDATA[https://community.oracle.com/mosc/discussion/4320801]]></community_link>
+<wiki_link><![CDATA[https://www.oracle.com/webfolder/s/analyzer/isg_latest_version.gif]]></wiki_link>
+<whats_new><![CDATA[<p>4/16/2025 - Analyzer Framework Version 6.26.3</p><ul><li>Fixes an error in the Patch Wizard analyzer when there are no previous Patch Wizard request_set_id</li><li>Adds tool tip to Arrow when expanding collapsing result data</li><li>Updates Java requirement to ensure the analyzers still work on EBS servers with Java 1.7</li><li>Fixed g_banner_message and g_banner_severity framework global variable handling nulls, which prevented these global variables to be populated in newer releases of EBS</li></ul><p>EBS Integrated SOA Gateway (ISG) Setup Analyzer v200.21 is a java program that is now run using a shell script.&nbsp;<br>See Note 2462729.1 for detailed instructions.</p><ul><li>Runs on our new Analyzer Framework version 6.24</li><li>Able to execute scripts, parse log files and collect their outputs</li><li>Identifies Integrated SOA Gateway system setup and configurations</li><li>Provides recommended actions and best practices</li><li>Collects log files, properties files, configuration files and does analysis on the queries run in the database.</li><li>Everything collected is zipped into a single uploadable zip file.</li></ul>]]></whats_new>
+<framework_version>6.27.1</framework_version>
+<analyzer_id>2116</analyzer_id>
+<apex_host>ASEPROD</apex_host>
+<apex_app_files>https://aseobs.oraclecorp.com/ords/r/ebsap_psd/303/files/static/v223/</apex_app_files>
+<apex_ws_files>https://aseobs.oraclecorp.com/ords/r/ebsap_psd/files/static/v46/</apex_ws_files>
+</ha_attributes>
+<ha_bundle>
+<condition/>
+<condition_fail/>
+</ha_bundle>
+<ha_init>
+<tier>CP|DB|MT</tier>
+<dbconn>YES</dbconn>
+<compatible_apps_release>12.1|12.2</compatible_apps_release>
+</ha_init>
+</hybrid_analyzer>

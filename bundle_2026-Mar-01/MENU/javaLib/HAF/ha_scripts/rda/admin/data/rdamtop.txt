@@ -1,0 +1,2 @@
+# ARCS: $Header: /home/cvs/cvs/RDA_8/src/scripting/lib/admin/data/rdamtop.txt,v 1.2 2013/11/07 07:55:03 RDA Exp $
+---+ %RED%%ACRONYM:RDA% %VERSION% Main Index %ENDCOLOR%

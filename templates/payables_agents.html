@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}AP Agents — Oracle EBS{% endblock %}
+
+{% block head_extra %}
+<style>
+  .ap-layout    { padding: 20px 24px 60px; max-width: 1400px; margin: 0 auto; }
+
+  .ap-hero {
+    background: linear-gradient(135deg, #0969da 0%, #6f42c1 100%);
+    border-radius: var(--radius-lg);
+    padding: 22px 26px;
+    margin-bottom: 22px;
+    color: #fff;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;
+  }
+  .ap-hero-left h1 { font-size: 20px; font-weight: 700; margin: 0 0 4px; }
+  .ap-hero-left p  { font-size: 13px; opacity: .85; margin: 0; }
+  .ap-hero-right   { display: flex; gap: 10px; align-items: center; }
+  .ap-window-input {
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.25);
+    color: #fff;
+    border-radius: 8px;
+    padding: 6px 10px;
+    width: 160px;
+    font-size: 13px;
+  }
+  .ap-window-input::placeholder { color: rgba(255,255,255,.6); }
+  .ap-run-all-btn {
+    background: rgba(255,255,255,.95);
+    color: #0969da;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .ap-run-all-btn:hover  { opacity: .9; }
+  .ap-run-all-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  .ap-summary-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  .ap-summary-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+  }
+  .ap-summary-card .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+  .ap-summary-card .value { font-size: 20px; font-weight: 700; margin-top: 4px; }
+  .sev-CRITICAL .value { color: #d12f2f; }
+  .sev-HIGH     .value { color: #e65100; }
+  .sev-MEDIUM   .value { color: #d4a017; }
+  .sev-INFO     .value { color: #1a7f37; }
+  .sev-ERROR    .value { color: #6f42c1; }
+
+  .ap-group-header {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin: 18px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+
+  .ap-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    transition: border-color .15s, box-shadow .15s;
+    position: relative;
+  }
+  .ap-card:hover { border-color: var(--accent); box-shadow: var(--shadow-sm); }
+
+  .ap-card-top { display: flex; gap: 12px; align-items: flex-start; }
+  .ap-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .ap-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+  .ap-purpose { font-size: 11px; color: var(--text-muted); line-height: 1.5; margin-top: 4px; }
+
+  .ap-tables {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    font-size: 10px;
+  }
+  .ap-table-tag {
+    background: var(--bg-card-2);
+    color: var(--text-muted);
+    padding: 2px 7px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  .ap-status {
+    display: none;
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    line-height: 1.4;
+  }
+  .ap-status.show { display: block; }
+  .ap-status-CRITICAL { background: rgba(209,47,47,.10);  color: #d12f2f; border: 1px solid rgba(209,47,47,.25); }
+  .ap-status-HIGH     { background: rgba(230,81,0,.10);   color: #e65100; border: 1px solid rgba(230,81,0,.25); }
+  .ap-status-MEDIUM   { background: rgba(212,160,23,.10); color: #b08600; border: 1px solid rgba(212,160,23,.25); }
+  .ap-status-INFO     { background: rgba(26,127,55,.10);  color: #1a7f37; border: 1px solid rgba(26,127,55,.25); }
+  .ap-status-ERROR    { background: rgba(111,66,193,.10); color: #6f42c1; border: 1px solid rgba(111,66,193,.25); }
+
+  .ap-card-footer { display: flex; gap: 6px; margin-top: auto; padding-top: 4px; }
+  .btn-ap-run {
+    flex: 1;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-ap-run:hover { opacity: .9; }
+  .btn-ap-run:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-ap-run .spinner-border { width: 12px; height: 12px; border-width: 2px; }
+
+  .btn-ap-chat {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 7px 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .btn-ap-chat:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Drawer */
+  .ap-drawer {
+    position: fixed; top: 0; right: 0; width: 540px; max-width: 90vw; height: 100vh;
+    background: var(--bg-card); border-left: 1px solid var(--border);
+    box-shadow: -8px 0 24px rgba(0,0,0,.10);
+    transform: translateX(110%); transition: transform .25s ease;
+    z-index: 1050;
+    display: flex; flex-direction: column;
+  }
+  .ap-drawer.open { transform: translateX(0); }
+  .ap-drawer-header {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .ap-drawer-title { font-size: 14px; font-weight: 700; }
+  .ap-drawer-body  { flex: 1; overflow: auto; padding: 16px 18px; }
+  .ap-drawer-close {
+    background: none; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer;
+  }
+  .ap-action-list { list-style: disc; padding-left: 18px; margin: 8px 0 0; }
+  .ap-action-list li { font-size: 12px; line-height: 1.6; margin-bottom: 4px; }
+
+  .ap-tab-bar { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 12px; flex-wrap: wrap; }
+  .ap-tab {
+    background: none; border: none;
+    padding: 7px 12px; font-size: 12px; font-weight: 600;
+    color: var(--text-muted); cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+  .ap-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .ap-table { width: 100%; font-size: 11px; border-collapse: collapse; }
+  .ap-table th, .ap-table td {
+    padding: 6px 8px; border-bottom: 1px solid var(--border);
+    text-align: left; vertical-align: top;
+  }
+  .ap-table th { background: var(--bg-card-2); font-weight: 600; color: var(--text-muted); }
+
+  /* Group color stripe on cards */
+  .group-Invoice  { border-top: 3px solid #0969da; }
+  .group-Payment  { border-top: 3px solid #1a7f37; }
+  .group-Risk     { border-top: 3px solid #d12f2f; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ap-layout">
+
+  <div class="ap-hero">
+    <div class="ap-hero-left">
+      <h1><i class="fa-solid fa-people-group me-2"></i>AP Agents</h1>
+      <p>Ten critical agentic workers across Oracle EBS Payables. Click an agent to run, or fan out the whole crew.</p>
+    </div>
+    <div class="ap-hero-right">
+      <label style="font-size:12px; opacity:.85;">Last
+        <input type="number" class="ap-window-input" id="apDaysBack" value="30" min="1" max="365" />
+        days
+      </label>
+      <button class="ap-run-all-btn" id="btnRunAll" onclick="apRunAll()">
+        <i class="fa-solid fa-play me-1"></i>Run All Agents
+        <span class="spinner-border spinner-border-sm ms-2 d-none" id="runAllSpinner"></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="ap-summary-row" id="apSummaryRow">
+    <div class="ap-summary-card sev-CRITICAL"><div class="label">Critical</div><div class="value" id="sumCritical">—</div></div>
+    <div class="ap-summary-card sev-HIGH"    ><div class="label">High</div>    <div class="value" id="sumHigh">—</div></div>
+    <div class="ap-summary-card sev-MEDIUM"  ><div class="label">Medium</div>  <div class="value" id="sumMedium">—</div></div>
+    <div class="ap-summary-card sev-INFO"    ><div class="label">Info</div>    <div class="value" id="sumInfo">—</div></div>
+    <div class="ap-summary-card"><div class="label">Total Time</div><div class="value" id="sumTime">—</div></div>
+  </div>
+
+  {% set groups = ['Invoice Processing', 'Payment & Cash', 'Risk & Compliance'] %}
+  {% for grp in groups %}
+  <div class="ap-group-header">{{ grp }}</div>
+  <div class="ap-grid">
+    {% for a in agents if a.group == grp %}
+    <div class="ap-card group-{{ grp.split()[0] }}" id="card-{{ a.id }}">
+      <div class="ap-card-top">
+        <div class="ap-icon" style="background: {{ a.color }}1a; color: {{ a.color }};">
+          <i class="fa-solid {{ a.icon }}"></i>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div class="ap-name">{{ a.label }}</div>
+          <div class="ap-purpose">{{ a.purpose }}</div>
+        </div>
+      </div>
+      <div class="ap-tables">
+        {% for t in a.tables %}<span class="ap-table-tag">{{ t }}</span>{% endfor %}
+      </div>
+      <div class="ap-status" id="status-{{ a.id }}"></div>
+      <div class="ap-card-footer">
+        <button class="btn-ap-run" onclick="apRunOne('{{ a.id }}')" id="btn-{{ a.id }}">
+          <i class="fa-solid fa-play"></i> Run
+          <span class="spinner-border spinner-border-sm d-none" id="spin-{{ a.id }}"></span>
+        </button>
+        <button class="btn-ap-chat" onclick="apSendToChat('{{ a.id }}')" title="Send to AI">
+          <i class="fa-regular fa-comment"></i>
+        </button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+</div>
+
+<!-- Drawer -->
+<div class="ap-drawer" id="apDrawer">
+  <div class="ap-drawer-header">
+    <div class="ap-drawer-title" id="drawerTitle">Agent results</div>
+    <button class="ap-drawer-close" onclick="apCloseDrawer()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="ap-drawer-body" id="drawerBody"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/payables_agents.js') }}"></script>
+{% endblock %}

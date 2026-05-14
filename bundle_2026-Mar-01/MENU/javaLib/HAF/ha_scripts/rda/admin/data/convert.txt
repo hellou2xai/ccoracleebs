@@ -1,0 +1,7 @@
+# ARCS: $Header: /home/cvs/cvs/RDA_8/src/scripting/lib/admin/data/convert.txt,v 1.1 2013/08/23 12:49:22 RDA Exp $
+cnv:S010CFG=RDA.CONFIG
+cnv:S100OS=OS.OS
+cnv:S130INST=OS.INST
+cnv:S204LOG=DB.LOG
+cnv:S362OIM=OFM.OIM
+cnv:TSTALERT=TOOL.ALERT

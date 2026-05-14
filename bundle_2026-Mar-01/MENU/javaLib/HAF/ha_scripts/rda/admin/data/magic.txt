@@ -1,0 +1,1683 @@
+# Copyright (c) 1988, 2024, Oracle and/or its affiliates. All rights reserved.
+#
+# $Id: magic.txt,v 1.12 2015/09/24 23:41:03 RDA Exp $
+# ARCS: $Header: /home/cvs/cvs/RDA_8/src/scripting/lib/admin/data/magic.txt,v 1.12 2015/09/24 23:41:03 RDA Exp $
+#
+# This file contains the dictionary of file format identifiers (magic strings)
+# used by file(1). It is derived from the Solaris 11. It contains several
+# enhancements particularly to support cross-platform use, to have more
+# information about the files from other platforms, and to provide MIME types.
+#
+# The fields of this file are as follows:
+#
+# (1) byte offset
+# (2) value type
+# (3) optional operator (= by default)
+# (4) value to match (numeric or string)
+# (5) string to be printed
+#
+# Numeric values may be decimal, octal, or hex. Also note that the last string
+# may have one printf format specifier. The '>' in occassional column 1's is
+# magic: it forces file(1) to continue scanning and matching additional lines.
+# The first line afterwards not so marked terminates the search.
+
+# ELF and current archives
+0	string		\177ELF		ELF
+>4	byte		1		32-bit
+>4	byte		2		64-bit
+>5	byte		1		LSB
+>>16	leshort		0		unknown type
+!:mime application/octet-stream
+>>16	leshort		1		relocatable
+!:mime application/x-object
+>>16	leshort		2		executable
+!:mime application/x-executable
+>>16	leshort		3		dynamic lib
+!:mime application/x-sharedlib
+>>16	leshort		4		core file
+!:mime application/x-coredump
+>>18	leshort		0		\b, unknown machine
+>>18	leshort		1		\b, WE32100
+>>18	leshort		2		\b, SPARC
+>>18	leshort		3		\b, 80386
+>>18	leshort		4		\b, M68000
+>>18	leshort		5		\b, M88000
+>>18	leshort		6		\b, i80486
+>>18	leshort		7		\b, i860
+>>18	leshort		8		\b, RS3000_BE
+>>18	leshort		9		\b, Amdahl
+>>18	leshort		10		\b, RS3000_LE
+>>18	leshort		11		\b, RS6000
+>>18	leshort		12		\b, UNKNOWN
+>>18	leshort		13		\b, UNKNOWN
+>>18	leshort		14		\b, UNKNOWN
+>>18	leshort		15		\b, PA_RISC
+>>18	leshort		16		\b, nCUBE
+>>18	leshort		17		\b, VPP500
+>>18	leshort		18		\b, SPARC32PLUS
+>>18	leshort		19		\b, UNKNOWN
+>>18	leshort		20		\b, PowerPC
+>>18	leshort		20		\b, PowerPC
+>>18	leshort		21		\b, 64-bit PowerPC or Cisco 7500
+>>18	leshort		22		\b, S/390
+>>18	leshort		23		\b, Cell SPU
+>>18	leshort		24		\b, Cisco SVIP
+>>18	leshort		25		\b, Cisco 7200
+>>18	leshort		36		\b, V800 or Cisco 12000
+>>18	leshort		37		\b, FR20
+>>18	leshort		38		\b, RH-32
+>>18	leshort		39		\b, RCE
+>>18	leshort		40		\b, ARM
+>>18	leshort		41		\b, Alpha
+>>18	leshort		42		\b, SH
+>>18	leshort		43		\b, SPARC V9
+>>18	leshort		44		\b, Siemens Tricore Embedded Processor
+>>18	leshort		45		\b, Argonaut RISC Core
+>>18	leshort		46		\b, H8/300
+>>18	leshort		47		\b, H8/300H
+>>18	leshort		48		\b, H8S
+>>18	leshort		49		\b, H8/500
+>>18	leshort		50		\b, IA-64
+>>18	leshort		51		\b, MIPS-X
+>>18	leshort		52		\b, Coldfire
+>>18	leshort		53		\b, M68HC12
+>>18	leshort		54		\b, MMA
+>>18	leshort		55		\b, Siemens PCP
+>>18	leshort		56		\b, nCPU
+>>18	leshort		57		\b, NDR1
+>>18	leshort		58		\b, Start*Core
+>>18	leshort		59		\b, Toyota ME16
+>>18	leshort		60		\b, ST100
+>>18	leshort		61		\b, Tinyj embedded
+>>18	leshort		62		\b, x86-64
+>>18	leshort		63		\b, Sony DSP
+>>18	leshort		66		\b, FX66
+>>18	leshort		67		\b, ST9+ 8/16-bit
+>>18	leshort		68		\b, ST7 8-bit
+>>18	leshort		69		\b, MC68HC16
+>>18	leshort		70		\b, MC68HC11
+>>18	leshort		71		\b, MC68HC08
+>>18	leshort		72		\b, MC68HC05
+>>18	leshort		73		\b, SGI SVx
+>>18	leshort		74		\b, ST19 8-bit
+>>18	leshort		75		\b, VAX
+>>18	leshort		76		\b, cris
+>>18	leshort		77		\b, Infineon 32-bit embedded
+>>18	leshort		78		\b, Element 14 64-bit DSP
+>>18	leshort		79		\b, Logic 16-bit DSP
+>>18	leshort		80		\b, MMIX
+>>18	leshort		81		\b, Harvard machine-independent
+>>18	leshort		82		\b, Prism
+>>18	leshort		83		\b, AVR 8-bit
+>>18	leshort		84		\b, FR30
+>>18	leshort		85		\b, D10V
+>>18	leshort		86		\b, D30V
+>>18	leshort		87		\b, v850
+>>18	leshort		88		\b, M32R
+>>18	leshort		89		\b, MN10300
+>>18	leshort		90		\b, MN10200
+>>18	leshort		91		\b, picoJava
+>>18	leshort		92		\b, OpenRISC
+>>18	leshort		93		\b, Tangent-A5
+>>18	leshort		94		\b, Xtensa
+>>18	leshort		97		\b, NatSemi 32k
+>>18	leshort		106		\b, Blackfin
+>>18	leshort		113		\b, Nios II
+>>18	leshort		0xae		\b, META
+>>18	leshort		0xb7		\b, Alpha
+>>18	leshort		0x3426		\b, OpenRISC
+>>18	leshort		0x8472		\b, OpenRISC
+>>20	lelong		1		\b, Version 1
+>>36	lelong		1		MAU Required
+>5	byte		2		MSB
+>>16	beshort		0		unknown type
+!:mime application/octet-stream
+>>16	beshort		1		relocatable
+!:mime application/x-object
+>>16	beshort		2		executable
+!:mime application/x-executable
+>>16	beshort		3		dynamic lib
+!:mime application/x-sharedlib
+>>16	beshort		4		core file
+!:mime application/x-coredump
+>>18	beshort		0		\b, unknown machine
+>>18	beshort		1		\b, WE32100
+>>18	beshort		2		\b, SPARC
+>>18	beshort		3		\b, 80386
+>>18	beshort		4		\b, M68000
+>>18	beshort		5		\b, M88000
+>>18	beshort		6		\b, i80486
+>>18	beshort		7		\b, i860
+>>18	beshort		8		\b, RS3000_BE
+>>18	beshort		9		\b, Amdahl
+>>18	beshort		10		\b, RS3000_LE
+>>18	beshort		11		\b, RS6000
+>>18	beshort		12		\b, UNKNOWN
+>>18	beshort		13		\b, UNKNOWN
+>>18	beshort		14		\b, UNKNOWN
+>>18	beshort		15		\b, PA_RISC
+>>18	beshort		16		\b, nCUBE
+>>18	beshort		17		\b, VPP500
+>>18	beshort		18		\b, SPARC32PLUS
+>>>36	belong&0xffff00	0x000100	\b, V8+ Required
+>>>36	belong&0xffff00	0x000200	\b, Sun UltraSPARC1 Extensions Required
+>>>36	belong&0xffff00	0x000400	\b, HaL R1 Extensions Required
+>>>36	belong&0xffff00	0x000800	\b, Sun UltraSPARC3 Extensions Required
+>>18	beshort		19		\b, UNKNOWN
+>>18	beshort		20		\b, PowerPC
+>>18	beshort		21		\b, 64-bit PowerPC or Cisco 7500
+>>18	beshort		22		\b, S/390
+>>18	beshort		23		\b, Cell SPU
+>>18	beshort		24		\b, Cisco SVIP
+>>18	beshort		25		\b, Cisco 7200
+>>18	beshort		36		\b, V800 or Cisco 12000
+>>18	beshort		37		\b, FR20
+>>18	beshort		38		\b, RH-32
+>>18	beshort		39		\b, RCE
+>>18	beshort		40		\b, ARM
+>>18	beshort		41		\b, Alpha
+>>18	beshort		42		\b, SH
+>>18	beshort		43		\b, SPARC V9
+>>>36	belong&0xffff00	0x000200	\b, Sun UltraSPARC1 Extensions Required
+>>>36	belong&0xffff00	0x000400	\b, HaL R1 Extensions Required
+>>>36	belong&0xffff00	0x000800	\b, Sun UltraSPARC3 Extensions Required
+>>20	belong		1		\b, Version 1
+>>36	belong		1		MAU Required
+>4	ubyte		<0x80
+>>8	string		>\0		(%s)
+>8	string		\0
+>>7	ubyte		0		(SYSV)
+>>7	ubyte		1		(HP-UX)
+>>7	ubyte		2		(NetBSD)
+>>7	ubyte		3		(GNU/Linux)
+>>7	ubyte		4		(GNU/Hurd)
+>>7	ubyte		5		(86Open)
+>>7	ubyte		6		(Solaris)
+>>7	ubyte		7		(Monterey)
+>>7	ubyte		8		(IRIX)
+>>7	ubyte		9		(FreeBSD)
+>>7	ubyte		10		(Tru64)
+>>7	ubyte		11		(Novell Modesto)
+>>7	ubyte		12		(OpenBSD)
+>8	string		\2
+>>7	ubyte		13		(OpenVMS)
+>>7	ubyte		97		(ARM)
+>>7	ubyte		255		(embedded)
+
+257	string		ustar\0			POSIX tar archive
+!:mime application/x-tar
+257	string		ustar\040\040\0		GNU tar archive
+!:mime application/x-tar
+257	string		ustar			USTAR tar archive
+!:mime application/x-tar
+>156	byte		88			extended format
+
+0	short	070701	cpio archive (SVR4)
+0	short	070702	cpio archive (SVR4 with CRC)
+0	short	070707	cpio archive (pre SRV4)
+0	beshort	070701	cpio archive (SVR4) - big-endian
+0	beshort	070702	cpio archive (SVR4 with CRC) - big-endian
+0	beshort	070707	cpio archive (pre SRV4) - big-endian
+0	leshort	070701	cpio archive (SVR4) - little-endian
+0	leshort	070702	cpio archive (SVR4 with CRC) - little-endian
+0	leshort	070707	cpio archive (pre SRV4) - little-endian
+!:mime application/x-cpio
+0	string	070701	ASCII cpio archive (SVR4)
+0	string	070702	ASCII cpio archive (SVR4 with CRC)
+0	string	070707	ASCII cpio archive (pre SRV4)
+
+0	long		0177555		obsolete ar archive
+0	short		0177545		PDP-11/pre System V ar archive
+0	long		0100554		APL workspace
+0	short		017037		packed data
+0	string		\<ar>		System V Release 1 ar archive
+!:mime application/x-archive
+0	string		\!<arch>	current ar archive
+!:mime application/x-archive
+0	leshort		0407		PDP-11/pre System V VAX executable
+>8	uleshort	>0		not stripped
+>15	ubyte		>0		\b, Version %ld
+0	leshort		0401		UNIX-rt ldp
+0	leshort		0405		PDP-11 overlay
+0	leshort		0410		PDP-11/pre System V VAX pure executable
+>8	uleshort	>0		not stripped
+>15	ubyte		>0		\b, Version %ld
+0	leshort		0411		PDP-11 separate I&D
+>8	uleshort	>0		not stripped
+>15	ubyte		>0		\b, Version %ld
+0	leshort		0432		Compiled Terminfo Entry
+0	short		0433		Curses screen image
+0	short		0434		Curses screen image
+0	leshort		0437		PDP-11 kernel overlay
+0	leshort		0570		VAX executable
+>12	lelong		>0		not stripped
+>22	uleshort	>0		\b, Version %ld
+0	leshort		0575		VAX pure executable
+>12	lelong		>0		not stripped
+>22	uleshort	>0		\b, Version %ld
+0	leshort		0502		basic-16 executable
+>12	lelong		>0		not stripped
+>22	uleshort	>0		\b, Version %ld
+0	leshort		0503		basic-16 executable (TV)
+>12	lelong		>0		not stripped
+>22	uleshort	>0		\b, Version %ld
+0	leshort		0510		x86 executable
+>12	lelong		>0		not stripped
+0	leshort		0511		x86 executable (TV)
+>12	lelong		>0		not stripped
+0	beshort		0550		3b20 executable
+>12	belong		>0		not stripped
+>22	ubeshort	>0		\b, Version %ld
+0	beshort		0551		3b20 executable (TV)
+>12	belong		>0		not stripped
+>22	ubeshort	>0		\b, Version %ld
+0	beshort		0560		WE32000 executable
+>12	belong		>0		not stripped
+>18	beshort		^00010000	- N/A on 3b2/300 w/paging
+>18	beshort		&00020000	- 32100 required
+>18	beshort		&00040000	and mau hardware required
+>20	beshort		0443		(target shared library)
+>20	beshort		0410		(swapped)
+>20	beshort		0413		(paged)
+>22	ubeshort	>0		\b, Version %ld
+0	beshort		0561		WE32000 executable (TV)
+>12	belong		>0		not stripped
+>18	beshort		&00020000	- 32100 required
+>18	beshort		&00040000	and mau hardware required
+>22	ubeshort	>0		\b, Version %ld
+0	leshort		=0512		iAPX 286 executable small model (COFF)
+>12	lelong		>0		not stripped
+>22	uleshort	>0		\b, Version %ld
+0	leshort		=0522		iAPX 286 executable large model (COFF)
+>12	lelong		>0		not stripped
+>22	uleshort	>0		\b, Version %ld
+0	leshort		0514		iAPX 386 executable (COFF) (deprecated)
+>12	lelong		>0		not stripped
+>22	uleshort	>0		\b, Version %ld
+0	beshort		0520		MC68k executable
+>12	belong		>0		not stripped
+0	beshort		0521		MC68k executable (shared)
+>12	belong		>0		not stripped
+0	beshort		0522		MC68k executable (shared demand paged)
+>12	belong		>0		not stripped
+2	beshort		0413		Sun demand paged
+>1	byte		0		sun2 executable
+>1	byte		1		MC68010 executable
+>1	byte		2		MC68020 executable
+>1	byte		3		SPARC executable
+>0	ubyte		>077		dynamically linked
+
+0	ushort	0x8001		Adobe PostScript Type 1 binary font (PFB)
+0	short	0x0180		Adobe PostScript Type 1 binary font (PFB)
+0	string	\0\001\0\0\0	TrueType font file, Version 1.0 (TTF)
+
+0	belong		0xf00000ff	extended accounting file
+0	ubyte		0x80		8086 relocatable (Microsoft)
+0	ubyte		0xf0		MS-DOS library
+0	short		0xff65		x.out
+>2	string		__.SYMDEF	randomized
+>0	byte		x		archive
+0	leshort		0x206		Microsoft a.out
+>0x1e	leshort		&0x10		overlay
+>0x1e	leshort		&0x2		separate
+>0x1e	leshort		&0x4		pure
+>0x1e	leshort		&0x800		segmented
+>0x1e	leshort		&0x400		standalone
+>0x1e	leshort		&0x8		fixed-stack
+>0x1c	ubyte		&0x80		byte-swapped
+>0x1c	ubyte		&0x40		word-swapped
+>0x10	lelong		>0		not-stripped
+>0x1e	leshort		^0xc000		pre-SysV
+>0x1c	ubyte		&0x4		86
+>0x1c	ubyte		&0x9		286
+>0x1c	ubyte		&0xa		386
+>0x1e	leshort		&0x1		executable
+>0x1e	leshort		^0x1		object file
+>0x1e	leshort		&0x40		Large Text
+>0x1e	leshort		&0x20		Large Data
+>0x1e	leshort		&0x120		Huge Objects Enabled
+0	short		0x10b		VAX demand load format a.out object file
+>0x10	long		>0		not stripped
+0	short		0x140		old Microsoft 8086 x.out
+>0x3	ubyte		&0x4		separate
+>0x3	ubyte		&0x2		pure
+>0	ubyte		&0x1		executable
+>0	ubyte		^0x1		relocatable
+>0x14	long		>0		not stripped
+0	long		0x10b		VAX demand load format a.out object file
+>0x10	long		>0		not stripped
+0	long		0x140		old Microsoft 8086 x.out
+>0x3	ubyte		&0x4		separate
+>0x3	ubyte		&0x2		pure
+>0	ubyte		&0x1		executable
+>0	ubyte		^0x1		relocatable
+>0x14	lelong		>0		not stripped
+0	long		0xe807		object file (Z8000 a.out)
+0	long		0xe808		pure object file (Z8000 a.out)
+0	long		0xe809		separate object file (Z8000 a.out)
+0	long		0xe805		overlay object file (Z8000 a.out)
+0	long		0x178		Bell 5.0 executable
+0	beshort		0410		Sun read-only text executable
+>2	beshort		0407		Sun old executable
+>1	byte		3		(SPARC)
+>1	byte		2		(68020)
+>1	byte		1		(68010)
+>1	byte		0		(Sun2)
+0	short		0143561		byte-swapped cpio archive
+0	long		0101555		PDP-11 single precision APL workspace
+0	long		0101554		PDP-11 double precision APL workspace
+0	long		0101557		VAX single precision APL workspace
+0	long		0101556		VAX double precision APL workspace
+0	short		017437		old packed data
+0	string		\037\036	packed data
+!:mime application/octet-stream
+0	string		\377\037	compacted data
+!:mime application/octet-stream
+0	string		\037\235	compressed data
+!:mime application/x-compress
+>2	ubyte&0x80	>0		block compressed
+>2	ubyte&0x1f	x		%d bits
+0	string		\037\213	gzip compressed data
+!:mime application/x-gzip
+>2	byte		8		- deflate method
+>3	ubyte		&0x1		\b, ascii
+>3	ubyte		&0x2		\b, continuation
+>3	ubyte		&0x4		\b, extra field
+>3	ubyte		&0x8		\b, original file name
+>>3	ubyte&0xc	=0x08
+>>>10	string		x		was "%s"
+>3	ubyte		&0x10		\b, comment
+>3	ubyte		&0x20		\b, encrypted
+>8	byte		2		\b, max compression
+>8	byte		4		\b, max speed
+0	string		7z\274\257\047\034	7-zip archive data
+>6	ubyte		x			\b, version %d
+>7	ubyte		x			\b.%d
+0	string		\xFD7zXZ\x00	xz compressed data
+!:mime application/x-xz
+0	string		\!<arch>\n__.SYMDEF	archive random library
+0	long		0x1010101	MMDF mailbox
+0	string		\<!OPS		Interleaf ASCII document
+24	string		SunGKS		SunGKS
+# version number follows, in the form m.n
+>0	string		GKSM		Metafile
+0	string		GKSM		GKS Metafile
+# version number follows, in the form <!OPS, Version n.n>
+0	string		%!PS-AdobeFont	Adobe PostScript ASCII font (PFA)
+0	string		%!		PostScript document
+>2	string		PS-Adobe	 conforming to level
+>10	string		-1.0		 1.0
+>10	string		-2.0		 2.0
+>10	string		-3.0		 3.0
+# Handle Microsoft PostScript files (CTRL-D%!)
+0	string		\004%!			PostScript document text
+0	string		Interpress/Xerox	Interpress document
+0	string		StartFontMetrics	Adobe font metrics
+0	string		StartFont		Adobe font bits
+0	belong		0x137A2944		NeWS bitmap font
+0	belong		0x137A2947		NeWS font family
+8	belong		0x137A2B45		X11/NeWS bitmap font
+8	belong		0x137A2B48		X11/NeWS font family
+0	short		0436			vfont definition
+
+0	string		\<MakerFile	Frame Maker document
+!:mime application/x-frame
+0	string		\<MIFFile	Frame Maker MIF file
+!:mime application/x-frame
+0	string		\<MML		Frame Maker MML file
+!:mime application/x-frame
+0	string		\<BookFile	Frame Maker book file
+!:mime application/x-frame
+
+# Sun/Next audio files are always big-endian
+0	string		.snd	Sun/NeXT audio data:
+>12	belong		1	8-bit u-law,
+!:mime audio/basic
+>12	belong		2	8-bit linear PCM,
+!:mime audio/basic
+>12	belong		3	16-bit linear PCM,
+!:mime audio/basic
+>12	belong		4	24-bit linear PCM,
+!:mime audio/basic
+>12	belong		5	32-bit linear PCM,
+!:mime audio/basic
+>12	belong		6	32-bit floating point,
+!:mime audio/basic
+>12	belong		7	64-bit floating point,
+!:mime audio/basic
+>12	belong		8	Fragmented sample data,
+>12	belong		10	DSP program,
+>12	belong		11	8-bit fixed point,
+>12	belong		12	16-bit fixed point,
+>12	belong		13	24-bit fixed point,
+>12	belong		14	32-bit fixed point,
+>12	belong		18	16-bit linear with emphasis,
+>12	belong		19	16-bit linear compressed,
+>12	belong		20	16-bit linear with emphasis and compression,
+>12	belong		21	Music kit DSP commands,
+>12	belong		23	compressed (4-bit G.721 ADPCM),
+!:mime audio/x-adpcm
+>12	belong		24	compressed (8-bit G.722 ADPCM),
+>12	belong		25	compressed (3-bit G.723 ADPCM),
+>12	belong		26	compressed (5-bit G.723 ADPCM),
+>12	belong		27	8-bit A-law,
+>20	belong		1	mono,
+>20	belong		2	stereo,
+>20	belong		4	quad,
+>16	belong		x	%d Hz
+
+# DEC systems (e.g. DECstation 5000) variant
+0	long		0x00646e73	DEC audio data:
+>12	long		0x01000000	8-bit u-law,
+!:mime audio/basic
+>12	long		0x02000000	8-bit linear PCM,
+!:mime audio/basic
+>12	long		0x03000000	16-bit linear PCM,
+!:mime audio/basic
+>12	long		0x04000000	24-bit linear PCM,
+!:mime audio/basic
+>12	long		0x05000000	32-bit linear PCM,
+!:mime audio/basic
+>12	long		0x06000000	32-bit floating point,
+!:mime audio/basic
+>12	long		0x07000000	64-bit floating point,
+!:mime audio/basic
+>12	long		0x17000000	ADPCM,
+!:mime audio/basic
+>12	long		0x17000000	compressed (4-bit G.721 ADPCM),
+!:mime audio/x-adpcm
+>12	long		0x18000000	compressed (8-bit G.722 ADPCM),
+>12	long		0x19000000	compressed (3-bit G.723 ADPCM),
+>12	long		0x1a000000	compressed (5-bit G.723 ADPCM),
+>12	long		0x1b000000	8-bit A-law,
+
+# RIFF formats
+0			string		RIFF	RIFF data
+>8			string		PAL	\b, palette
+>>16			uleshort	x	\b, version %d
+>>18			uleshort	x	\b, %d entries
+>8			string		RDIB	\b, device-independent bitmap
+>>16			string		BM
+>>>30			uleshort	12	\b, OS/2 1.x format
+>>>>34			uleshort	x	\b, %d x
+>>>>36			uleshort	x	%d
+>>>30			uleshort	64	\b, OS/2 2.x format
+>>>>34			uleshort	x	\b, %d x
+>>>>36			uleshort	x	%d
+>>>30			uleshort	40	\b, Windows 3.x format
+>>>>34			ulelong		x	\b, %d x
+>>>>38			ulelong		x	%d x
+>>>>44			uleshort	x	%d
+>8			string		RMID	\b, MIDI
+>8			string		RMMP	\b, multimedia movie
+>8			string		RMP3	\b, MPEG Layer 3 audio
+>8			string		WAVE	\b, WAVE audio
+!:mime audio/x-wav
+>>20			uleshort	1	\b, Microsoft PCM
+>>>34			uleshort	>0	\b, %d bit
+>>20			uleshort	2	\b, Microsoft ADPCM
+>>20			uleshort	6	\b, ITU G.711 A-law
+>>20			uleshort	7	\b, ITU G.711 mu-law
+>>20			uleshort	17	\b, IMA ADPCM
+>>20			uleshort	20	\b, ITU G.723 ADPCM (Yamaha)
+>>20			uleshort	49	\b, GSM 6.10
+>>20			uleshort	64	\b, ITU G.721 ADPCM
+>>20			uleshort	80	\b, MPEG
+>>20			uleshort	85	\b, MPEG Layer 3
+>>22			uleshort	=1	\b, mono
+>>22			uleshort	=2	\b, stereo
+>>22			uleshort	>2	\b, %d channels
+>>24			ulelong		>0	%d Hz
+>8			string		CDRA	\b, Corel Draw Picture
+!:mime image/x-coreldraw
+>8			string		AVI\040	\b, AVI
+!:mime video/x-msvideo
+>>12			string		LIST
+>>>20			string		hdrlavih
+>>>>&36			ulelong		x	\b, %lu x
+>>>>&40			lelong		x	%lu,
+>>>>&4			ulelong		>1000000	<1 fps,
+>>>>&4			ulelong		1000000	1.00 fps,
+>>>>&4			ulelong		500000	2.00 fps,
+>>>>&4			ulelong		333333	3.00 fps,
+>>>>&4			ulelong		250000	4.00 fps,
+>>>>&4			ulelong		200000	5.00 fps,
+>>>>&4			ulelong		166667	6.00 fps,
+>>>>&4			ulelong		142857	7.00 fps,
+>>>>&4			ulelong		125000	8.00 fps,
+>>>>&4			ulelong		111111	9.00 fps,
+>>>>&4			ulelong		100000	10.00 fps,
+>>>>&4			ulelong		<101010
+>>>>>&-4		ulelong		>99010
+>>>>>>&-4		ulelong		!100000	~10 fps,
+>>>>&4			ulelong		83333	12.00 fps,
+>>>>&4			ulelong		<84034
+>>>>>&-4		ulelong		>82645
+>>>>>>&-4		ulelong		!83333	~12 fps,
+>>>>&4			ulelong		66667	15.00 fps,
+>>>>&4			ulelong		<67114
+>>>>>&-4		ulelong		>66225
+>>>>>>&-4		ulelong		!66667	~15 fps,
+>>>>&4			ulelong		50000	20.00 fps,
+>>>>&4			ulelong		41708	23.98 fps,
+>>>>&4			ulelong		41667	24.00 fps,
+>>>>&4			ulelong		<41841
+>>>>>&-4		ulelong		>41494
+>>>>>>&-4		ulelong		!41708
+>>>>>>>&-4		ulelong		!41667	~24 fps,
+>>>>&4			ulelong		40000	25.00 fps,
+>>>>&4			ulelong		<40161
+>>>>>&-4		ulelong		>39841
+>>>>>>&-4		ulelong		!40000	~25 fps,
+>>>>&4			ulelong		33367	29.97 fps,
+>>>>&4			ulelong		33333	30.00 fps,
+>>>>&4			ulelong		<33445
+>>>>>&-4		ulelong		>33223
+>>>>>>&-4		ulelong		!33367
+>>>>>>>&-4		ulelong		!33333	~30 fps,
+>>>>&4			ulelong		<32224	>30 fps,
+>>>88			string		LIST
+>>>>96			string		strlstrh
+>>>>>108		string		vids	video:
+>>>>>>&0		lelong		0	uncompressed
+>>>>>>(104.l+108)	string		strf
+>>>>>>>(104.l+132)	lelong		1	RLE 8bpp
+>>>>>>>(104.l+132)	string/c	cvid	Cinepak
+>>>>>>>(104.l+132)	string/c	i263	Intel I.263
+>>>>>>>(104.l+132)	string/c	iv32	Indeo 3.2
+>>>>>>>(104.l+132)	string/c	iv41	Indeo 4.1
+>>>>>>>(104.l+132)	string/c	iv50	Indeo 5.0
+>>>>>>>(104.l+132)	string/c	mp42	Microsoft MPEG-4 v2
+>>>>>>>(104.l+132)	string/c	mp43	Microsoft MPEG-4 v3
+>>>>>>>(104.l+132)	string/c	fmp4	FFMpeg MPEG-4
+>>>>>>>(104.l+132)	string/c	mjpg	Motion JPEG
+>>>>>>>(104.l+132)	string/c	div3	DivX 3
+>>>>>>>>112		string/c	div3	Low-Motion
+>>>>>>>>112		string/c	div4	Fast-Motion
+>>>>>>>(104.l+132)	string/c	divx	DivX 4
+>>>>>>>(104.l+132)	string/c	dx50	DivX 5
+>>>>>>>(104.l+132)	string/c	xvid	XviD
+>>>>>>>(104.l+132)	string/c	h264	H.264
+>>>>>>>(104.l+132)	string/c	wmv3	Windows Media Video 9
+>>>>>>>(104.l+132)	string/c	h264	X.264 or H.264
+>>>>>>>(104.l+132)	lelong		0
+>>>>(92.l+96)		string		LIST
+>>>>>(92.l+104)		string		strlstrh
+>>>>>>(92.l+116)	string		auds	\b, audio:
+>>>>>>>(92.l+172)	string		strf
+>>>>>>>>(92.l+180)	leshort		0x0001	uncompressed PCM
+>>>>>>>>(92.l+180)	leshort		0x0002	ADPCM
+>>>>>>>>(92.l+180)	leshort		0x0006	aLaw
+>>>>>>>>(92.l+180)	leshort		0x0007	uLaw
+>>>>>>>>(92.l+180)	leshort		0x0050	MPEG-1 Layer 1 or 2
+>>>>>>>>(92.l+180)	leshort		0x0055	MPEG-1 Layer 3
+>>>>>>>>(92.l+180)	leshort		0x2000	Dolby AC3
+>>>>>>>>(92.l+180)	leshort		0x0161	DivX
+>>>>>>>>(92.l+182)	leshort		1	(mono,
+>>>>>>>>(92.l+182)	leshort		2	(stereo,
+>>>>>>>>(92.l+182)	leshort		>2	(%d channels,
+>>>>>>>>(92.l+184)	lelong		x	%d Hz)
+>>>>>>>(92.l+180)	string		strf
+>>>>>>>>(92.l+188)	leshort		0x0001	uncompressed PCM
+>>>>>>>>(92.l+188)	leshort		0x0002	ADPCM
+>>>>>>>>(92.l+188)	leshort		0x0055	MPEG-1 Layer 3
+>>>>>>>>(92.l+188)	leshort		0x2000	Dolby AC3
+>>>>>>>>(92.l+188)	leshort		0x0161	DivX
+>>>>>>>>(92.l+190)	leshort		1	(mono,
+>>>>>>>>(92.l+190)	leshort		2	(stereo,
+>>>>>>>>(92.l+190)	leshort		>2	(%d channels,
+>>>>>>>>(92.l+192)	lelong		x	%d Hz)
+>8			string		ACON	\b, animated cursor
+>8			string		sfbk	SoundFont/Bank
+>8			string		CDXA	\b, wrapped MPEG-1 (CDXA)
+>8			string		4XMV	\b, 4X Movie file
+
+0	string		FORM		audio data:
+!:mime audio/x-aiff
+>26	beshort		0x0008		8-bit linear PCM,
+>26	beshort		0x0010		16-bit linear PCM,
+>20	beshort		0x0001		mono
+>20	beshort		0x0002		stereo
+
+0	string		MThd		MIDI data:
+!:mime audio/midi
+>8	beshort		x		type %u,
+>10	beshort		x		using %u track(s)
+
+#
+0	short		0x1010		PEX Binary Archive
+
+# rasterfiles are big-endian
+0	belong		0x59a66a95	rasterfile,
+>4	belong		>0		%ld x
+>8	belong		>0		%ld x
+>12	belong		>0		%ld
+>20	belong		0		old format image
+>20	belong		1		standard format image
+>20	belong		2		run-length byte encoded image
+>20	belong		3		XRGB or RGB format image
+>20	belong		4		tiff format image
+>20	belong		5		iff (TAAC format) image
+>20	belong		0xffff		experimental format image
+#
+0	long		0x884f5053	Interleaf fast-saved document
+0	long		0x2a535441	Aster*x
+>7	long		0x574f5244		Words Document
+>7	long		0x47524150		Graphic
+>7	long		0x53505245		Spreadsheet
+>7	long		0x4d414352		Macro
+0	long		0x32323738	Aster*x Version 2
+>29	byte		0x36			Words Document
+>29	byte		0x35			Graphic
+>29	byte		0x32			Spreadsheet
+>29	byte		0x38			Macro
+4	string		pgscriptver	IslandWrite document
+13	string		DrawFile	IslandDraw document
+
+0	string		P1			PBM ascii file
+!:mime image/x-portable-bitmap
+>3	regex/s		^(\\d+)\\s(\\d+)	\b, %d x %d
+0	string		P2			PGM ascii file
+!:mime image/x-portable-greymap
+>3	regex/s		^(\\d+)\\s(\\d+)	\b, %d x %d
+0	string		P3			PPM ascii file
+!:mime image/x-portable-pixmap
+>3	regex/s		^(\\d+)\\s(\\d+)	\b, %d x %d
+0	string		P4			PBM raw file
+!:mime image/x-portable-bitmap
+>3	regex/s		^(\\d+)\\s(\\d+)	\b, %d x %d
+0	string		P5			PGM raw file
+!:mime image/x-portable-greymap
+>3	regex/s		^(\\d+)\\s(\\d+)	\b, %d x %d
+0	string		P6			PPM raw file
+!:mime image/x-portable-pixmap
+>3	regex/s		^(\\d+)\\s(\\d+)	\b, %d x %d
+
+0	string		\115\115		TIFF file, big-endian
+!:mime image/tiff
+0	string		\111\111\116\061	Navy Interchange File Format
+!:mime image/x-niff
+0	string		\111\111		TIFF file, little-endian
+!:mime image/tiff
+0	string		GIF87a		GIF file, Version 87
+!:mime image/gif
+>6	uleshort	>0		\b, %hd x
+>8	uleshort	>0		%hd
+0	string		GIF89a		GIF file, Version 89
+!:mime image/gif
+>6	uleshort	>0		\b, %hd x
+>8	uleshort	>0		%hd
+0	string		\377\330\377\340	JPEG file
+!:mime image/jpeg
+0	string		\377\330\377\341	JPEG file
+!:mime image/jpeg
+0	string		\377\330\377\356	JPG file
+8	string		ILBM		IFF ILBM file
+36	string		acsp	Kodak Color Management System, ICC Profile
+
+# PCX images
+0	beshort		0x0a00	PCX version 2.5 image data
+0	beshort		0x0a02	PCX version 2.8 image data, with palette
+0	beshort		0x0a03	PCX version 2.8 image data, without palette
+0	beshort		0x0a04	PCX for Windows image data
+0	beshort		0x0a05	PCX version 3.0 image data
+>4	uleshort	x	bounding box [%hd,
+>6	uleshort	x	%hd] -
+>8	uleshort	x	[%hd,
+>10	uleshort	x	%hd],
+>65	ubyte		>1	%d planes each of
+>3	byte		x	%hd-bit
+>68	byte		0	image,
+>68	byte		1	colour,
+>68	byte		2	grayscale,
+>68	byte		>2	image,
+>68	byte		<0	image,
+>12	uleshort	>0	%hd x
+>>14	uleshort	x	%hd dpi,
+>2	byte		0	uncompressed
+>2	byte		1	RLE compressed
+
+# Windows icon
+0	string	\0\0\001\0	MS Windows icon resource
+!:mime image/x-ico
+>4	ubyte	>1		- %d icons
+>4	ubyte	1		- 1 icon
+>>6	ubyte	>0		\b, %d x
+>>7	ubyte	>0		%d
+>>8	ubyte	0		\b, 256-colors
+>>8	ubyte	>0		\b, %d-colors
+
+# XPM icons
+0	string		/*\ XPM\ */	X pixmap image, ASCII text
+
+# X Window Dump file.
+4	belong	7	XWD X Window Dump image data
+>100	string	>\0	\b, "%s"
+>16	ubelong	x	\b, %d
+>20	ubelong	x	x %d
+>12	ubelong	x	x %d
+
+#
+0	string		%PDF		Adobe Portable Document Format (PDF)
+!:mime application/pdf
+>4	string		-1.0		\b, Version 1.0
+>4	string		-1.1		\b, Version 1.1
+>4	string		-1.2		\b, Version 1.2
+>4	string		-1.3		\b, Version 1.3
+>4	string		-1.4		\b, Version 1.4
+>4	string		-1.5		\b, Version 1.5
+
+0 regex/c \<!doctype[^>]*?dtd\\s+html\\s+(\\d+\\.\\d+)	HTML %s document
+0 regex/c \<!doctype[^>]*?dtd\\s+xhtml\\s+(\\d+\\.\\d+)	XHTML %s document
+0	string/c	\<html				HTML document
+0	string/c	\<head				HTML document
+0	string/c	\<title				HTML document
+0	string/c	\<?xml				XML document
+0	string/c	\<xs:schema			XSD document
+
+0	string		\211PNG		PNG image data
+!:mime image/png
+>16	ubelong		x		\b, %ld x
+>20	ubelong		x		%ld,
+>24	byte		x		%d-bit
+>25	byte		0		\b/grayscale,
+>25	byte		2		\b/RGB,
+>25	byte		3		\b/colormap,
+>25	byte		4		\b/grayscale+alpha,
+>25	byte		6		\b/RGB+alpha,
+>28	byte		0		non-interlaced
+>28	byte		1		interlaced
+0	belong		0x2e7261fd	RealAudio sound file
+!:mime	audio/x-pn-realaudio
+0	string		.RMF		RealMedia file
+!:mime application/vnd.rn-realmedia
+0	string		FlAsH-aRcHiVe	Flash Archive
+>13	string		-1.0		 1.0
+>13	string		-2.0		 2.0
+38	string		application/vnd.sun.xml.writer	StarOffice 7 Text Document
+38	string		application/vnd.sun.xml.calc	StarOffice 7 Spreadsheet
+38	string		application/vnd.sun.xml.draw	StarOffice 7 Drawing
+38	string		application/vnd.sun.xml.impress	StarOffice 7 Presentation
+38	string		application/vnd.sun.xml.math	StarOffice 7 Formula
+38	string		application/vnd.oasis.opendocument.chart	OpenDocument Chart
+38	string		application/vnd.oasis.opendocument.database	OpenDocument Database
+38	string		application/vnd.sun.xml.base			OpenDocument Database
+38	string		application/vnd.oasis.opendocument.formula	OpenDocument Formula
+38	string		application/vnd.oasis.opendocument.image	OpenDocument Image
+38	string		application/vnd.oasis.opendocument.text-web	HTML Document Template
+38	string		application/vnd.oasis.opendocument.text-	OpenDocument
+>78	string		template					Text Template
+>78	string		master						Master Document
+38	string		application/vnd.oasis.opendocument.text		OpenDocument Text
+38	string		application/vnd.oasis.opendocument.graphics	OpenDocument Drawing
+>81	string		-template					Template
+38	string		application/vnd.oasis.opendocument.presentation	OpenDocument Presentation
+>85	string		-template					Template
+38	string		application/vnd.oasis.opendocument.spreadsheet	OpenDocument Spreadsheet
+>84	string		-template					Template
+0	string		PK\003\004	ZIP archive
+!:mime application/x-zip
+
+# Windows executables
+0		string		MZ
+!:mime application/octet-stream
+>24		leshort		<0x40	MZ executable for MS-DOS
+>24		leshort		>0x3f
+>>(60.l)	string		PE\0\0	PE
+>>>(60.l+25)	byte		1	\b32 executable
+>>>(60.l+25)	byte		2	\b32+ executable
+>>>(60.l+92)	leshort		<10
+>>>>(8.s*16)	string		=32STUB	for MS-DOS, 32rtm DOS extender
+>>>>(8.s*16)	string		!32STUB	for MS Windows
+>>>>>(60.l+22)	uleshort&0x2000	>0	(DLL)
+>>>>>(60.l+92)	leshort		0	(unknown subsystem)
+>>>>>(60.l+92)	leshort		1	(native)
+>>>>>(60.l+92)	leshort		2	(GUI)
+>>>>>(60.l+92)	leshort		3	(console)
+>>>>>(60.l+92)	leshort		7	(POSIX)
+>>>>>(60.l+92)	leshort		7	(WIndows CE)
+>>>(60.l+92)	leshort		10	(EFI application)
+>>>(60.l+92)	leshort		11	(EFI boot service driver)
+>>>(60.l+92)	leshort		12	(EFI runtime driver)
+>>>(60.l+92)	leshort		13	(EFI ROM)
+>>>(60.l+92)	leshort		14	(XBOX)
+>>>(60.l+4)	uleshort	0x0000	unknown	processor
+>>>(60.l+4)	uleshort	0x014c	Intel 80386
+>>>(60.l+4)	uleshort	0x0162	MIPS R3000
+>>>(60.l+4)	uleshort	0x0166	MIPS R4000
+>>>(60.l+4)	uleshort	0x0168	MIPS R10000
+>>>(60.l+4)	uleshort	0x0169	MIPS WCE V2
+>>>(60.l+4)	uleshort	0x0184	Alpha
+>>>(60.l+4)	uleshort	0x01a2	Hitachi SH3
+>>>(60.l+4)	uleshort	0x01a2	Hitachi SH3 DSP
+>>>(60.l+4)	uleshort	0x01a6	Hitachi SH4
+>>>(60.l+4)	uleshort	0x01a8	Hitachi SH5
+>>>(60.l+4)	uleshort	0x01c0	ARM
+>>>(60.l+4)	uleshort	0x01c2	ARM or Thumb (interworking)
+>>>(60.l+4)	uleshort	0x01c4	ARMv7 (or higher) Thumb mode only
+>>>(60.l+4)	uleshort	0x01d3	Matsushita AM33
+>>>(60.l+4)	uleshort	0x01f0	PowerPC
+>>>(60.l+4)	uleshort	0x01f0	PowerPC with FPU
+>>>(60.l+4)	uleshort	0x0200	Intel Itanium
+>>>(60.l+4)	uleshort	0x0266	MIPS16
+>>>(60.l+4)	uleshort	0x0268	Motorola 68000
+>>>(60.l+4)	uleshort	0x0290	PA-RISC
+>>>(60.l+4)	uleshort	0x0366	MIPS with FPU
+>>>(60.l+4)	uleshort	0x0466	MIPS16 with FPU
+>>>(60.l+4)	uleshort	0x0ebc	EFI byte code
+>>>(60.l+4)	uleshort	0x8664	x86-64
+>>>(60.l+4)	uleshort	0x9041	Mitsubishi M32R
+>>>(60.l+4)	uleshort	0xaa64	ARMv8 in 64-bit mode
+>>>(60.l+22)	uleshort&0x0100	>0	32-bit
+>>>(60.l+22)	uleshort&0x1000	>0	system file
+>>&0		default		x	DOS executable (EXE)
+0	string		LZ		DOS built-in
+!:mime application/octet-stream
+0	ubyte		0xe9		DOS executable (COM)
+0	ubyte		0xeb		DOS executable (COM)
+0 string \114\0\0\0\001\024\002\0\0\0\0\0\300\0\0\0\0\0\0\106 MS Windows shortcut
+
+# HP PA-RISC 1.1
+0	belong	0x02100106	PA-RISC1.1 relocatable object
+0	belong	0x02100107	PA-RISC1.1 executable
+>168	ubelong	&0x00000004	dynamically linked
+>(144)	belong	0x054ef630	dynamically linked
+>96	belong	>0		- not stripped
+
+0	belong		0x02100108	PA-RISC1.1 shared executable
+>168	ubelong&0x4	0x4		dynamically linked
+>(144)	belong		0x054ef630	dynamically linked
+>96	belong		>0		- not stripped
+
+0	belong		0x0210010b	PA-RISC1.1 demand-load executable
+>168	ubelong&0x4	0x4		dynamically linked
+>(144)	belong		0x054ef630	dynamically linked
+>96	belong		>0		- not stripped
+
+0	belong	0x0210010e	PA-RISC1.1 shared library
+>96	belong	>0		- not stripped
+
+0	belong	0x0210010d	PA-RISC1.1 dynamic load library
+>96	belong	>0		- not stripped
+
+0	belong	0x02140106	PA-RISC2.0 relocatable object
+0	belong	0x02140107	PA-RISC2.0 executable
+>168	ubelong	&0x00000004	dynamically linked
+>(144)	belong	0x054ef630	dynamically linked
+>96	belong	>0		- not stripped
+
+# HP PA-RISC 2.0
+0	belong	0x02140108	PA-RISC2.0 shared executable
+>168	ubelong	&0x00000004	dynamically linked
+>(144)	belong	0x054ef630	dynamically linked
+>96	belong	>0		- not stripped
+
+0	belong	0x0214010b	PA-RISC2.0 demand-load executable
+>168	ubelong	&0x00000004	dynamically linked
+>(144)	belong	0x054ef630	dynamically linked
+>96	belong	>0		- not stripped
+
+0	belong	0x0214010e	PA-RISC2.0 shared library
+>96	belong	>0		- not stripped
+
+0	belong	0x0214010d	PA-RISC2.0 dynamic load library
+>96	belong	>0		- not stripped
+
+# HP s800
+0	belong	0x020b0106	PA-RISC1.0 relocatable object
+
+0	belong		0x020b0107	PA-RISC1.0 executable
+>168	ubelong&0x4	0x4		dynamically linked
+>(144)	belong		0x054ef630	dynamically linked
+>96	belong		>0		- not stripped
+
+0	belong		0x020b0108	PA-RISC1.0 shared executable
+>168	ubelong&0x4	0x4		dynamically linked
+>(144)	belong		0x054ef630	dynamically linked
+>96	belong		>0		- not stripped
+
+0	belong		0x020b010b	PA-RISC1.0 demand-load executable
+>168	ubelong&0x4	0x4		dynamically linked
+>(144)	belong		0x054ef630	dynamically linked
+>96	belong		>0		- not stripped
+
+0	belong	0x020b010e	PA-RISC1.0 shared library
+>96	belong	>0		- not stripped
+
+0	belong	0x020b010d	PA-RISC1.0 dynamic load library
+>96	belong	>0		- not stripped
+
+0	belong	0x213c6172	archive file
+>68	belong	0x020b0619	- PA-RISC1.0 relocatable library
+>68	belong	0x02100619	- PA-RISC1.1 relocatable library
+>68	belong	0x02110619	- PA-RISC1.2 relocatable library
+>68	belong	0x02140619	- PA-RISC2.0 relocatable library
+
+# HP s500
+0	long	0x02080106	HP s500 relocatable executable
+>16	long	>0		\b, Version %ld
+
+0	long	0x02080107	HP s500 executable
+>16	long	>0		\b, Version %ld
+
+0	long	0x02080108	HP s500 pure executable
+>16	long	>0		\b, Version %ld
+
+# HP s200
+0	belong	0x020c0108	HP s200 pure executable
+>4	beshort	>0		\b, Version %ld
+>8	ubelong	&0x80000000	save fp regs
+>8	ubelong	&0x40000000	dynamically linked
+>8	ubelong	&0x20000000	debuggable
+>36	belong	>0		not stripped
+
+0	belong	0x020c0107	HP s200 executable
+>4	beshort	>0		\b, Version %ld
+>8	ubelong	&0x80000000	save fp regs
+>8	ubelong	&0x40000000	dynamically linked
+>8	ubelong	&0x20000000	debuggable
+>36	belong	>0		not stripped
+
+0	belong	0x020c010b	HP s200 demand-load executable
+>4	beshort	>0		\b, Version %ld
+>8	ubelong	&0x80000000	save fp regs
+>8	ubelong	&0x40000000	dynamically linked
+>8	ubelong	&0x20000000	debuggable
+>36	belong	>0		not stripped
+
+0	belong	0x020c0106	HP s200 relocatable executable
+>4	beshort	>0		\b, Version %ld
+>6	beshort	>0		- highwater %d
+>8	ubelong	&0x80000000	save fp regs
+>8	ubelong	&0x20000000	debuggable
+>8	ubelong	&0x10000000	PIC
+
+0	belong	0x020a0108	HP s200 (2.x release) pure executable
+>4	beshort	>0		\b, Version %ld
+>36	belong	>0		not stripped
+
+0	belong	0x020a0107	HP s200 (2.x release) executable
+>4	beshort	>0		\b, Version %ld
+>36	belong	>0		not stripped
+
+0	belong	0x020c010e	HP s200 shared library
+>4	beshort	>0		\b, Version %ld
+>6	beshort	>0		- highwater %d
+>36	belong	>0		not stripped
+
+0	belong	0x020c010d	HP s200 dynamic load library
+>4	beshort	>0		\b, Version %ld
+>6	beshort	>0		- highwater %d
+>36	belong	>0		not stripped
+
+#
+2	beshort	0407	impure
+>1	byte	0	sun2 executable
+>1	byte	1	MC68010 executable
+>1	byte	2	MC68020 executable
+>1	byte	3	SPARC executable
+>0	ubyte	>077	dynamically linked
+2	beshort	0410	pure
+>1	byte	0	sun2 executable
+>1	byte	1	MC68010 executable
+>1	byte	2	MC68020 executable
+>1	byte	3	SPARC executable
+>0	ubyte	>077	dynamically linked
+
+# Java and Mach-O
+0	string	\312\376\272\276
+>4	belong	>30	Java class file
+!:mime	application/x-java-applet
+>>6	beshort	x	\b, Version %d.
+>>4	beshort	x	\b%d
+>>4	belong	0x002e	(Java 1.2)
+>>4	belong	0x002f	(Java 1.3)
+>>4	belong	0x0030	(Java 1.4)
+>>4	belong	0x0031	(Java 1.5)
+>>4	belong	0x0032	(Java 1.6)
+>>4	belong	0x0033	(Java 1.7)
+>>4	belong	0x0034	(Java 1.8)
+>4	belong	1	Mach-O fat file with 1 architecture
+>4	belong	>1
+>>4	belong	<20	Mach-O fat file with %ld architectures
+
+0	ulelong&0xfffffffe 0xfeedface	Mach-O
+>0	ubyte		0xcf		64-bit
+>12	lelong		1		object
+>12	lelong		2		executable
+>12	lelong		3		fixed virtual memory shared library
+>12	lelong		4		core
+>12	lelong		5		preload executable
+>12	lelong		6		dynamically linked shared library
+>12	lelong		7		dynamic linker
+>12	lelong		8		bundle
+>12	lelong		9		dynamically linked shared library stub
+>12	lelong		>9
+>>12	lelong		x		filetype=%ld
+>4	lelong		<0
+>>4	lelong		x		architecture=%ld
+>4	lelong		0x01		VAX
+>4	lelong		0x02		romp
+>4	lelong		0x03		architecture=3
+>4	lelong		0x04		NS32032
+>4	lelong		0x05		NS32332
+>4	lelong		0x06		MC68k
+>4	lelong		0x07		i386
+>4	lelong		0x08		MIPS
+>4	lelong		0x09		NS32532
+>4	lelong		0x0a		architecture=10
+>4	lelong		0x0b		hppa
+>4	lelong		0x0c		Acorn
+>4	lelong		0x0d		m88k
+>4	lelong		0x0e		SPARC
+>4	lelong		0x0f		i860-big
+>4	lelong		0x10		i860
+>4	lelong		0x11		RS6000
+>4	lelong		0x12		PowerPC
+>4	lelong		0x1000007	x86-64
+>4	lelong		0x1000012	PowerPC64
+>4	lelong		>16777234
+>>4	lelong		x		architecture=%ld
+
+0	ubelong&0xfffffffe 0xfeedface	Mach-O
+>0	ubyte		0xcf		64-bit
+>12	belong		1		object
+>12	belong		2		executable
+>12	belong		3		fixed virtual memory shared library
+>12	belong		4		core
+>12	belong		5		preload executable
+>12	belong		6		dynamically linked shared library
+>12	belong		7		dynamic linker
+>12	belong		8		bundle
+>12	belong		9		dynamically linked shared library stub
+>12	belong		>9
+>>12	belong		x		filetype=%ld
+>4	belong		<0
+>>4	belong		x		architecture=%ld
+>4	belong		0x01		VAX
+>4	belong		0x02		romp
+>4	belong		0x03		architecture=3
+>4	belong		0x04		NS32032
+>4	belong		0x05		NS32332
+>4	belong		0x06		MC68k
+>4	belong		0x07		i386
+>4	belong		0x08		MIPS
+>4	belong		0x09		NS32532
+>4	belong		0x0a		architecture=10
+>4	belong		0x0b		hppa
+>4	belong		0x0c		Acorn
+>4	belong		0x0d		m88k
+>4	belong		0x0e		SPARC
+>4	belong		0x0f		i860-big
+>4	belong		0x10		i860
+>4	belong		0x11		RS6000
+>4	belong		0x12		PowerPC
+>4	belong		0x1000007	i86-64
+>4	belong		0x1000012	PowerPC64
+>4	belong		>16777234
+>>4	belong		x		architecture=%ld
+
+# OSF/1
+0	leshort	0603		ECOFF object file alpha
+>24	leshort	0407		impure
+>24	leshort	0410		shared text
+>24	leshort	0413		demand paged
+>22	leshort	&0x0002		executable
+>8	long	>0		not stripped
+>8	long	0		stripped
+>27	ubyte	>0		\b, Version %ld
+>>26	ubyte	>0		\b.%ld
+>>28	leshort	>0		\b-%ld
+0	leshort	0610		ECOFF compressed object file
+0	leshort	0617		ECOFF Ucode object file
+
+# RS/6000
+0	beshort	0x01df		executable (RISC System/6000 V3.1) or obj module
+>12	belong	>0		not stripped
+0	beshort	0x0104		shared library
+0	beshort	0x0105		ctab data
+0	beshort	0xfe04		structured file
+0	string	0xabcdef	AIX message catalog
+0	belong	0x000001f9	AIX compiled message catalog
+0	string	\<aiaff>	archive
+0	string	\<bigaf>	archive (big format)
+
+#
+0	string	\013\023\010\0	ksh compiled shell script executable
+24	belong	60012			ufsdump archive file
+0	string	TZif			zoneinfo timezone data file
+0	string	BZh			bzip2 compressed data
+>3	ubyte	>47			\b, block size = %c00k
+0	string	SUNWcpch		Sun C compiler precompiled header
+0	string	SUNWCpch		Sun C++ compiler precompiled header
+0	string	\043\040PaCkAgE\040DaTaStReAm	package datastream
+0	short	0xcff1			CTF data file
+0	string	\177DOF			DTrace DOF data file
+0	string	\177FCF			fmd(1M) checkpoint file
+0	string	EFT\0			Fault tree file,
+>4	ushort	x			v%u
+>6	ushort	x			rev %u,
+>8	ushort	x			from esc v%u
+>10	ushort	x			rev %u
+0	string	_SM_			DMTF SMBIOS image
+>6	ubyte	x			\b, Version %u
+>7	ubyte	x			\b.%u
+0	byte	0x11			Solaris Audit File
+0	byte	0x78			Solaris Audit File
+# ZFS send stream entries
+8	string	\0\0\0\002\365\272\313\254	ZFS snapshot stream
+# little endian stream
+8	string	\254\313\272\365\002\0\0\0	ZFS snapshot stream
+
+# Video files
+2	string		\001\272\041	MPEG Movie file
+!:mime video/mpeg
+0	string		\377\375	MPEG-1 Audio Layer 2
+0	string		\377\373	MPEG-1 Audio Layer 3
+0	string		\377\372	MPEG-1 Audio Layer 3
+0	string		ID3		Audio file with ID3 version 2
+>3	ubyte		x		\b.%d
+>4	ubyte		x		\b.%d
+
+# AVI and GVI files
+20	string	hdrlavih	RIFF Avi Video
+>36	ulong	>0		%u Max Bps,
+>64	ushort	x		%u X
+>68	ushort	x		%u,
+>48	ulong	x		%u frames
+
+20	string	goog		RIFF gvi
+>88	ulong	>0		%u Max Bps
+>116	ushort	x		%u X
+>120	ushort	x		%u,
+>100	ulong	x		%u frames
+
+# JPEG 2000 - jp2 image file.
+3	string		\014\152\120\040\040	JPEG 2000 Image file
+
+# iso 9660 CD-ROM image and El Torito Bootable standard
+32769	string		CD\0		ISO 9660 filesystem image
+>34823	string		EL\040TORITO	- El Torito
+
+# Palm Pilot files .pdb and .prc of some type.
+0x3c	string	TEXtREAd		Palm DOC file
+0x3c	string	SDocSilX		iSilo 3 Doc file for PalmPilot
+0x3c	string	applSil			iSilo Application file
+0x3c	string	appl			Palm Pilot Application
+0x3c	string	ToGoToGo		iSilo Doc file for Palm Pilot
+
+# PC bitmaps (OS/2 and Windows BMP files)
+0	string	BM
+>14	uleshort	12	PC bitmap, OS/2 1.x format
+!:mime	image/x-ms-bmp
+>>18	uleshort	x	\b, %d x
+>>20	uleshort	x	%d
+>14	uleshort	64	PC bitmap, OS/2 2.x format
+!:mime	image/x-ms-bmp
+>>18	uleshort	x	\b, %d x
+>>20	uleshort	x	%d
+>14	uleshort	40	PC bitmap, Windows 3.x format
+!:mime	image/x-ms-bmp
+>>18	ulelong		x	\b, %d x
+>>22	ulelong		x	%d x
+>>28	uleshort	x	%d
+>14	uleshort	128	PC bitmap, Windows NT/2000 format
+!:mime	image/x-ms-bmp
+>>18	ulelong		x	\b, %d x
+>>22	ulelong		x	%d x
+>>28	uleshort	x	%d
+
+# SGI files with .rgb extention
+0	string	\001\332		SGI Image data
+>2	byte	1			\b, RLE
+>2	byte	0			\b, Verbatim
+>5	ubyte	x			\b, %u-D
+>7	ubyte	x			%u x
+>9	ubyte	x			%u
+>11	ubyte	x			\b, %u channel(s)
+
+2048	string		PCD_IPI		Kodak Photo CD image pack file
+>0xe02	ubyte&0x03	0x00		\b, landscape mode
+>0xe02	ubyte&0x03	0x01		\b, portrait mode
+>0xe02	ubyte&0x03	0x02		\b, landscape mode
+>0xe02	ubyte&0x03	0x03		\b, portrait mode
+0	string		PCD_OPA		Kodak Photo CD overview pack file
+
+# MS Documents
+0	string	\320\317\021\340\241\261\032\341	Microsoft
+>546	string	bjbj					Word
+>0	byte	<0					Document
+0	string	{\\rtf		Microsoft Rich Text Format Document
+!:mime application/rtf
+
+# Windows registry
+0	string	regf	MS Windows registry file (NT/2000 or later)
+0	string	CREG	MS Windows registry file (95/98/ME)
+0	string	SHCC3	MS Windows registry file (3.1)
+0	string	REGEDIT4\r\n\r\n	Windows Registry text (Win95 or later)
+0	string	Windows\ Registry\ Editor\040
+>&0	string	Version\ 5.00\r\n\r\n	Windows Registry text (Win2K or later)
+2	string	Windows\ Registry\ Editor\040
+>&0	string	Version\ 5.00\r\n\r\n	Windows Registry text (Win2K or later)
+
+# mp4 media format with different media files embedded in it
+4	string	ftyp		MPEG-4
+>8	string	isom		Base Media, Version 1 [IS0 14496-12:2003]
+!:mime video/mp4
+>8	string	iso2		Base Media, Version 2 [ISO 14496-12:2005]
+>8	string	m4a\040		Apple iTunes AAC-LC (.M4A) Audio
+>8	string	m4v\040		Apple iTunes (.M4V) Video
+>8	string	qt		Apple QuickTime (.MOV/QT)
+!:mime video/quicktime
+>8	string	jp2		JPEG 2000 Image
+!:mime image/jp2
+>8	string	jpm		JPEG 2000 Compound Image (.JPM) [ISO 15444-6]
+>8	string	jpx		JPEG 2000 w/ extensions (.JPX) [ISO 15444-2]
+>8	string	mp42		v2 [ISO 14496-14]
+!:mime video/mp4
+4	string	moov		QuickTime MOV file
+!:mime video/quicktime
+
+# MPEG sequences
+0	ubelong&0xffffff00	0x00000100
+>3	ubyte		0xba	MPEG sequence
+>>4	ubyte		&0x40	\b, Version 2, program multiplex
+>>4	ubyte		^0x40	\b, Version 1, system multiplex
+>3	ubyte		0xbb	MPEG sequence, Version 1/2, multiplex (missing pack header)
+>3	ubyte&0x1f	0x07	MPEG sequence, H.264 video
+>>4	byte		66	\b, baseline
+>>4	byte		77	\b, main
+>>4	byte		88	\b, extended
+>>6	byte		x	\b @ L %u
+>3	byte		0xB0	MPEG sequence, Version 4
+>>5	belong		0x000001B5
+>>>9	byte		&0x80
+>>>>10	ubyte&0xf0	16	\b, video
+>>>>10	ubyte&0xf0	32	\b, still texture
+>>>>10	ubyte&0xf0	48	\b, mesh
+>>>>10	ubyte&0xf0	64	\b, face
+>>>9	ubyte&0xf8	8	\b, video
+>>>9	ubyte&0xf8	16	\b, still texture
+>>>9	ubyte&0xf8	24	\b, mesh
+>>>9	ubyte&0xf8	32	\b, face
+>>4	ubyte		1	\b, simple @ L1
+>>4	ubyte		2	\b, simple @ L2
+>>4	ubyte		3	\b, simple @ L3
+>>4	ubyte		4	\b, simple @ L0
+>>4	ubyte		17	\b, simple scalable @ L1
+>>4	ubyte		18	\b, simple scalable @ L2
+>>4	ubyte		33	\b, core @ L1
+>>4	ubyte		34	\b, core @ L2
+>>4	ubyte		50	\b, main @ L2
+>>4	ubyte		51	\b, main @ L3
+>>4	ubyte		53	\b, main @ L4
+>>4	ubyte		66	\b, n-bit @ L2
+>>4	ubyte		81	\b, scalable texture @ L1
+>>4	ubyte		97	\b, simple face animation @ L1
+>>4	ubyte		98	\b, simple face animation @ L2
+>>4	ubyte		99	\b, simple face basic animation @L1
+>>4	ubyte		100	\b, simple face basic animation @L2
+>>4	ubyte		113	\b, basic animation text @ L1
+>>4	ubyte		114	\b, basic animation text @ L2
+>>4	ubyte		129	\b, hybrid @ L1
+>>4	ubyte		130	\b, hybrid @ L2
+>>4	ubyte		145	\b, advanced RT simple @ L1
+>>4	ubyte		146	\b, advanced RT simple @ L2
+>>4	ubyte		147	\b, advanced RT simple @ L3
+>>4	ubyte		148	\b, advanced RT simple @ L4
+>>4	ubyte		161	\b, core scalable @ L1
+>>4	ubyte		161	\b, core scalable @ L1
+>>4	ubyte		162	\b, core scalable @ L2
+>>4	ubyte		163	\b, core scalable @ L3
+>>4	ubyte		177	\b, advanced coding efficiency @ L1
+>>4	ubyte		178	\b, advanced coding efficiency @ L2
+>>4	ubyte		179	\b, advanced coding efficiency @ L3
+>>4	ubyte		180	\b, advanced coding efficiency @ L4
+>>4	ubyte		193	\b, advanced core @ L1
+>>4	ubyte		194	\b, advanced core @ L2
+>>4	ubyte		209	\b, advanced scalable texture @ L1
+>>4	ubyte		210	\b, advanced scalable texture @ L2
+>>4	ubyte		211	\b, advanced scalable texture @ L3
+>>4	ubyte		225	\b, simple studio @ L1
+>>4	ubyte		226	\b, simple studio @ L2
+>>4	ubyte		227	\b, simple studio @ L3
+>>4	ubyte		228	\b, simple studio @ L4
+>>4	ubyte		229	\b, core studio @ L1
+>>4	ubyte		230	\b, core studio @ L2
+>>4	ubyte		231	\b, core studio @ L3
+>>4	ubyte		232	\b, core studio @ L4
+>>4	ubyte		240	\b, advanced simple @ L0
+>>4	ubyte		241	\b, advanced simple @ L1
+>>4	ubyte		242	\b, advanced simple @ L2
+>>4	ubyte		243	\b, advanced simple @ L3
+>>4	ubyte		244	\b, advanced simple @ L4
+>>4	ubyte		245	\b, advanced simple @ L5
+>>4	ubyte		247	\b, advanced simple @ L3b
+>>4	ubyte		248	\b, FGS @ L0
+>>4	ubyte		249	\b, FGS @ L1
+>>4	ubyte		250	\b, FGS @ L2
+>>4	ubyte		251	\b, FGS @ L3
+>>4	ubyte		252	\b, FGS @ L4
+>>4	ubyte		253	\b, FGS @ L5
+>3	ubyte		0xb5	MPEG sequence, Version 4
+>>4	ubyte		&0x80
+>>>5	ubyte&0xf0	16	\b, video (missing profile header)
+>>>5	ubyte&0xf0	32	\b, still texture (missing profile header)
+>>>5	ubyte&0xf0	48	\b, mesh (missing profile header)
+>>>5	ubyte&0xf0	64	\b, face (missing profile header)
+>>4	ubyte&0xf8	8	\b, video (missing profile header)
+>>4	ubyte&0xf8	16	\b, still texture (missing profile header)
+>>4	ubyte&0xf8	24	\b, mesh (missing profile header)
+>>4	ubyte&0xf8	32	\b, face (missing profile header)
+>3	ubyte		0xB3	MPEG sequence
+>>12	ubelong	0x000001b2	\b, Version 1, progressive Y'CbCr 4:2:0 video
+>>12	ubelong	0x000001b5	\b, Version 2,
+>>12	ubelong	0x000001b8	\b, Version 1, progressive Y'CbCr 4:2:0 video
+>>>16	ubyte&0x0f	1	\b HP
+>>>16	ubyte&0x0f	2	\b Spt
+>>>16	ubyte&0x0f	3	\b SNR
+>>>16	ubyte&0x0f	4	\b MP
+>>>16	ubyte&0x0f	5	\b SP
+>>>17	ubyte&0xf0	64	\b@HL
+>>>17	ubyte&0xf0	96	\b@H-14
+>>>17	ubyte&0xf0	128	\b@ML
+>>>17	ubyte&0xf0	160	\b@LL
+>>>17	ubyte		&0x08	\b progressive
+>>>17	ubyte		^0x08	\b interlaced
+>>>17	ubyte&0x06	2	\b Y'CbCr 4:2:0 video
+>>>17	ubyte&0x06	4	\b Y'CbCr 4:2:2 video
+>>>17	ubyte&0x06	6	\b Y'CbCr 4:4:4 video
+>>11	ubyte		&0x02
+>>>75	ubyte		&0x01
+>>>>140	belong	0x000001b2	\b, Version 1, progressive Y'CbCr 4:2:0 video
+>>>>140	belong	0x000001b5	\b, Version 2,
+>>>>140	belong	0x000001b8	\b, Version 1, progressive Y'CbCr 4:2:0 video
+>>>>>144 ubyte&0x0f	1	\b HP
+>>>>>144 ubyte&0x0f	2	\b Spt
+>>>>>144 ubyte&0x0f	3	\b SNR
+>>>>>144 ubyte&0x0f	4	\b MP
+>>>>>144 ubyte&0x0f	5	\b SP
+>>>>>145 ubyte&0xf0	64	\b@HL
+>>>>>145 ubyte&0xf0	96	\b@H-14
+>>>>>145 ubyte&0xf0	128	\b@ML
+>>>>>145 ubyte&0xf0	160	\b@LL
+>>>>>145 ubyte		&0x08	\b progressive
+>>>>>145 ubyte		^0x08	\b interlaced
+>>>>>145 ubyte&0x06	2	\b Y'CbCr 4:2:0 video
+>>>>>145 ubyte&0x06	4	\b Y'CbCr 4:2:2 video
+>>>>>145 ubyte&0x06	6	\b Y'CbCr 4:4:4 video
+>>76	belong	0x000001b2	\b, Version 1, progressive Y'CbCr 4:2:0 video
+>>76	belong	0x000001b5	\b, Version 2,
+>>76	belong	0x000001B8	\b, Version 1, progressive Y'CbCr 4:2:0 video
+>>>80	ubyte&0x0f	1	\b HP
+>>>80	ubyte&0x0f	2	\b Spt
+>>>80	ubyte&0x0f	3	\b SNR
+>>>80	ubyte&0x0f	4	\b MP
+>>>80	ubyte&0x0f	5	\b SP
+>>>81	ubyte&0xf0	64	\b@HL
+>>>81	ubyte&0xf0	96	\b@H-14
+>>>81	ubyte&0xf0	128	\b@ML
+>>>81	ubyte&0xf0	160	\b@LL
+>>>81	ubyte		&0x08	\b progressive
+>>>81	ubyte		^0x08	\b interlaced
+>>>81	ubyte&0x06	2	\b Y'CbCr 4:2:0 video
+>>>81	ubyte&0x06	4	\b Y'CbCr 4:2:2 video
+>>>81	ubyte&0x06	6	\b Y'CbCr 4:4:4 video
+>>4	ubelong&0xffffff00	0x78043800	\b, HD-TV 1920P
+>>>7	ubyte&0xf0	0x10	\b, 16:9
+>>4	ubelong&0xffffff00	0x50002D00	\b, SD-TV 1280I
+>>>7	ubyte&0xf0	0x10	\b, 16:9
+>>4	ubelong&0xffffff00	0x30024000	\b, PAL Capture
+>>>7	ubyte&0xf0	0x10	\b, 4:3
+>>4	ubeshort&0xfff0	0x2C00	\b, 4CIF
+>>>5	ubeshort&0x0fff	0x01E0	\b NTSC
+>>>5	ubeshort&0x0fff	0x0240	\b PAL
+>>>7	ubyte&0xf0	0x20	\b, 4:3
+>>>7	ubyte&0xf0	0x30	\b, 16:9
+>>>7	ubyte&0xf0	0x40	\b, 11:5
+>>>7	ubyte&0xf0	0x80	\b, PAL 4:3
+>>>7	ubyte&0xf0	0xC0	\b, NTSC 4:3
+>>4	ubelong&0xffffff00	0x2801E000	\b, LD-TV 640P
+>>>7	ubyte&0xf0	0x10	\b, 4:3
+>>4	ubelong&0xffffff00	0x1400F000	\b, 320x240
+>>>7	ubyte&0xf0	0x10	\b, 4:3
+>>4	ubelong&0xffffff00	0x0F00A000	\b, 240x160
+>>>7	ubyte&0xf0	0x10	\b, 4:3
+>>4	ubelong&0xffffff00	0x0A007800	\b, 160x120
+>>>7	ubyte&0xf0	0x10	\b, 4:3
+>>4	ubeshort&0xfff0	0x1600	\b, CIF
+>>>5	ubeshort&0x0fff	0x00F0	\b NTSC
+>>>5	ubeshort&0x0fff	0x0120	\b PAL
+>>>7	ubyte&0xf0	0x20	\b, 4:3
+>>>7	ubyte&0xf0	0x30	\b, 16:9
+>>>7	ubyte&0xf0	0x40	\b, 11:5
+>>>7	ubyte&0xf0	0x80	\b, PAL 4:3
+>>>7	ubyte&0xf0	0xC0	\b, NTSC 4:3
+>>>5	ubeshort&0x0fff	0x0240	\b PAL 625
+>>>>7	ubyte&0xf0	0x20	\b, 4:3
+>>>>7	ubyte&0xf0	0x30	\b, 16:9
+>>>>7	ubyte&0xf0	0x40	\b, 11:5
+>>4	ubeshort&0xfff0	0x2D00	\b, CCIR/ITU
+>>>5	ubeshort&0x0fff	0x01E0	\b NTSC 525
+>>>5	ubeshort&0x0fff	0x0240	\b PAL 625
+>>>7	ubyte&0xf0	0x20	\b, 4:3
+>>>5	ubeshort&0x0fff	0x0240	\b PAL 625
+>>>7	ubyte&0xf0	0x20	\b, 4:3
+>>>7	ubyte&0xf0	0x30	\b, 16:9
+>>>7	ubyte&0xf0	0x40	\b, 11:5
+>>4	ubeshort&0xfff0	0x1E00	\b, SVCD
+>>>5	ubeshort&0x0fff	0x01E0	\b NTSC 525
+>>>5	ubeshort&0x0fff	0x0240	\b PAL 625
+>>>7	ubyte&0xf0	0x20	\b, 4:3
+>>>7	ubyte&0xf0	0x30	\b, 16:9
+>>>7	ubyte&0xf0	0x40	\b, 11:5
+>>7	ubyte&0x0f	1	\b, 23.976 fps
+>>7	ubyte&0x0f	2	\b, 24 fps
+>>7	ubyte&0x0f	3	\b, 25 fps
+>>7	ubyte&0x0f	4	\b, 29.97 fps
+>>7	ubyte&0x0f	5	\b, 30 fps
+>>7	ubyte&0x0f	6	\b, 50 fps
+>>7	ubyte&0x0f	7	\b, 59.94 fps
+>>7	ubyte&0x0f	8	\b, 60 fps
+>>11	ubyte		&0x04	\b, Constrained
+
+# MPEG ADTS Audio (*.mpx/mxa/aac)
+0	ubeshort&0xfffe	0xfffa
+>2	ubyte&0xf0	0x10	MPEG ADTS, layer III, v1,	32 kbps
+!:mime	audio/mpeg
+>2	ubyte&0xf0	0x20	MPEG ADTS, layer III, v1,	40 kbps
+!:mime	audio/mpeg
+>2	ubyte&0xf0	0x30	MPEG ADTS, layer III, v1,	48 kbps
+!:mime	audio/mpeg
+>2	ubyte&0xf0	0x40	MPEG ADTS, layer III, v1,	56 kbps
+!:mime	audio/mpeg
+>2	ubyte&0xf0	0x50	MPEG ADTS, layer III, v1,	64 kbps
+!:mime	audio/mpeg
+>2	ubyte&0xf0	0x60	MPEG ADTS, layer III, v1,	80 kbps
+!:mime	audio/mpeg
+>2	ubyte&0xf0	0x70	MPEG ADTS, layer III, v1,	96 kbps
+!:mime	audio/mpeg
+>2	ubyte&0xf0	0x80	MPEG ADTS, layer III, v1, 112 kbps
+!:mime	audio/mpeg
+>2	ubyte&0xf0	0x90	MPEG ADTS, layer III, v1, 128 kbps
+!:mime	audio/mpeg
+>2	ubyte&0xf0	0xa0	MPEG ADTS, layer III, v1, 160 kbps
+!:mime	audio/mpeg
+>2	ubyte&0xf0	0xb0	MPEG ADTS, layer III, v1, 192 kbps
+!:mime	audio/mpeg
+>2	ubyte&0xf0	0xc0	MPEG ADTS, layer III, v1, 224 kbps
+!:mime	audio/mpeg
+>2	ubyte&0xf0	0xd0	MPEG ADTS, layer III, v1, 256 kbps
+!:mime	audio/mpeg
+>2	ubyte&0xf0	0xe0	MPEG ADTS, layer III, v1, 320 kbps
+!:mime	audio/mpeg
+>2	ubyte&0x0c	0x00	\b, 44.1 kHz
+>2	ubyte&0x0c	0x04	\b, 48 kHz
+>2	ubyte&0x0c	0x08	\b, 32 kHz
+>3	ubyte&0xc0	0x00	\b, Stereo
+>3	ubyte&0xc0	0x40	\b, JntStereo
+>3	ubyte&0xc0	0x80	\b, 2x Monaural
+>3	ubyte&0xc0	0x40	\b, JntStereo
+>3	ubyte&0xc0	0x80	\b, 2x Monaural
+>3	ubyte&0xc0	0xC0	\b, Monaural
+
+# MP2, M1A
+0	ubeshort&0xfffe	0xfffc	MPEG ADTS, layer II, Version 1
+!:mime	audio/mpeg
+>2	ubyte&0xf0	0x10	\b, 32 kbps
+>2	ubyte&0xf0	0x20	\b, 48 kbps
+>2	ubyte&0xf0	0x30	\b, 56 kbps
+>2	ubyte&0xf0	0x40	\b, 64 kbps
+>2	ubyte&0xf0	0x50	\b, 80 kbps
+>2	ubyte&0xf0	0x60	\b, 96 kbps
+>2	ubyte&0xf0	0x70	\b, 112 kbps
+>2	ubyte&0xf0	0x80	\b, 128 kbps
+>2	ubyte&0xf0	0x90	\b, 160 kbps
+>2	ubyte&0xf0	0xa0	\b, 192 kbps
+>2	ubyte&0xf0	0xb0	\b, 224 kbps
+>2	ubyte&0xf0	0xc0	\b, 256 kbps
+>2	ubyte&0xf0	0xd0	\b, 320 kbps
+>2	ubyte&0xf0	0xe0	\b, 384 kbps
+>2	ubyte&0x0c	0x00	\b, 44.1 kHz
+>2	ubyte&0x0c	0x04	\b, 48 kHz
+>2	ubyte&0x0c	0x08	\b, 32 kHz
+>3	ubyte&0xc0	0x00	\b, Stereo
+>3	ubyte&0xc0	0x40	\b, JntStereo
+>3	ubyte&0xc0	0x80	\b, 2x Monaural
+>3	ubyte&0xc0	0xC0	\b, Monaural
+
+# MP3, M2A
+0	ubeshort&0xfffe	0xfff2	MPEG ADTS, layer III, Version 2
+!:mime	audio/mpeg
+>2	ubyte&0xf0	0x10	\b, 8 kbps
+>2	ubyte&0xf0	0x20	\b, 16 kbps
+>2	ubyte&0xf0	0x10	\b, 8 kbps
+>2	ubyte&0xf0	0x20	\b, 16 kbps
+>2	ubyte&0xf0	0x30	\b, 24 kbps
+>2	ubyte&0xf0	0x40	\b, 32 kbps
+>2	ubyte&0xf0	0x50	\b, 40 kbps
+>2	ubyte&0xf0	0x60	\b, 48 kbps
+>2	ubyte&0xf0	0x70	\b, 56 kbps
+>2	ubyte&0xf0	0x80	\b, 64 kbps
+>2	ubyte&0xf0	0x90	\b, 80 kbps
+>2	ubyte&0xf0	0xA0	\b, 96 kbps
+>2	ubyte&0xf0	0xB0	\b, 112 kbps
+>2	ubyte&0xf0	0xC0	\b, 128 kbps
+>2	ubyte&0xf0	0xD0	\b, 144 kbps
+>2	ubyte&0xf0	0xE0	\b, 160 kbps
+>2	ubyte&0x0c	0x00	\b, 22.05 kHz
+>2	ubyte&0x0c	0x04	\b, 24 kHz
+>2	ubyte&0x0c	0x08	\b, 16 kHz
+>3	ubyte&0xc0	0x00	\b, Stereo
+>3	ubyte&0xc0	0x40	\b, JntStereo
+>3	ubyte&0xc0	0x80	\b, 2x Monaural
+>3	ubyte&0xc0	0xC0	\b, Monaural
+
+# MP2, M2A
+0	ubeshort&0xfffe	0xfff4	MPEG ADTS, layer II, Version 2
+>2	ubyte&0xf0	0x10	\b, 8 kbps
+>2	ubyte&0xf0	0x20	\b, 16 kbps
+>2	ubyte&0xf0	0x30	\b, 24 kbps
+>2	ubyte&0xf0	0x40	\b, 32 kbps
+>2	ubyte&0xf0	0x50	\b, 40 kbps
+>2	ubyte&0xf0	0x60	\b, 48 kbps
+>2	ubyte&0xf0	0x70	\b, 56 kbps
+>2	ubyte&0xf0	0x80	\b, 64 kbps
+>2	ubyte&0xf0	0x90	\b, 80 kbps
+>2	ubyte&0xf0	0xA0	\b, 96 kbps
+>2	ubyte&0xf0	0xB0	\b, 112 kbps
+>2	ubyte&0xf0	0xC0	\b, 128 kbps
+>2	ubyte&0xf0	0xD0	\b, 144 kbps
+>2	ubyte&0xf0	0xE0	\b, 160 kbps
+>2	ubyte&0xf0	0xB0	\b, 176 kbps
+>2	ubyte&0xf0	0xC0	\b, 192 kbps
+>2	ubyte&0xf0	0xD0	\b, 224 kbps
+>2	ubyte&0xf0	0xE0	\b, 256 kbps
+>2	ubyte&0x0c	0x00	\b, 22.05 kHz
+>2	ubyte&0x0c	0x04	\b, 24 kHz
+>2	ubyte&0x0c	0x08	\b, 16 kHz
+>3	ubyte&0xc0	0x00	\b, Stereo
+>3	ubyte&0xc0	0x40	\b, JntStereo
+>3	ubyte&0xc0	0x80	\b, 2x Monaural
+>3	ubyte&0xc0	0xC0	\b, Monaural
+
+# Free lossless audio codec
+0	string			fLaC		FLAC audio bitstream data
+!:mime	audio/x-flac
+>4	ubyte&0x7f		>0		\b, unknown version
+>4	ubyte&0x7f		0		\b
+>>20	ubeshort&0x1f0		0x030		\b, 4 bit
+>>20	ubeshort&0x1f0		0x050		\b, 6 bit
+>>20	ubeshort&0x1f0		0x070		\b, 8 bit
+>>20	ubeshort&0x1f0		0x0b0		\b, 12 bit
+>>20	ubeshort&0x1f0		0x0f0		\b, 16 bit
+>>20	ubeshort&0x1f0		0x170		\b, 24 bit
+>>20	ubyte&0xe		0x0		\b, mono
+>>20	ubyte&0xe		0x2		\b, stereo
+>>20	ubyte&0xe		0x4		\b, 3 channels
+>>20	ubyte&0xe		0x6		\b, 4 channels
+>>20	ubyte&0xe		0x8		\b, 5 channels
+>>20	ubyte&0xe		0xa		\b, 6 channels
+>>20	ubyte&0xe		0xc		\b, 7 channels
+>>20	ubyte&0xe		0xe		\b, 8 channels
+>>17	ubelong&0xfffff0	0x01f400	\b, 8 kHz
+>>17	ubelong&0xfffff0	0x02b110	\b, 11.025 kHz
+>>17	ubelong&0xfffff0	0x02ee00	\b, 12 kHz
+>>17	ubelong&0xfffff0	0x03e800	\b, 16 kHz
+>>17	ubelong&0xfffff0	0x056220	\b, 22.05 kHz
+>>17	ubelong&0xfffff0	0x05dc00	\b, 24 kHz
+>>17	ubelong&0xfffff0	0x07d000	\b, 32 kHz
+>>17	ubelong&0xfffff0	0x0ac440	\b, 44.1 kHz
+>>17	ubelong&0xfffff0	0x0bb800	\b, 48 kHz
+>>17	ubelong&0xfffff0	0x0fa000	\b, 64 kHz
+>>17	ubelong&0xfffff0	0x177000	\b, 96 kHz
+>>21	ubyte&0xf		>0		\b, >4G samples
+>>21	ubyte&0xf		0		\b
+>>>22	belong			>0		\b, %u samples
+>>>22	belong			0		\b, length unknown
+
+# OGG/Vorbis
+0	string		OggS			OGG data
+!:mime	application/ogg
+>4	byte		!0			Unknown revision %u
+>4	byte		0
+>>28	string		\x7fFLAC		\b, FLAC audio
+>>28	string		\x80theora		\b, Theora video
+>>28	string		\x80kate\0\0\0\0	\b, Kate
+>>>37	ubyte		x			v%u
+>>>38	ubyte		x			\b.%u,
+>>>40	byte		0			utf8 encoding,
+>>>40	byte		!0			unknown character encoding,
+>>>60	string		>\0			language %s,
+>>>60	string		\0			no language set,
+>>>76	string		>\0			category %s
+>>>76	string		\0			no category set
+>>28	string		fishead\0		\b, Skeleton
+>>>36	short		x			v%u
+>>>40	short		x			\b.%u
+>>28	string		Speex\ \ \		\b, Speex audio
+>>28	string		\x01video\0\0\0 \b, OGM video
+>>>37	string/c	div3			(DivX 3)
+>>>37	string/c	divx			(DivX 4)
+>>>37	string/c	dx50			(DivX 5)
+>>>37	string/c	xvid			(XviD)
+>>28	string		\x01vorbis		\b, Vorbis audio,
+>>>35	lelong		!0			Unknown version %lu
+>>>35	lelong		0
+>>>>39	ubyte		1			mono,
+>>>>39	ubyte		2			stereo,
+>>>>39	ubyte		>2			%u channels,
+>>>>40	lelong		x			%lu Hz
+>>>>48	string	<\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff	\b,
+>>>>>52		lelong	!-1
+>>>>>>52	lelong	!0
+>>>>>>>52	lelong	!-1000
+>>>>>>>>52	lelong	x	<%lu
+>>>>>48		lelong	!-1
+>>>>>>48	lelong	x	~%lu
+>>>>>4		lelong	!-1
+>>>>>>44	lelong	!-1000
+>>>>>>>44	lelong	!0
+>>>>>>>>44	lelong	x	>%lu
+>>>>>48	string	<\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff	bps
+

@@ -1,0 +1,32 @@
+<hybrid_analyzer><ha_attributes>
+<title>Mobile Applications Analyzer</title>
+<type>Analyzer</type>
+<short_name>MOBILE_ANALYZER</short_name>
+<product_line>EBS</product_line>
+<product_family>EBS MFG</product_family>
+<product_area>EBS - Inventory</product_area>
+<owner>SIBGHATULLAH.HUSSAINI.SYED@ORACLE.COM</owner>
+<version>200.5</version>
+<last_generated>2026/01/29</last_generated>
+<doc_id>3047894.1</doc_id>
+<file_name>mobile_analyzer</file_name>
+<version_image_name>mobile_latest_version.gif</version_image_name>
+<download_attachment_name>DOWNLOAD</download_attachment_name>
+<community_link><![CDATA[https://community.oracle.com/mosc/discussion/4575657]]></community_link>
+<whats_new><![CDATA[<p>200.5 29-JAN-2026</p><ul><li>Updated link format</li></ul><p>&nbsp;</p><p>200.4 05-DEC-2025</p><ul><li>Signature updates</li></ul><p>&nbsp;</p><p>200.03 18-AUG-2025</p><ul><li>Signature updates<br>&nbsp;</li></ul><p>&nbsp;</p><p>200.02 24-MAR-2025</p><ul><li>Updated Apps Check section</li></ul><p>&nbsp;</p><p>Introducing the NEW Mobile Applications Analyzer</p><p><span style="font-size:medium;"><strong>Benefits</strong></span></p><ul><li><span style="font-size:small;">Immediate analysis and output of EBS Mobile Application environment</span></li><li><span style="font-size:small;">Identifies Mobile system setup and configurations</span></li><li><span style="font-size:small;">Provides recommended actions and best practices</span></li></ul>]]></whats_new>
+<framework_version>6.27.1</framework_version>
+<analyzer_id>11898</analyzer_id>
+<apex_host>ASEPROD</apex_host>
+<apex_app_files>https://aseobs.oraclecorp.com/ords/r/ebsap_psd/303/files/static/v223/</apex_app_files>
+<apex_ws_files>https://aseobs.oraclecorp.com/ords/r/ebsap_psd/files/static/v46/</apex_ws_files>
+</ha_attributes>
+<ha_bundle>
+<condition/>
+<condition_fail/>
+</ha_bundle>
+<ha_init>
+<tier>CP|DB|MT</tier>
+<dbconn>YES</dbconn>
+<compatible_apps_release>12.0|12.1|12.2</compatible_apps_release>
+</ha_init>
+</hybrid_analyzer>

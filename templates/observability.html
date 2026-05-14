@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Observability — AP Agents{% endblock %}
+
+{% block head_extra %}
+<style>
+  .obs-layout { padding: 20px 24px 60px; max-width: 1500px; margin: 0 auto; }
+
+  .obs-hero {
+    background: linear-gradient(135deg, #0e1626 0%, #1a2540 100%);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 18px;
+    color: #fff;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;
+  }
+  .obs-hero h1 { font-size: 19px; font-weight: 700; margin: 0 0 4px; }
+  .obs-hero p  { font-size: 12px; opacity: .8; margin: 0; }
+
+  .obs-stat-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .obs-stat-pill {
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .obs-stat-pill .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .obs-stat-pill.run .dot     { background: #1a7f37; }
+  .obs-stat-pill.err .dot     { background: #d12f2f; }
+  .obs-stat-pill.flight .dot  { background: #d4a017; animation: pulse 1.4s infinite; }
+  .obs-stat-pill.avg .dot     { background: #6f42c1; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: .35; }
+  }
+
+  /* Two-column main area */
+  .obs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 1100px) { .obs-grid { grid-template-columns: 1fr; } }
+
+  .obs-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    min-height: 420px;
+  }
+  .obs-panel-head {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card-2);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .obs-panel-title { font-size: 13px; font-weight: 700; }
+  .obs-panel-meta  { font-size: 11px; color: var(--text-muted); }
+  .obs-panel-body  { flex: 1; overflow: auto; padding: 12px 14px; }
+
+  /* Agent status grid */
+  .agent-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .agent-tile {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    display: flex; gap: 10px; align-items: center;
+    transition: border-color .15s, transform .15s;
+    background: var(--bg-card-2);
+  }
+  .agent-tile.flashing {
+    border-color: #d4a017;
+    box-shadow: 0 0 0 3px rgba(212,160,23,.12);
+    transform: translateY(-1px);
+  }
+  .agent-tile .icon {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
+  }
+  .agent-tile .meta { flex: 1; min-width: 0; }
+  .agent-tile .name { font-size: 12px; font-weight: 700; }
+  .agent-tile .state {
+    font-size: 10px; color: var(--text-muted);
+    display: flex; gap: 4px; align-items: center;
+    margin-top: 2px;
+  }
+  .agent-tile .state .badge {
+    padding: 1px 6px; border-radius: 8px; font-weight: 600;
+  }
+  .badge-CRITICAL { background: rgba(209,47,47,.12); color: #d12f2f; }
+  .badge-HIGH     { background: rgba(230,81,0,.12);  color: #e65100; }
+  .badge-MEDIUM   { background: rgba(212,160,23,.12); color: #b08600; }
+  .badge-INFO     { background: rgba(26,127,55,.12); color: #1a7f37; }
+  .badge-ERROR    { background: rgba(111,66,193,.12); color: #6f42c1; }
+  .badge-running  { background: rgba(212,160,23,.20); color: #b08600; }
+  .badge-idle     { background: var(--border);        color: var(--text-muted); }
+
+  /* Live event stream */
+  .ev-list { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; line-height: 1.55; }
+  .ev-row {
+    display: grid;
+    grid-template-columns: 70px 90px 110px 1fr 60px;
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .ev-row:last-child { border-bottom: none; }
+  .ev-ts    { color: var(--text-muted); }
+  .ev-phase { font-weight: 700; }
+  .ev-phase.start    { color: #d4a017; }
+  .ev-phase.query    { color: #0969da; }
+  .ev-phase.rule     { color: #6f42c1; }
+  .ev-phase.complete { color: #1a7f37; }
+  .ev-phase.error    { color: #d12f2f; }
+  .ev-agent { color: var(--text-muted); }
+  .ev-msg   { color: var(--text-primary); }
+  .ev-dur   { color: var(--text-muted); text-align: right; }
+
+  .obs-toolbar { display: flex; gap: 8px; align-items: center; }
+  .obs-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .obs-btn.active, .obs-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Flow strip */
+  .flow-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 12px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 18px;
+    align-items: center;
+  }
+  .flow-step {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: var(--bg-card-2);
+    border: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: all .2s;
+  }
+  .flow-step.active {
+    background: rgba(212,160,23,.18);
+    border-color: #d4a017;
+    color: #b08600;
+    transform: scale(1.04);
+  }
+  .flow-step.done-CRITICAL { border-color: #d12f2f; color: #d12f2f; }
+  .flow-step.done-HIGH     { border-color: #e65100; color: #e65100; }
+  .flow-step.done-MEDIUM   { border-color: #d4a017; color: #b08600; }
+  .flow-step.done-INFO     { border-color: #1a7f37; color: #1a7f37; }
+  .flow-step.done-ERROR    { border-color: #6f42c1; color: #6f42c1; }
+  .flow-arrow { color: var(--text-muted); font-size: 10px; }
+
+  .obs-empty {
+    text-align: center; padding: 30px 0; color: var(--text-muted); font-size: 13px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="obs-layout">
+
+  <div class="obs-hero">
+    <div>
+      <h1><i class="fa-solid fa-wave-square me-2"></i>Agent Observability</h1>
+      <p>Live execution flow of every Payables agent. Events stream in over SSE.</p>
+    </div>
+    <div class="obs-stat-row">
+      <span class="obs-stat-pill flight"><span class="dot"></span><span>In flight: <strong id="statFlight">0</strong></span></span>
+      <span class="obs-stat-pill run"   ><span class="dot"></span><span>Runs: <strong id="statRuns">0</strong></span></span>
+      <span class="obs-stat-pill err"   ><span class="dot"></span><span>Errors: <strong id="statErr">0</strong></span></span>
+      <span class="obs-stat-pill avg"   ><span class="dot"></span><span>Avg: <strong id="statAvg">0</strong> ms</span></span>
+    </div>
+  </div>
+
+  <!-- Flow strip showing the 10 agents in pipeline order -->
+  <div class="flow-strip" id="flowStrip">
+    {% for a in agents %}
+      <div class="flow-step" data-agent="{{ a.id }}" id="flow-{{ a.id }}">
+        <i class="fa-solid {{ a.icon }}" style="color: {{ a.color }};"></i>
+        {{ a.label }}
+      </div>
+      {% if not loop.last %}<span class="flow-arrow">›</span>{% endif %}
+    {% endfor %}
+  </div>
+
+  <div class="obs-grid">
+
+    <!-- Left: agent tiles -->
+    <div class="obs-panel">
+      <div class="obs-panel-head">
+        <div class="obs-panel-title"><i class="fa-solid fa-grid-2 me-1"></i>Agent State</div>
+        <div class="obs-panel-meta">Last result per agent</div>
+      </div>
+      <div class="obs-panel-body">
+        <div class="agent-grid" id="agentGrid">
+          {% for a in agents %}
+          <div class="agent-tile" id="tile-{{ a.id }}">
+            <div class="icon" style="background: {{ a.color }}1a; color: {{ a.color }};">
+              <i class="fa-solid {{ a.icon }}"></i>
+            </div>
+            <div class="meta">
+              <div class="name">{{ a.label }}</div>
+              <div class="state">
+                <span class="badge badge-idle" data-role="sev">idle</span>
+                <span data-role="info">never run</span>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: live events -->
+    <div class="obs-panel">
+      <div class="obs-panel-head">
+        <div class="obs-panel-title"><i class="fa-solid fa-stream me-1"></i>Live Events</div>
+        <div class="obs-toolbar">
+          <button class="obs-btn active" data-filter="all" onclick="obsFilter('all', this)">All</button>
+          <button class="obs-btn" data-filter="start"    onclick="obsFilter('start', this)">Start</button>
+          <button class="obs-btn" data-filter="query"    onclick="obsFilter('query', this)">Query</button>
+          <button class="obs-btn" data-filter="complete" onclick="obsFilter('complete', this)">Complete</button>
+          <button class="obs-btn" data-filter="error"    onclick="obsFilter('error', this)">Error</button>
+          <button class="obs-btn" onclick="obsClear()" title="Clear view">Clear</button>
+        </div>
+      </div>
+      <div class="obs-panel-body" id="evList">
+        <div class="ev-list">
+          <div class="obs-empty" id="evEmpty">Waiting for events. Run an agent on the AP Agents page.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/observability.js') }}"></script>
+{% endblock %}

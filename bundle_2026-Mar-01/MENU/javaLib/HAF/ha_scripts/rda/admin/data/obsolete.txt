@@ -1,0 +1,5 @@
+# ARCS: $Header: /home/cvs/cvs/RDA_8/src/scripting/lib/admin/data/obsolete.txt,v 1.3 2013/08/14 13:26:26 RDA Exp $
+lib:RDA::Library::Env
+lib:RDA::Library::Hcve
+lib:RDA::Library::Remote::Unix
+web:RDA::Web::Archive

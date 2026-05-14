@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Chat — Oracle EBS Support Agent{% endblock %}
+
+{% block content %}
+<div class="chat-layout">
+
+  <!-- ─── Left Panel: Chat (60%) ─────────────────────────────────── -->
+  <div class="chat-panel" id="chatPanel">
+
+    <!-- Chat Header -->
+    <div class="panel-header">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fa-solid fa-comments text-accent"></i>
+        <span class="panel-title">EBS Support Chat</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small" id="chatStatusText">Ready</span>
+        <button class="btn btn-xs btn-outline-secondary" id="newSessionBtn" title="New Session">
+          <i class="fa-solid fa-plus fa-xs me-1"></i>New
+        </button>
+      </div>
+    </div>
+
+    <!-- Message History -->
+    <div class="chat-messages" id="chatMessages">
+      <!-- Welcome message -->
+      <div class="msg-row msg-assistant">
+        <div class="msg-avatar"><i class="fa-solid fa-robot"></i></div>
+        <div class="msg-body">
+          <div class="msg-bubble">
+            <p class="mb-2">Welcome to the <strong>Oracle EBS Support Agent</strong>. I'm your AI-powered diagnostic specialist with expertise across all EBS modules.</p>
+            <p class="mb-2 text-muted small">I can help you with:</p>
+            <ul class="mb-2 small text-muted">
+              <li>Period close issues (AP, GL, AR, FA, CST)</li>
+              <li>Concurrent Manager diagnostics</li>
+              <li>Workflow and notification problems</li>
+              <li>Month-end readiness assessments</li>
+              <li>Manufacturing and supply chain issues</li>
+              <li>Payroll and HCM troubleshooting</li>
+            </ul>
+            <p class="mb-0 text-muted small">Describe your issue or use a <strong>Quick Action</strong> from the sidebar.</p>
+          </div>
+          <div class="msg-time">{{ "now" | replace("now", "") }}Just now</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Typing Indicator -->
+    <div class="typing-indicator d-none" id="typingIndicator">
+      <div class="msg-row msg-assistant">
+        <div class="msg-avatar"><i class="fa-solid fa-robot"></i></div>
+        <div class="msg-body">
+          <div class="msg-bubble typing-bubble">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </div>
+          <div class="msg-time" id="statusText">Analyzing...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="chat-input-area">
+      <div class="input-row">
+        <textarea
+          id="chatInput"
+          class="chat-textarea"
+          placeholder="Describe your Oracle EBS issue... (e.g., 'AP invoices stuck in validation' or 'GL period close failing')"
+          rows="2"
+          maxlength="4000"
+        ></textarea>
+        <div class="input-buttons">
+          <button class="btn btn-primary btn-send" id="sendBtn" title="Send (Ctrl+Enter)">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+      <div class="input-footer">
+        <button class="btn btn-sm btn-diagnostics" id="fullDiagnosticsBtn">
+          <i class="fa-solid fa-stethoscope fa-sm me-1"></i>Run Full Diagnostics
+        </button>
+        <span class="char-count" id="charCount">0 / 4000</span>
+      </div>
+    </div>
+  </div><!-- /.chat-panel -->
+
+  <!-- ─── Right Panel: Live Results + Agents (40%) ─── -->
+  <div class="results-panel" id="resultsPanel">
+
+    <!-- Tab Header -->
+    <div class="results-tab-bar">
+      <button class="results-tab active" data-tab="analysis" id="tabAnalysis">
+        <i class="fa-solid fa-chart-bar fa-xs me-1"></i>Analysis
+      </button>
+      <button class="results-tab" data-tab="agents" id="tabAgents">
+        <i class="fa-solid fa-robot fa-xs me-1"></i>Agents
+        <span class="agents-tab-count" id="agentsTabCount">117</span>
+      </button>
+      <span class="session-tag ms-auto me-2" id="currentSessionTag">No session</span>
+    </div>
+
+    <!-- ── Analysis Tab Content ── -->
+    <div class="tab-pane active" id="paneAnalysis">
+
+      <!-- Session Info -->
+      <div class="results-section" id="sessionInfoSection" style="display:none">
+        <div class="result-meta-grid">
+          <div class="result-meta-item">
+            <span class="meta-label">Session</span>
+            <span class="meta-value font-mono small" id="resultSessionId">—</span>
+          </div>
+          <div class="result-meta-item">
+            <span class="meta-label">Findings</span>
+            <span class="meta-value fw-bold text-accent" id="resultFindingCount">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Severity Summary -->
+      <div class="results-section" id="severitySection" style="display:none">
+        <div class="section-label">Severity Summary</div>
+        <div class="severity-pills-row" id="severityPills">
+          <span class="sev-pill sev-critical" id="pillCritical">Critical: 0</span>
+          <span class="sev-pill sev-high" id="pillHigh">High: 0</span>
+          <span class="sev-pill sev-medium" id="pillMedium">Medium: 0</span>
+          <span class="sev-pill sev-low" id="pillLow">Low: 0</span>
+          <span class="sev-pill sev-info" id="pillInfo">Info: 0</span>
+        </div>
+
+        <!-- Donut Chart -->
+        <div class="chart-container" id="chartContainer" style="display:none">
+          <canvas id="findingsChart" width="180" height="180"></canvas>
+        </div>
+      </div>
+
+      <!-- Findings Table -->
+      <div class="results-section findings-table-section" id="findingsTableSection" style="display:none">
+        <div class="section-label">Findings</div>
+        <div class="findings-table-wrap">
+          <table class="findings-table" id="findingsTable">
+            <thead>
+              <tr>
+                <th>Sev</th>
+                <th>Agent</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody id="findingsTableBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-results" id="emptyResults">
+        <i class="fa-solid fa-magnifying-glass-chart fa-2x text-muted mb-3"></i>
+        <p class="text-muted small mb-0">Findings will appear here during analysis.</p>
+        <p class="text-muted small">Use the chat or run a quick action to get started.</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="results-actions" id="resultsActions" style="display:none">
+        <a href="#" class="btn btn-sm btn-outline-accent w-100 mb-2" id="viewReportBtn">
+          <i class="fa-solid fa-file-lines fa-sm me-1"></i>View Full Report
+        </a>
+        <button class="btn btn-sm btn-outline-secondary w-100" id="exportMarkdownBtn">
+          <i class="fa-solid fa-download fa-sm me-1"></i>Export Markdown
+        </button>
+      </div>
+
+    </div><!-- /#paneAnalysis -->
+
+    <!-- ── Agents Tab Content ── -->
+    <div class="tab-pane d-none" id="paneAgents">
+
+      <!-- Module Filter -->
+      <div class="agents-filter-bar">
+        <div class="agents-search-wrap">
+          <i class="fa-solid fa-magnifying-glass agents-search-icon"></i>
+          <input type="text" id="agentSearchInput" class="agents-search-input"
+                 placeholder="Search agents..." autocomplete="off" />
+        </div>
+        <div class="agents-module-filters" id="agentModuleFilters">
+          <button class="agent-module-btn active" data-module="ALL">All</button>
+          <button class="agent-module-btn" data-module="ATG">ATG</button>
+          <button class="agent-module-btn" data-module="FINANCIALS">Financials</button>
+          <button class="agent-module-btn" data-module="MANUFACTURING">Mfg</button>
+          <button class="agent-module-btn" data-module="HCM">HCM</button>
+          <button class="agent-module-btn" data-module="CRM">CRM</button>
+        </div>
+      </div>
+
+      <!-- Agent List -->
+      <div class="agents-list" id="agentsList">
+        <!-- populated by JS -->
+        <div class="agents-list-loading text-center py-4">
+          <div class="spinner-border spinner-border-sm text-muted"></div>
+        </div>
+      </div>
+
+    </div><!-- /#paneAgents -->
+
+  </div><!-- /.results-panel -->
+
+</div><!-- /.chat-layout -->
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Initialize chat page
+  window.EBS_PAGE = 'chat';
+  {% if recent_sessions %}
+  window.EBS_RECENT_SESSIONS = {{ recent_sessions | tojson }};
+  {% else %}
+  window.EBS_RECENT_SESSIONS = [];
+  {% endif %}
+</script>
+{% endblock %}

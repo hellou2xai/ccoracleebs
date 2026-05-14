@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}Incident Report {{ session_id[:8] }} — Oracle EBS Support Agent{% endblock %}
+
+{% block content %}
+<div class="report-layout">
+
+  <!-- Report Header -->
+  <div class="report-header-card">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+      <div>
+        <div class="report-label">Incident Report</div>
+        <h2 class="report-session-id">{{ session_id }}</h2>
+        <div class="report-meta">
+          <span><i class="fa-regular fa-clock me-1"></i>
+            {{ session_data.get('created_at', 'Unknown')[:19] if session_data else 'Unknown' }}
+          </span>
+          <span><i class="fa-solid fa-server me-1"></i>{{ oracle_host }}</span>
+          <span><i class="fa-solid fa-list-check me-1"></i>{{ findings | length }} findings</span>
+        </div>
+      </div>
+      <div class="report-actions">
+        <button class="btn btn-sm btn-outline-accent" id="copyReportBtn">
+          <i class="fa-solid fa-clipboard me-1"></i>Copy
+        </button>
+        <button class="btn btn-sm btn-outline-secondary" id="downloadMdBtn">
+          <i class="fa-solid fa-download me-1"></i>Markdown
+        </button>
+        <a href="{{ url_for('audit', session_id=session_id) }}" class="btn btn-sm btn-outline-secondary">
+          <i class="fa-solid fa-list-ul me-1"></i>Audit Trail
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Severity Summary Bar -->
+  <div class="severity-summary-bar">
+    <div class="sev-bar-item sev-bar-critical">
+      <span class="sev-bar-label">Critical</span>
+      <span class="sev-bar-count">{{ severity_counts.get('CRITICAL', 0) }}</span>
+    </div>
+    <div class="sev-bar-item sev-bar-high">
+      <span class="sev-bar-label">High</span>
+      <span class="sev-bar-count">{{ severity_counts.get('HIGH', 0) }}</span>
+    </div>
+    <div class="sev-bar-item sev-bar-medium">
+      <span class="sev-bar-label">Medium</span>
+      <span class="sev-bar-count">{{ severity_counts.get('MEDIUM', 0) }}</span>
+    </div>
+    <div class="sev-bar-item sev-bar-low">
+      <span class="sev-bar-label">Low</span>
+      <span class="sev-bar-count">{{ severity_counts.get('LOW', 0) }}</span>
+    </div>
+    <div class="sev-bar-item sev-bar-info">
+      <span class="sev-bar-label">Info</span>
+      <span class="sev-bar-count">{{ severity_counts.get('INFO', 0) }}</span>
+    </div>
+  </div>
+
+  {% if not findings %}
+  <!-- Empty state -->
+  <div class="empty-report-state">
+    <i class="fa-solid fa-file-circle-xmark fa-3x text-muted mb-3"></i>
+    <p class="text-muted">No findings recorded for this session yet.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-accent mt-2">
+      <i class="fa-solid fa-comments me-1"></i>Go to Chat
+    </a>
+  </div>
+  {% else %}
+
+  <!-- Report Body Grid -->
+  <div class="report-body-grid">
+
+    <!-- Left: Findings Accordion -->
+    <div class="report-findings-col">
+
+      <!-- Findings by Severity Accordion -->
+      <div class="report-card">
+        <div class="report-card-title">
+          <i class="fa-solid fa-triangle-exclamation me-2 text-accent"></i>Findings by Severity
+        </div>
+        <div class="accordion accordion-flush" id="findingsAccordion">
+
+          {% set severities = [
+            ('CRITICAL', 'sev-critical', 'fa-circle-exclamation'),
+            ('HIGH',     'sev-high',     'fa-circle-up'),
+            ('MEDIUM',   'sev-medium',   'fa-circle-minus'),
+            ('LOW',      'sev-low',      'fa-circle-down'),
+            ('INFO',     'sev-info',     'fa-circle-info'),
+          ] %}
+
+          {% for sev, sev_class, icon in severities %}
+          {% set sev_findings = findings | selectattr('severity', 'equalto', sev) | list %}
+          {% if sev_findings %}
+          <div class="accordion-item accordion-item-dark">
+            <h2 class="accordion-header">
+              <button
+                class="accordion-button {% if sev not in ['CRITICAL', 'HIGH'] %}collapsed{% endif %} accordion-btn-dark"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapse{{ sev }}"
+              >
+                <span class="sev-dot {{ sev_class }} me-2"></span>
+                {{ sev }}
+                <span class="finding-count-badge ms-2">{{ sev_findings | length }}</span>
+              </button>
+            </h2>
+            <div
+              id="collapse{{ sev }}"
+              class="accordion-collapse collapse {% if sev in ['CRITICAL', 'HIGH'] %}show{% endif %}"
+            >
+              <div class="accordion-body p-0">
+                {% for finding in sev_findings %}
+                <div class="finding-card finding-{{ sev | lower }}">
+                  <div class="finding-card-header">
+                    <div class="d-flex align-items-start gap-2 flex-wrap">
+                      <span class="severity-badge severity-{{ sev | lower }}">
+                        <i class="fa-solid {{ icon }} me-1"></i>{{ sev }}
+                      </span>
+                      <span class="finding-analyzer-badge">{{ finding.get('analyzer_id', '—') }}</span>
+                      {% if finding.get('module') %}
+                      <span class="finding-module-badge">{{ finding.module }}</span>
+                      {% endif %}
+                      {% if finding.get('category') %}
+                      <span class="finding-category text-muted small">{{ finding.category }}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <p class="finding-description">{{ finding.get('description', '') }}</p>
+
+                  {% if finding.get('recommended_action') %}
+                  <div class="finding-action">
+                    <span class="finding-action-label">
+                      <i class="fa-solid fa-wrench fa-xs me-1"></i>Recommended Action
+                    </span>
+                    <p class="mb-0">{{ finding.recommended_action }}</p>
+                  </div>
+                  {% endif %}
+
+                  {% if finding.get('affected_objects') %}
+                  <div class="finding-objects mt-2">
+                    <span class="finding-action-label"><i class="fa-solid fa-database fa-xs me-1"></i>Affected Objects</span>
+                    <div class="object-tags mt-1">
+                      {% for obj in finding.affected_objects[:8] %}
+                      <code class="object-tag">{{ obj }}</code>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  {% endif %}
+
+                  {% if finding.get('mos_references') %}
+                  <div class="finding-mos mt-2">
+                    <span class="finding-action-label"><i class="fa-solid fa-file-circle-info fa-xs me-1"></i>MOS References</span>
+                    <div class="mos-tags mt-1">
+                      {% for ref in finding.mos_references %}
+                      <a href="https://support.oracle.com/rs?type=doc&id={{ ref }}"
+                         target="_blank" class="mos-ref-link">{{ ref }}</a>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  {% endif %}
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          {% endfor %}
+
+        </div>
+      </div>
+
+    </div><!-- /.report-findings-col -->
+
+    <!-- Right: Summary + Raw Report -->
+    <div class="report-sidebar-col">
+
+      <!-- Remediation Priority List -->
+      {% if findings %}
+      <div class="report-card">
+        <div class="report-card-title">
+          <i class="fa-solid fa-list-ol me-2 text-accent"></i>Remediation Priority
+        </div>
+        <ol class="remediation-list">
+          {% set critical_findings = findings | selectattr('severity', 'equalto', 'CRITICAL') | list %}
+          {% set high_findings = findings | selectattr('severity', 'equalto', 'HIGH') | list %}
+          {% set priority_findings = (critical_findings + high_findings)[:8] %}
+          {% for finding in priority_findings %}
+          <li class="remediation-item">
+            <span class="sev-inline-badge severity-{{ finding.severity | lower }}">{{ finding.severity }}</span>
+            <span>{{ finding.get('description', '')[:80] }}{% if finding.get('description', '') | length > 80 %}…{% endif %}</span>
+          </li>
+          {% endfor %}
+          {% if not priority_findings %}
+          <li class="text-muted small">No critical or high severity findings.</li>
+          {% endif %}
+        </ol>
+      </div>
+      {% endif %}
+
+      <!-- Raw Markdown Report -->
+      {% if report_md %}
+      <div class="report-card">
+        <div class="report-card-title d-flex justify-content-between align-items-center">
+          <span><i class="fa-brands fa-markdown me-2 text-accent"></i>Full Markdown Report</span>
+          <button class="btn btn-xs btn-outline-secondary" id="toggleMdBtn">Show</button>
+        </div>
+        <div id="reportMdContainer" class="d-none">
+          <pre class="raw-output"><code id="reportMdContent">{{ report_md }}</code></pre>
+        </div>
+      </div>
+      {% endif %}
+
+    </div><!-- /.report-sidebar-col -->
+
+  </div><!-- /.report-body-grid -->
+
+  <!-- Audit Trail (collapsible) -->
+  {% if audit_trail %}
+  <div class="report-card mt-3">
+    <div class="report-card-title d-flex justify-content-between align-items-center">
+      <span><i class="fa-solid fa-scroll me-2 text-accent"></i>Audit Trail
+        <span class="finding-count-badge ms-2">{{ audit_trail | length }}</span>
+      </span>
+      <button class="btn btn-xs btn-outline-secondary" id="toggleAuditBtn">Show</button>
+    </div>
+    <div id="auditTrailContainer" class="d-none">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Action</th>
+              <th>Agent</th>
+              <th>Duration</th>
+              <th>Rows</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in audit_trail %}
+            <tr>
+              <td class="font-mono small">{{ entry.get('created_at', '')[:19] }}</td>
+              <td>{{ entry.get('action', '') }}</td>
+              <td><code class="small">{{ entry.get('analyzer_id', '—') }}</code></td>
+              <td class="text-muted small">{{ entry.get('duration_ms', 0) }} ms</td>
+              <td class="text-muted small">{{ entry.get('row_count', 0) }}</td>
+              <td>
+                {% if entry.get('status') == 'success' %}
+                <span class="status-ok">success</span>
+                {% else %}
+                <span class="status-err">{{ entry.get('status', 'unknown') }}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% endif %}<!-- end if findings -->
+</div><!-- /.report-layout -->
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.EBS_PAGE = 'report';
+  window.EBS_SESSION_ID = {{ session_id | tojson }};
+  window.EBS_REPORT_MD = {{ report_md | tojson }};
+
+  // Toggle raw markdown
+  document.getElementById('toggleMdBtn')?.addEventListener('click', function() {
+    const c = document.getElementById('reportMdContainer');
+    if (c) {
+      c.classList.toggle('d-none');
+      this.textContent = c.classList.contains('d-none') ? 'Show' : 'Hide';
+    }
+  });
+
+  // Toggle audit trail
+  document.getElementById('toggleAuditBtn')?.addEventListener('click', function() {
+    const c = document.getElementById('auditTrailContainer');
+    if (c) {
+      c.classList.toggle('d-none');
+      this.textContent = c.classList.contains('d-none') ? 'Show' : 'Hide';
+    }
+  });
+
+  // Copy report
+  document.getElementById('copyReportBtn')?.addEventListener('click', function() {
+    const md = window.EBS_REPORT_MD || '';
+    if (navigator.clipboard && md) {
+      navigator.clipboard.writeText(md).then(() => {
+        this.innerHTML = '<i class="fa-solid fa-check me-1"></i>Copied!';
+        setTimeout(() => { this.innerHTML = '<i class="fa-solid fa-clipboard me-1"></i>Copy'; }, 2000);
+      });
+    }
+  });
+
+  // Download markdown
+  document.getElementById('downloadMdBtn')?.addEventListener('click', function() {
+    downloadMarkdown(window.EBS_SESSION_ID);
+  });
+
+  {% if recent_sessions %}
+  window.EBS_RECENT_SESSIONS = {{ recent_sessions | tojson }};
+  {% else %}
+  window.EBS_RECENT_SESSIONS = [];
+  {% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,17 @@
+.env
+.env_1
+.claude
+.pytest_cache
+__pycache__
+*.pyc
+*.pptx
+*.log
+desktop/
+demo/
+tests/
+JIRA Analysis/
+*.md
+Invoice Note.txt
+JIRA Key.txt
+run_desktop.py
+mcp_servers/

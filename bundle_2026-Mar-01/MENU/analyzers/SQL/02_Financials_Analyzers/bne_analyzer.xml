@@ -1,0 +1,33 @@
+<hybrid_analyzer><ha_attributes>
+<title>Web Applications Desktop Integrator (Web ADI) Analyzer</title>
+<type>Analyzer</type>
+<short_name>BNEWEBADI</short_name>
+<product_line>EBS</product_line>
+<product_family>EBS Financials</product_family>
+<product_area>EBS - Financial Control</product_area>
+<owner>VISHU.AKULA@ORACLE.COM</owner>
+<version>200.25</version>
+<last_generated>2025/12/13</last_generated>
+<description>BNE (Web ADI) Analyzer</description>
+<doc_id>2762796.1</doc_id>
+<file_name>bne_analyzer</file_name>
+<version_image_name>bne_latest_version.gif</version_image_name>
+<download_attachment_name>BNE_ANALYZER</download_attachment_name>
+<community_link><![CDATA[https://community.oracle.com/mosc/discussion/4490725]]></community_link>
+<whats_new><![CDATA[<p data-pm-slice="1 1 []">Revision history: Last 5 version changes<br><strong>Version 200.25</strong><br>Changes to Framework due to MOSFS migration</p><p data-pm-slice="1 1 []"><strong>Version 200.24</strong><br>The following signatures have been updated with current latest patches:<br>- BNE Recommended Patches<br>- Recommended EBS CPU Patches</p><p data-pm-slice="1 1 []"><strong>Version 200.23</strong><br>The following signatures are enhanced and contains latest Patch details.<br>- BNE_ADI_CREATE_DOCUMENT Function<br>- BNE Recommended Patches<br>- Layout Blocks<br>- Layout Columns<br>- Recommended EBS CPU Patches</p><p><strong>Version 200.22</strong><br>A new signature "BNE Digital Signature Certificate" is added to Proactive Actions and Recommendations section.</p><p>The following signatures have been updated with current latest patches:<br>- Web ADI Recommended Patches<br>- Recommended EBS CPU Patches</p><p><strong>Version 200.21</strong><br>The following signatures were enhanced and contains latest Patch details.<br>- ADI Recommended Patches<br>- Recommended EBS CPU Patches<br>- Interface<br>- Interface Attributes General Features&nbsp;</p><p><strong>Version 200.20</strong><br>A new signature "Profile Self Service Accessibility Features" is added to Menu Functions and Profiles section.</p><p>The following signatures have been updated with enhancements and with current latest patches:<br>- Web ADI Recommended Patches<br>- BNE_ADI_CREATE_DOCUMENT Function<br>- Recommended EBS CPU Patches<br>- TXK Patch 34856304 For BNE POI Apache Libraries Issue</p>]]></whats_new>
+<framework_version>6.27</framework_version>
+<analyzer_id>3655</analyzer_id>
+<apex_host>ASEPROD</apex_host>
+<apex_app_files>https://aseobs.oraclecorp.com/ords/r/ebsap_psd/303/files/static/v223/</apex_app_files>
+<apex_ws_files>https://aseobs.oraclecorp.com/ords/r/ebsap_psd/files/static/v46/</apex_ws_files>
+</ha_attributes>
+<ha_bundle>
+<condition/>
+<condition_fail/>
+</ha_bundle>
+<ha_init>
+<tier>CP|DB|MT</tier>
+<dbconn>RECOMMENDED</dbconn>
+<compatible_apps_release>12.0|12.1|12.2</compatible_apps_release>
+</ha_init>
+</hybrid_analyzer>

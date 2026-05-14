@@ -1,0 +1,14 @@
+# list_exclude.cfg: Level Name Definitions
+# $Id: level.txt,v 1.1 RDA Exp $
+#
+# Copyright (c) 2002, 2024, Oracle and/or its affiliates. All rights reserved.
+#
+# Change History
+# 20230316  DXM  Initial creation.
+
+modules=(DCasbr|DCasg|DCasit|DCbegin|DCbee|DCcamm|DCconfig|DCcont|DCcust|DCdscv|DCdscs|DCend|DCexl|DCextra|DCfilter|DCgfs|DCgrdn|DCias|DCifs|DCinit|DCireq|DCiw|DCj2ee|DCjive|DCjboss|DClcm|DCload|DCltfs|DCmail|DCocal|DCocdb|DCocs|DCogg|DCoif|DCowb|DCpda|DCrtc|DCsta|DCses|DCtom|DCtopl|DCwebc|DCwksp|DCwmc|DCwreq|DCwrls|DCwsp)
+profiles=(BackupRecovery|Beehive|Discoverer|EnterpriseSearch|Exa|GlassFishServer|GoldenGate|LifecycleManagement|OFM11g_IDGov|OFM11g_Identity|OFM11g_WebTier|OFM11g_WlsIdentity|OFM11g_WlsWebTier|Portal|Security|StorageTek|TopLink|WarehouseBuilder|WebGate11g|WebSphere|10g)
+tools=
+tests=TMexl
+
+

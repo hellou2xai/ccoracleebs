@@ -1,0 +1,1145 @@
+{% extends "base.html" %}
+
+{% block title %}Payables Agentic App — Oracle EBS{% endblock %}
+
+{% block head_extra %}
+<style>
+/* ── Payables page layout ───────────────────────────────────────────────── */
+.pay-layout {
+  padding: 20px 24px 60px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ── Page header ────────────────────────────────────────────────────────── */
+.pay-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.pay-page-header-left { display: flex; flex-direction: column; gap: 4px; }
+.pay-breadcrumb {
+  font-size: 12px; color: var(--text-muted);
+  display: flex; align-items: center; gap-4px;
+  text-decoration: none;
+  transition: color var(--transition);
+}
+.pay-breadcrumb:hover { color: var(--accent); }
+.pay-title {
+  font-size: 22px; font-weight: 700;
+  color: var(--text-bright); margin: 0;
+  display: flex; align-items: center; gap: 10px;
+}
+.pay-title-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, #0969da, #0550ae);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 16px;
+}
+.pay-subtitle { font-size: 13px; color: var(--text-muted); margin: 0; }
+
+.pay-header-controls {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.pay-lookback {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px; color: var(--text-primary);
+}
+.pay-lookback label { color: var(--text-muted); white-space: nowrap; }
+.pay-lookback input {
+  width: 52px; text-align: center;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px; padding: 2px 4px;
+  font-size: 12px; font-weight: 700;
+  color: var(--text-primary); outline: none;
+}
+.pay-lookback input:focus { border-color: var(--accent); }
+
+.pay-run-btn {
+  display: flex; align-items: center; gap-8px;
+  background: linear-gradient(135deg, #0969da, #0550ae);
+  border: none; border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 13px; font-weight: 600; color: #fff;
+  cursor: pointer; transition: opacity .15s, transform .1s;
+  white-space: nowrap;
+  gap: 8px;
+}
+.pay-run-btn:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
+.pay-run-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+.pay-run-btn .spinner-border { width: 14px; height: 14px; border-width: 2px; }
+
+.pay-exec-info {
+  font-size: 11px; color: var(--text-muted);
+  align-self: center;
+}
+
+/* ── Demo banner ────────────────────────────────────────────────────────── */
+.pay-demo-banner {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(154, 103, 0, .08);
+  border: 1px solid rgba(154, 103, 0, .25);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  font-size: 12px; color: var(--text-primary);
+}
+.pay-demo-badge {
+  background: #9a6700; color: #fff;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 4px;
+  letter-spacing: .05em; flex-shrink: 0;
+}
+
+/* ── KPI Grid ───────────────────────────────────────────────────────────── */
+.pay-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+@media (max-width: 1100px) { .pay-kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 700px)  { .pay-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.pay-kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px 14px;
+  display: flex; flex-direction: column; gap: 4px;
+  transition: border-top-color .3s, box-shadow .15s;
+  box-shadow: var(--shadow-sm);
+}
+.pay-kpi-card:hover { box-shadow: var(--shadow-md); }
+.pay-kpi-card.kpi-ok      { border-top-color: #1a7f37; }
+.pay-kpi-card.kpi-warn    { border-top-color: #9a6700; }
+.pay-kpi-card.kpi-critical { border-top-color: #cf222e; }
+.pay-kpi-card.kpi-info    { border-top-color: #0969da; }
+
+/* shimmer loading */
+.pay-kpi-card.loading .pay-kpi-value {
+  background: linear-gradient(90deg, var(--bg-card-2) 25%, var(--bg-hover) 50%, var(--bg-card-2) 75%);
+  background-size: 200% 100%;
+  animation: pay-shimmer 1.4s infinite;
+  border-radius: 4px; color: transparent;
+  user-select: none;
+}
+@keyframes pay-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.pay-kpi-label {
+  font-size: 10px; font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .06em;
+  margin-bottom: 2px;
+}
+.pay-kpi-value {
+  font-size: 28px; font-weight: 700;
+  color: var(--text-bright); line-height: 1.1;
+  min-height: 34px;
+}
+.pay-kpi-detail {
+  font-size: 11px; color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ── Findings bar ───────────────────────────────────────────────────────── */
+.pay-findings {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 8px; margin-bottom: 18px;
+  min-height: 30px;
+}
+.pay-findings-label {
+  font-size: 11px; font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .06em;
+  white-space: nowrap;
+}
+.pay-finding-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+  cursor: default;
+}
+.pay-finding-pill.sev-CRITICAL { background: rgba(207,34,46,.12); color: #cf222e; border: 1px solid rgba(207,34,46,.25); }
+.pay-finding-pill.sev-HIGH     { background: rgba(154,103,0,.12); color: #9a6700; border: 1px solid rgba(154,103,0,.25); }
+.pay-finding-pill.sev-MEDIUM   { background: rgba(9,105,218,.1);  color: #0969da; border: 1px solid rgba(9,105,218,.25); }
+.pay-finding-pill.sev-INFO     { background: rgba(87,96,106,.1);  color: #57606a; border: 1px solid rgba(87,96,106,.2); }
+.pay-finding-pill.sev-LOW      { background: rgba(26,127,55,.1);  color: #1a7f37; border: 1px solid rgba(26,127,55,.2); }
+
+/* ── Tabs ───────────────────────────────────────────────────────────────── */
+.pay-tabs {
+  display: flex; align-items: center; gap: 2px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.pay-tabs::-webkit-scrollbar { display: none; }
+.pay-tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 9px 16px;
+  background: transparent; border: none;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color .15s, border-color .15s;
+  white-space: nowrap;
+}
+.pay-tab:hover { color: var(--text-primary); }
+.pay-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+.pay-tab-count {
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 10px; font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.pay-tab.active .pay-tab-count {
+  background: rgba(9,105,218,.12);
+  border-color: rgba(9,105,218,.25);
+  color: var(--accent);
+}
+.pay-tab-count.err { background: rgba(207,34,46,.12); color: #cf222e; border-color: rgba(207,34,46,.25); }
+
+/* ── Tab panes ──────────────────────────────────────────────────────────── */
+.pay-pane { display: none; }
+.pay-pane.active { display: block; }
+
+/* ── Table toolbar ──────────────────────────────────────────────────────── */
+.pay-table-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px; flex-wrap: wrap; gap: 8px;
+}
+.pay-table-info {
+  font-size: 12px; color: var(--text-muted);
+}
+.pay-table-info strong { color: var(--text-primary); }
+
+.pay-csv-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 5px 12px;
+  font-size: 11px; font-weight: 600; color: var(--text-muted);
+  cursor: pointer; transition: border-color .12s, color .12s;
+}
+.pay-csv-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Data table ─────────────────────────────────────────────────────────── */
+.pay-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+}
+.pay-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 12px;
+}
+.pay-table thead th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 10px; font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .06em;
+  background: var(--bg-card-2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.pay-table tbody td {
+  padding: 9px 12px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-light);
+  white-space: nowrap;
+}
+.pay-table tbody tr:last-child td { border-bottom: none; }
+.pay-table tbody tr:hover { background: var(--bg-hover); }
+
+/* row urgency colours */
+.pay-row-urgent td { background: rgba(207,34,46,.04) !important; }
+.pay-row-urgent:hover td { background: rgba(207,34,46,.08) !important; }
+.pay-row-warn td { background: rgba(154,103,0,.04) !important; }
+.pay-row-warn:hover td { background: rgba(154,103,0,.08) !important; }
+
+/* clickable rows in holds */
+.pay-row-click { cursor: pointer; }
+.pay-row-click:hover td { background: rgba(9,105,218,.06) !important; }
+
+/* ── Hold type badge ────────────────────────────────────────────────────── */
+.hold-type-badge {
+  display: inline-block;
+  padding: 2px 8px; border-radius: 4px;
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .04em;
+  background: rgba(9,105,218,.1); color: #0969da;
+  border: 1px solid rgba(9,105,218,.2);
+}
+
+/* urgency badges */
+.urg-URGENT    { background: rgba(207,34,46,.12); color: #cf222e; border-color: rgba(207,34,46,.25); }
+.urg-THIS_WEEK { background: rgba(154,103,0,.12); color: #9a6700; border-color: rgba(154,103,0,.25); }
+.urg-UPCOMING  { background: rgba(26,127,55,.1);  color: #1a7f37; border-color: rgba(26,127,55,.2); }
+
+/* ── Loading / error / empty states ─────────────────────────────────────── */
+.pay-state-box {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 48px 24px;
+  text-align: center; color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+}
+.pay-state-icon { font-size: 32px; margin-bottom: 12px; opacity: .4; }
+.pay-state-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.pay-state-sub { font-size: 12px; }
+
+.pay-error-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(207,34,46,.08); color: #cf222e;
+  border: 1px solid rgba(207,34,46,.2);
+  border-radius: var(--radius); padding: 6px 12px;
+  font-size: 12px;
+}
+
+.pay-demo-notice {
+  background: rgba(154,103,0,.06);
+  border: 1px dashed rgba(154,103,0,.3);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  font-size: 12px; color: var(--text-muted);
+  text-align: center; margin-bottom: 12px;
+}
+
+/* ── AI Analysis tab ────────────────────────────────────────────────────── */
+.pay-ai-summary {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+.pay-ai-summary h6 {
+  font-size: 12px; font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .06em;
+  margin-bottom: 12px;
+}
+.pay-ai-text {
+  font-size: 14px; line-height: 1.7; color: var(--text-primary);
+}
+.pay-ai-actions {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+.pay-ask-ai-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, #6e40c9, #5a32a3);
+  border: none; border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 13px; font-weight: 600; color: #fff;
+  cursor: pointer; transition: opacity .15s;
+}
+.pay-ask-ai-btn:hover { opacity: .9; }
+.pay-ask-ai-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── Pill groups (source / approval breakdown) ───────────────────────────── */
+.pay-pill-group {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 12px;
+}
+.pay-stat-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11px; color: var(--text-primary);
+}
+.pay-stat-pill strong { color: var(--accent); }
+
+/* ── Drill-down panel ───────────────────────────────────────────────────── */
+.pay-drill-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.35);
+  z-index: 1040;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+.pay-drill-overlay.open { opacity: 1; pointer-events: auto; }
+
+.pay-drill-panel {
+  position: fixed;
+  top: 0; right: 0;
+  width: 400px; max-width: 92vw;
+  height: 100vh;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border);
+  box-shadow: -4px 0 24px rgba(0,0,0,.15);
+  z-index: 1050;
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+}
+.pay-drill-panel.open { transform: translateX(0); }
+
+.pay-drill-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card-2);
+  flex-shrink: 0;
+}
+.pay-drill-title {
+  font-size: 15px; font-weight: 700; color: var(--text-bright);
+  display: flex; align-items: center; gap: 8px;
+}
+.pay-drill-close {
+  background: transparent; border: none;
+  font-size: 18px; color: var(--text-muted);
+  cursor: pointer; padding: 4px 8px; border-radius: 4px;
+  transition: background .12s, color .12s;
+}
+.pay-drill-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+.pay-drill-body {
+  flex: 1; overflow-y: auto; padding: 20px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+.pay-drill-section {}
+.pay-drill-section-label {
+  font-size: 10px; font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .07em;
+  margin-bottom: 6px;
+}
+.pay-drill-value {
+  font-size: 14px; color: var(--text-primary);
+  font-weight: 500;
+}
+.pay-drill-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.pay-drill-item {
+  background: var(--bg-card-2);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+.pay-drill-item-label { font-size: 10px; color: var(--text-muted); margin-bottom: 2px; text-transform: uppercase; letter-spacing: .05em; }
+.pay-drill-item-value { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+
+.pay-drill-owner {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(9,105,218,.1); color: #0969da;
+  border: 1px solid rgba(9,105,218,.2);
+  border-radius: 20px; padding: 3px 10px;
+  font-size: 11px; font-weight: 600;
+}
+
+.pay-action-box {
+  background: rgba(9,105,218,.05);
+  border: 1px solid rgba(9,105,218,.15);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-size: 13px; line-height: 1.6; color: var(--text-primary);
+}
+
+.pay-drill-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-card-2);
+  flex-shrink: 0;
+}
+
+/* ── Close Issues tab ───────────────────────────────────────────────────── */
+.close-issue-list {
+  display: flex; flex-direction: column; gap: 12px;
+}
+.close-issue-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  transition: box-shadow .15s;
+}
+.close-issue-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+.close-issue-card.sev-CRITICAL { border-left-color: #cf222e; }
+.close-issue-card.sev-HIGH     { border-left-color: #bc4c00; }
+.close-issue-card.sev-MEDIUM   { border-left-color: #9a6700; }
+.close-issue-card.sev-INFO     { border-left-color: var(--accent); }
+.close-issue-card.sev-OK       { border-left-color: #1a7f37; }
+.close-issue-header {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  margin-bottom: 10px;
+}
+.close-issue-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.close-sev-badge {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  border-radius: 20px; padding: 2px 8px; white-space: nowrap;
+}
+.close-sev-badge.sev-CRITICAL { background: rgba(207,34,46,.12); color: #cf222e; border: 1px solid rgba(207,34,46,.25); }
+.close-sev-badge.sev-HIGH     { background: rgba(188,76,0,.12);  color: #bc4c00; border: 1px solid rgba(188,76,0,.25); }
+.close-sev-badge.sev-MEDIUM   { background: rgba(154,103,0,.12); color: #9a6700; border: 1px solid rgba(154,103,0,.25); }
+.close-sev-badge.sev-INFO     { background: rgba(9,105,218,.1);  color: #0969da; border: 1px solid rgba(9,105,218,.2); }
+.close-sev-badge.sev-OK       { background: rgba(26,127,55,.1);  color: #1a7f37; border: 1px solid rgba(26,127,55,.2); }
+.close-issue-title {
+  font-size: 14px; font-weight: 700; color: var(--text-bright);
+  display: flex; align-items: center; gap: 8px;
+}
+.close-issue-title i { color: var(--text-muted); font-size: 12px; }
+.close-issue-count {
+  font-size: 22px; font-weight: 800; color: var(--text-bright);
+  line-height: 1;
+}
+.close-issue-desc {
+  font-size: 13px; color: var(--text-primary); margin-bottom: 10px; line-height: 1.5;
+}
+.close-issue-action-text {
+  font-size: 12px; color: var(--text-muted); line-height: 1.5;
+  border-left: 2px solid var(--border); padding-left: 10px; margin-bottom: 12px;
+}
+.close-issue-footer {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.close-detail-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg-card-2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 12px;
+  font-size: 12px; font-weight: 600; color: var(--text-primary);
+  cursor: pointer; transition: all .15s;
+}
+.close-detail-btn:hover { border-color: var(--accent); color: var(--accent); }
+.close-ok-banner {
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(26,127,55,.07); border: 1px solid rgba(26,127,55,.2);
+  border-radius: var(--radius-lg); padding: 20px 24px;
+  color: #1a7f37; font-size: 14px; font-weight: 600;
+}
+.close-ok-banner i { font-size: 20px; }
+.close-section-hdr {
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .08em;
+  margin: 20px 0 10px; display: flex; align-items: center; gap: 6px;
+}
+
+/* ── Inline AI chat ───────────────────────────────────────────────────────── */
+.pay-inline-chat {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex; flex-direction: column;
+  height: 480px;
+  overflow: hidden;
+}
+.pay-chat-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg-card-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .06em;
+  flex-shrink: 0;
+}
+.pay-chat-clear-btn {
+  background: none; border: 1px solid var(--border);
+  border-radius: 6px; padding: 3px 8px;
+  font-size: 11px; color: var(--text-muted); cursor: pointer;
+  transition: all .15s;
+}
+.pay-chat-clear-btn:hover { color: var(--text-primary); border-color: var(--accent); }
+.pay-chat-messages {
+  flex: 1; overflow-y: auto; padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 12px;
+  scroll-behavior: smooth;
+}
+.pay-chat-msg { display: flex; gap: 10px; align-items: flex-start; max-width: 88%; }
+.pay-chat-msg-ai { align-self: flex-start; }
+.pay-chat-msg-user { align-self: flex-end; flex-direction: row-reverse; }
+.pay-chat-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6e40c9, #5a32a3);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 11px;
+  flex-shrink: 0; margin-top: 2px;
+}
+.pay-chat-msg-user .pay-chat-avatar {
+  background: linear-gradient(135deg, #0969da, #0550ae);
+}
+.pay-chat-bubble {
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 12px 12px 12px 4px;
+  padding: 10px 14px;
+  font-size: 13px; line-height: 1.6; color: var(--text-primary);
+}
+.pay-chat-msg-user .pay-chat-bubble {
+  background: rgba(9,105,218,.1);
+  border-color: rgba(9,105,218,.2);
+  border-radius: 12px 12px 4px 12px;
+  color: var(--text-bright);
+}
+.pay-chat-bubble.streaming::after {
+  content: '▋';
+  animation: blink .7s infinite;
+  color: var(--accent);
+}
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+.pay-chat-input-row {
+  display: flex; gap: 8px; padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-card-2);
+  flex-shrink: 0;
+}
+.pay-chat-input-row input {
+  flex: 1;
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 14px;
+  font-size: 13px; color: var(--text-primary); outline: none;
+  transition: border-color .15s;
+}
+.pay-chat-input-row input:focus { border-color: var(--accent); }
+.pay-chat-input-row input:disabled { opacity: .5; }
+.pay-chat-send-btn {
+  background: linear-gradient(135deg, #6e40c9, #5a32a3);
+  border: none; border-radius: 8px; padding: 9px 14px;
+  color: #fff; font-size: 13px; cursor: pointer;
+  transition: opacity .15s;
+  flex-shrink: 0;
+}
+.pay-chat-send-btn:hover:not(:disabled) { opacity: .85; }
+.pay-chat-send-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── Drill-down lines button ─────────────────────────────────────────────── */
+.pay-drill-lines-btn {
+  background: rgba(9,105,218,.1); border: 1px solid rgba(9,105,218,.25);
+  color: var(--accent); border-radius: 6px;
+  padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer;
+  transition: background .15s;
+}
+.pay-drill-lines-btn:hover:not(:disabled) { background: rgba(9,105,218,.2); }
+.pay-drill-lines-btn:disabled { opacity:.5; cursor:not-allowed; }
+.drill-lines-table {
+  width: 100%; border-collapse: collapse; font-size: 11px;
+  margin-top: 6px;
+}
+.drill-lines-table th {
+  background: var(--bg-card-2); color: var(--text-muted);
+  font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  padding: 5px 6px; border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.drill-lines-table td {
+  padding: 5px 6px; border-bottom: 1px solid var(--border);
+  color: var(--text-primary); vertical-align: middle;
+}
+.drill-lines-table tr:last-child td { border-bottom: none; }
+.drill-lines-table tr:hover td { background: var(--bg-hover); }
+
+/* ── Aging bucket bars ──────────────────────────────────────────────── */
+.aging-bar-wrap {
+  display: flex; height: 8px; border-radius: 4px;
+  overflow: hidden; background: var(--bg-card-2); margin-top: 4px; min-width: 100px;
+}
+.aging-seg-0-30   { background: #1a7f37; }
+.aging-seg-31-60  { background: #9a6700; }
+.aging-seg-61-90  { background: #bc4c00; }
+.aging-seg-over90 { background: #cf222e; }
+
+/* ── Cycle band badges ──────────────────────────────────────────────── */
+.cycle-FAST     { background: rgba(26,127,55,.1);  color: #1a7f37; border: 1px solid rgba(26,127,55,.2);  border-radius:20px; padding:2px 8px; font-size:10px; font-weight:700; }
+.cycle-NORMAL   { background: rgba(9,105,218,.1);  color: #0969da; border: 1px solid rgba(9,105,218,.2);  border-radius:20px; padding:2px 8px; font-size:10px; font-weight:700; }
+.cycle-SLOW     { background: rgba(154,103,0,.12); color: #9a6700; border: 1px solid rgba(154,103,0,.25); border-radius:20px; padding:2px 8px; font-size:10px; font-weight:700; }
+.cycle-CRITICAL { background: rgba(207,34,46,.12); color: #cf222e; border: 1px solid rgba(207,34,46,.25); border-radius:20px; padding:2px 8px; font-size:10px; font-weight:700; }
+
+/* ── Vendor history table in drill panel ────────────────────────────── */
+.vendor-hist-table { width:100%; border-collapse:collapse; font-size:11px; margin-top:6px; }
+.vendor-hist-table th { background:var(--bg-card-2); color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em; padding:5px 6px; border-bottom:1px solid var(--border); white-space:nowrap; }
+.vendor-hist-table td { padding:5px 6px; border-bottom:1px solid var(--border); color:var(--text-primary); }
+.vendor-hist-table tr:last-child td { border-bottom:none; }
+
+/* ── Duplicate pair badge ───────────────────────────────────────────── */
+.dup-risk-badge { display:inline-block; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:700; background:rgba(207,34,46,.1); color:#cf222e; border:1px solid rgba(207,34,46,.2); }
+
+/* ── Aging summary bar ──────────────────────────────────────────────── */
+.aging-summary { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:14px; padding:12px 16px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); }
+.aging-bucket { display:flex; flex-direction:column; gap:2px; }
+.aging-bucket-label { font-size:10px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+.aging-bucket-val { font-size:16px; font-weight:800; }
+.aging-bucket-val.b0  { color:#1a7f37; }
+.aging-bucket-val.b31 { color:#9a6700; }
+.aging-bucket-val.b61 { color:#bc4c00; }
+.aging-bucket-val.b90 { color:#cf222e; }
+
+/* ── Cycle time summary pills ───────────────────────────────────────── */
+.cycle-summary { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.cycle-pill { display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border); border-radius:20px; padding:6px 14px; font-size:12px; }
+.cycle-pill strong { color:var(--text-bright); }
+
+/* ── Scrollable tab bar ─────────────────────────────────────────────── */
+.pay-tabs { overflow-x: auto; flex-wrap: nowrap !important; }
+.pay-tabs::-webkit-scrollbar { height: 4px; }
+.pay-tabs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pay-layout">
+
+  <!-- Page header -->
+  <div class="pay-page-header">
+    <div class="pay-page-header-left">
+      <a href="{{ url_for('fusion') }}" class="pay-breadcrumb">
+        <i class="fa-solid fa-arrow-left fa-xs me-1"></i>EBS Apps
+      </a>
+      <h1 class="pay-title">
+        <span class="pay-title-icon"><i class="fa-solid fa-file-invoice-dollar"></i></span>
+        Payables Agentic App
+      </h1>
+      <p class="pay-subtitle">Oracle EBS AP — Straight-Through Processing, Holds &amp; Cash Optimization</p>
+    </div>
+
+    <div class="pay-header-controls">
+      <div class="pay-lookback">
+        <label for="payDaysBack"><i class="fa-solid fa-calendar-days fa-xs me-1"></i>Last</label>
+        <input type="number" id="payDaysBack" value="30" min="1" max="365" />
+        <span>days</span>
+      </div>
+      <button class="pay-run-btn" id="payRunBtn" onclick="runPayablesAnalysis()">
+        <i class="fa-solid fa-play fa-xs" id="payRunIcon"></i>
+        <span id="payRunLabel">Run Analysis</span>
+        <span class="spinner-border d-none" id="payRunSpinner"></span>
+      </button>
+      <span class="pay-exec-info" id="payExecInfo"></span>
+    </div>
+  </div>
+
+  <!-- Demo banner (hidden until run) -->
+  <div class="pay-demo-banner d-none" id="payDemoBanner">
+    <span class="pay-demo-badge">DEMO</span>
+    <span>Running in demo mode — figures are illustrative. Connect to Oracle for live AP data.</span>
+  </div>
+
+  <!-- KPI row -->
+  <div class="pay-kpi-grid" id="payKpiGrid">
+
+    <div class="pay-kpi-card" id="kpiStp">
+      <div class="pay-kpi-label"><i class="fa-solid fa-gauge fa-xs me-1"></i>STP Rate</div>
+      <div class="pay-kpi-value" id="kpiStpVal">—</div>
+      <div class="pay-kpi-detail" id="kpiStpDetail">Run analysis to calculate</div>
+    </div>
+
+    <div class="pay-kpi-card" id="kpiHold">
+      <div class="pay-kpi-label"><i class="fa-solid fa-hand fa-xs me-1"></i>Hold Rate</div>
+      <div class="pay-kpi-value" id="kpiHoldVal">—</div>
+      <div class="pay-kpi-detail" id="kpiHoldDetail">Run analysis to calculate</div>
+    </div>
+
+    <div class="pay-kpi-card" id="kpiAvgHold">
+      <div class="pay-kpi-label"><i class="fa-solid fa-clock fa-xs me-1"></i>Avg Hold Days</div>
+      <div class="pay-kpi-value" id="kpiAvgHoldVal">—</div>
+      <div class="pay-kpi-detail" id="kpiAvgHoldDetail">Run analysis to calculate</div>
+    </div>
+
+    <div class="pay-kpi-card" id="kpiDisc">
+      <div class="pay-kpi-label"><i class="fa-solid fa-tag fa-xs me-1"></i>Discount Risk</div>
+      <div class="pay-kpi-value" id="kpiDiscVal">—</div>
+      <div class="pay-kpi-detail" id="kpiDiscDetail">Run analysis to calculate</div>
+    </div>
+
+    <div class="pay-kpi-card" id="kpiClose">
+      <div class="pay-kpi-label"><i class="fa-solid fa-calendar-check fa-xs me-1"></i>Close Status</div>
+      <div class="pay-kpi-value" id="kpiCloseVal">—</div>
+      <div class="pay-kpi-detail" id="kpiCloseDetail">Run analysis to calculate</div>
+    </div>
+
+  </div>
+
+  <!-- Findings bar -->
+  <div class="pay-findings" id="payFindings">
+    <span class="pay-findings-label" id="payFindingsLabel">Findings will appear after analysis</span>
+  </div>
+
+  <!-- Tab nav -->
+  <div class="pay-tabs" id="payTabs">
+    <button class="pay-tab active" onclick="switchTab('health')" id="tab-health">
+      <i class="fa-solid fa-heart-pulse fa-xs"></i> Invoice Health
+      <span class="pay-tab-count" id="cnt-health">—</span>
+    </button>
+    <button class="pay-tab" onclick="switchTab('holds')" id="tab-holds">
+      <i class="fa-solid fa-hand fa-xs"></i> Hold Details
+      <span class="pay-tab-count" id="cnt-holds">—</span>
+    </button>
+    <button class="pay-tab" onclick="switchTab('approvers')" id="tab-approvers">
+      <i class="fa-solid fa-layer-group fa-xs"></i> By Hold Type
+      <span class="pay-tab-count" id="cnt-approvers">—</span>
+    </button>
+    <button class="pay-tab" onclick="switchTab('discounts')" id="tab-discounts">
+      <i class="fa-solid fa-coins fa-xs"></i> Cash Opportunities
+      <span class="pay-tab-count" id="cnt-discounts">—</span>
+    </button>
+    <button class="pay-tab" onclick="switchTab('close')" id="tab-close">
+      <i class="fa-solid fa-triangle-exclamation fa-xs"></i> Close Issues
+      <span class="pay-tab-count" id="cnt-close">—</span>
+    </button>
+    <button class="pay-tab" onclick="switchTab('unapproved')" id="tab-unapproved">
+      <i class="fa-solid fa-file-circle-xmark fa-xs"></i> Unapproved
+      <span class="pay-tab-count" id="cnt-unapproved">—</span>
+    </button>
+    <button class="pay-tab" onclick="switchTab('duplicate')" id="tab-duplicate">
+      <i class="fa-solid fa-copy fa-xs"></i> Dup Risk
+      <span class="pay-tab-count" id="cnt-duplicate">—</span>
+    </button>
+    <button class="pay-tab" onclick="switchTab('nopo')" id="tab-nopo">
+      <i class="fa-solid fa-link-slash fa-xs"></i> Non-PO
+      <span class="pay-tab-count" id="cnt-nopo">—</span>
+    </button>
+    <button class="pay-tab" onclick="switchTab('aging')" id="tab-aging">
+      <i class="fa-solid fa-hourglass-half fa-xs"></i> Aging
+      <span class="pay-tab-count" id="cnt-aging">—</span>
+    </button>
+    <button class="pay-tab" onclick="switchTab('matchexc')" id="tab-matchexc">
+      <i class="fa-solid fa-arrows-left-right-to-line fa-xs"></i> Match Exc.
+      <span class="pay-tab-count" id="cnt-matchexc">—</span>
+    </button>
+    <button class="pay-tab" onclick="switchTab('cycletime')" id="tab-cycletime">
+      <i class="fa-solid fa-stopwatch fa-xs"></i> Cycle Time
+      <span class="pay-tab-count" id="cnt-cycletime">—</span>
+    </button>
+    <button class="pay-tab" onclick="switchTab('prepay')" id="tab-prepay">
+      <i class="fa-solid fa-circle-dollar-to-slot fa-xs"></i> Prepayments
+      <span class="pay-tab-count" id="cnt-prepay">—</span>
+    </button>
+    <button class="pay-tab" onclick="switchTab('bottleneck')" id="tab-bottleneck">
+      <i class="fa-solid fa-person-circle-exclamation fa-xs"></i> Bottleneck
+      <span class="pay-tab-count" id="cnt-bottleneck">—</span>
+    </button>
+    <button class="pay-tab" onclick="switchTab('ai')" id="tab-ai">
+      <i class="fa-solid fa-wand-magic-sparkles fa-xs"></i> AI Analysis
+    </button>
+  </div>
+
+  <!-- Tab panes -->
+
+  <!-- Invoice Health -->
+  <div class="pay-pane active" id="pane-health">
+    <div class="pay-state-box" id="healthEmpty">
+      <div class="pay-state-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      <div class="pay-state-title">No data yet</div>
+      <div class="pay-state-sub">Click "Run Analysis" to load unposted invoice data.</div>
+    </div>
+    <div id="healthContent" class="d-none"></div>
+  </div>
+
+  <!-- Hold Details -->
+  <div class="pay-pane" id="pane-holds">
+    <div class="pay-state-box" id="holdsEmpty">
+      <div class="pay-state-icon"><i class="fa-solid fa-hand"></i></div>
+      <div class="pay-state-title">No data yet</div>
+      <div class="pay-state-sub">Click "Run Analysis" to load hold details.</div>
+    </div>
+    <div id="holdsContent" class="d-none"></div>
+  </div>
+
+  <!-- By Hold Type -->
+  <div class="pay-pane" id="pane-approvers">
+    <div class="pay-state-box" id="approversEmpty">
+      <div class="pay-state-icon"><i class="fa-solid fa-layer-group"></i></div>
+      <div class="pay-state-title">No data yet</div>
+      <div class="pay-state-sub">Click "Run Analysis" to see hold type breakdown.</div>
+    </div>
+    <div id="approversContent" class="d-none"></div>
+  </div>
+
+  <!-- Cash Opportunities -->
+  <div class="pay-pane" id="pane-discounts">
+    <div class="pay-state-box" id="discountsEmpty">
+      <div class="pay-state-icon"><i class="fa-solid fa-coins"></i></div>
+      <div class="pay-state-title">No data yet</div>
+      <div class="pay-state-sub">Click "Run Analysis" to identify early payment discounts.</div>
+    </div>
+    <div id="discountsContent" class="d-none"></div>
+  </div>
+
+  <!-- Close Issues -->
+  <div class="pay-pane" id="pane-close">
+    <div class="pay-state-box" id="closeEmpty">
+      <div class="pay-state-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <div class="pay-state-title">No data yet</div>
+      <div class="pay-state-sub">Click "Run Analysis" to identify period-close blockers.</div>
+    </div>
+    <div id="closeContent" class="d-none"></div>
+  </div>
+
+  <!-- Unapproved Invoices -->
+  <div class="pay-pane" id="pane-unapproved">
+    <div class="pay-state-box" id="unapprovedEmpty">
+      <div class="pay-state-icon"><i class="fa-solid fa-file-circle-xmark"></i></div>
+      <div class="pay-state-title">No data yet</div>
+      <div class="pay-state-sub">Click "Run Analysis" to load unapproved invoices with line detail.</div>
+    </div>
+    <div id="unapprovedContent" class="d-none"></div>
+  </div>
+
+  <!-- Duplicate Risk -->
+  <div class="pay-pane" id="pane-duplicate">
+    <div class="pay-state-box" id="duplicateEmpty">
+      <div class="pay-state-icon"><i class="fa-solid fa-copy"></i></div>
+      <div class="pay-state-title">No data yet</div>
+      <div class="pay-state-sub">Click "Run Analysis" to detect potential duplicate invoices.</div>
+    </div>
+    <div id="duplicateContent" class="d-none"></div>
+  </div>
+
+  <!-- Non-PO Invoices -->
+  <div class="pay-pane" id="pane-nopo">
+    <div class="pay-state-box" id="nopoEmpty">
+      <div class="pay-state-icon"><i class="fa-solid fa-link-slash"></i></div>
+      <div class="pay-state-title">No data yet</div>
+      <div class="pay-state-sub">Click "Run Analysis" to find invoices with no PO reference.</div>
+    </div>
+    <div id="nopoContent" class="d-none"></div>
+  </div>
+
+  <!-- Supplier Aging -->
+  <div class="pay-pane" id="pane-aging">
+    <div class="pay-state-box" id="agingEmpty">
+      <div class="pay-state-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+      <div class="pay-state-title">No data yet</div>
+      <div class="pay-state-sub">Click "Run Analysis" to see outstanding balances by aging bucket.</div>
+    </div>
+    <div id="agingContent" class="d-none"></div>
+  </div>
+
+  <!-- Match Exceptions -->
+  <div class="pay-pane" id="pane-matchexc">
+    <div class="pay-state-box" id="matchexcEmpty">
+      <div class="pay-state-icon"><i class="fa-solid fa-arrows-left-right-to-line"></i></div>
+      <div class="pay-state-title">No data yet</div>
+      <div class="pay-state-sub">Click "Run Analysis" to see 3-way match failures (price, qty, amount holds).</div>
+    </div>
+    <div id="matchexcContent" class="d-none"></div>
+  </div>
+
+  <!-- Cycle Time -->
+  <div class="pay-pane" id="pane-cycletime">
+    <div class="pay-state-box" id="cycletimeEmpty">
+      <div class="pay-state-icon"><i class="fa-solid fa-stopwatch"></i></div>
+      <div class="pay-state-title">No data yet</div>
+      <div class="pay-state-sub">Click "Run Analysis" to measure invoice-to-posting cycle time.</div>
+    </div>
+    <div id="cycletimeContent" class="d-none"></div>
+  </div>
+
+  <!-- Open Prepayments -->
+  <div class="pay-pane" id="pane-prepay">
+    <div class="pay-state-box" id="prepayEmpty">
+      <div class="pay-state-icon"><i class="fa-solid fa-circle-dollar-to-slot"></i></div>
+      <div class="pay-state-title">No data yet</div>
+      <div class="pay-state-sub">Click "Run Analysis" to find open prepayments not yet applied.</div>
+    </div>
+    <div id="prepayContent" class="d-none"></div>
+  </div>
+
+  <!-- Approval Bottleneck -->
+  <div class="pay-pane" id="pane-bottleneck">
+    <div class="pay-state-box" id="bottleneckEmpty">
+      <div class="pay-state-icon"><i class="fa-solid fa-person-circle-exclamation"></i></div>
+      <div class="pay-state-title">No data yet</div>
+      <div class="pay-state-sub">Click "Run Analysis" to identify approvers blocking AP workflow.</div>
+    </div>
+    <div id="bottleneckContent" class="d-none"></div>
+  </div>
+
+  <!-- AI Analysis -->
+  <div class="pay-pane" id="pane-ai">
+    <div class="pay-state-box" id="aiEmpty">
+      <div class="pay-state-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+      <div class="pay-state-title">Run analysis first</div>
+      <div class="pay-state-sub">Click "Run Analysis" to generate a summary and start the AI conversation.</div>
+    </div>
+    <div id="aiContent" class="d-none">
+
+      <!-- Summary box -->
+      <div class="pay-ai-summary" id="aiSummaryBox">
+        <h6><i class="fa-solid fa-chart-bar me-1"></i>Analysis Summary</h6>
+        <div class="pay-ai-text" id="aiSummaryText"></div>
+      </div>
+
+      <!-- Inline chat -->
+      <div class="pay-inline-chat">
+        <div class="pay-chat-header">
+          <span><i class="fa-solid fa-robot fa-xs me-1"></i>EBS Support AI</span>
+          <button class="pay-chat-clear-btn" onclick="clearPayChat()" title="Clear conversation">
+            <i class="fa-solid fa-rotate-left fa-xs"></i> Clear
+          </button>
+        </div>
+        <div class="pay-chat-messages" id="payChatMessages">
+          <div class="pay-chat-msg pay-chat-msg-ai" id="payChatWelcome">
+            <div class="pay-chat-avatar"><i class="fa-solid fa-robot fa-xs"></i></div>
+            <div class="pay-chat-bubble">Run the analysis above, then ask me anything about your AP data.</div>
+          </div>
+        </div>
+        <div class="pay-chat-input-row">
+          <input type="text" id="payChatInput"
+                 placeholder="Ask about holds, STP rate, discounts…"
+                 onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendPayChat();}" />
+          <button class="pay-chat-send-btn" id="payChatSendBtn" onclick="sendPayChat()">
+            <i class="fa-solid fa-paper-plane fa-xs"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /.pay-layout -->
+
+<!-- ── Drill-down overlay + panel ──────────────────────────────────────────── -->
+<div class="pay-drill-overlay" id="drillOverlay" onclick="closeDrillDown()"></div>
+
+<div class="pay-drill-panel" id="drillPanel">
+  <div class="pay-drill-header">
+    <div class="pay-drill-title">
+      <i class="fa-solid fa-magnifying-glass fa-xs"></i>
+      <span id="drillHoldType">Hold Detail</span>
+    </div>
+    <button class="pay-drill-close" onclick="closeDrillDown()" title="Close">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <div class="pay-drill-body">
+
+    <!-- Hold type + days -->
+    <div class="pay-drill-grid">
+      <div class="pay-drill-item">
+        <div class="pay-drill-item-label">Hold Type</div>
+        <div class="pay-drill-item-value" id="drillHoldCode">—</div>
+      </div>
+      <div class="pay-drill-item">
+        <div class="pay-drill-item-label">Days on Hold</div>
+        <div class="pay-drill-item-value" id="drillDays">—</div>
+      </div>
+    </div>
+
+    <!-- Invoice details -->
+    <div class="pay-drill-section">
+      <div class="pay-drill-section-label">Invoice Details</div>
+      <div class="pay-drill-grid">
+        <div class="pay-drill-item">
+          <div class="pay-drill-item-label">Invoice #</div>
+          <div class="pay-drill-item-value" id="drillInvNum">—</div>
+        </div>
+        <div class="pay-drill-item">
+          <div class="pay-drill-item-label">Amount</div>
+          <div class="pay-drill-item-value" id="drillAmount">—</div>
+        </div>
+        <div class="pay-drill-item">
+          <div class="pay-drill-item-label">Currency</div>
+          <div class="pay-drill-item-value" id="drillCurrency">—</div>
+        </div>
+        <div class="pay-drill-item" style="grid-column:1/-1">
+          <div class="pay-drill-item-label">Supplier</div>
+          <div class="pay-drill-item-value" id="drillVendor">—</div>
+        </div>
+        <div class="pay-drill-item">
+          <div class="pay-drill-item-label">Source</div>
+          <div class="pay-drill-item-value" id="drillSource">—</div>
+        </div>
+        <div class="pay-drill-item">
+          <div class="pay-drill-item-label">Approval Status</div>
+          <div class="pay-drill-item-value" id="drillApproval">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hold reason (hidden for non-hold rows) -->
+    <div class="pay-drill-section" id="drillReasonSection">
+      <div class="pay-drill-section-label">Hold Reason</div>
+      <div class="pay-drill-value" id="drillReason">—</div>
+    </div>
+
+    <!-- Recommended action (hidden for non-hold rows) -->
+    <div class="pay-drill-section" id="drillActionSection">
+      <div class="pay-drill-section-label">Recommended Action</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="font-size:11px;color:var(--text-muted);">Owner:</span>
+        <span class="pay-drill-owner" id="drillOwner"><i class="fa-solid fa-user fa-xs me-1"></i>—</span>
+      </div>
+      <div class="pay-action-box" id="drillAction">—</div>
+    </div>
+
+    <!-- Vendor Payment History section -->
+    <div class="pay-drill-section" id="drillVendorHistSection" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div class="pay-drill-section-label" style="margin-bottom:0">Recent Payments</div>
+        <button class="pay-drill-lines-btn" id="drillVendorHistBtn" onclick="loadVendorHistory()">
+          <i class="fa-solid fa-clock-rotate-left fa-xs me-1"></i>Load History
+        </button>
+      </div>
+      <div id="drillVendorHistContent">
+        <p style="font-size:12px;color:var(--text-muted);margin:0;">Click "Load History" to see recent payments to this supplier.</p>
+      </div>
+    </div>
+
+    <!-- Duplicate comparison grid -->
+    <div class="pay-drill-section" id="drillDupSection" style="display:none">
+      <div class="pay-drill-section-label">Duplicate Candidate</div>
+      <div class="pay-drill-grid" id="drillDupGrid"></div>
+    </div>
+
+    <!-- Invoice Lines section -->
+    <div class="pay-drill-section" id="drillLinesSection">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div class="pay-drill-section-label" style="margin-bottom:0">Invoice Lines</div>
+        <button class="pay-drill-lines-btn" id="drillLinesBtn" onclick="loadInvoiceLines()">
+          <i class="fa-solid fa-list fa-xs me-1"></i>Load Lines
+        </button>
+      </div>
+      <div id="drillLinesContent">
+        <p style="font-size:12px;color:var(--text-muted);margin:0;">Click "Load Lines" to see line-level detail.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="pay-drill-footer">
+    <button class="pay-csv-btn w-100 justify-content-center" style="font-size:12px;" onclick="closeDrillDown()">
+      <i class="fa-solid fa-xmark fa-xs"></i> Close Panel
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>window.EBS_PAGE = 'payables';</script>
+<script src="{{ url_for('static', filename='js/payables.js') }}"></script>
+{% endblock %}

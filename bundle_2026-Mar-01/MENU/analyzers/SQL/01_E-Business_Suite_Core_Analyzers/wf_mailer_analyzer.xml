@@ -1,0 +1,33 @@
+<hybrid_analyzer><ha_attributes>
+<title>Workflow Java Mailer Analyzer</title>
+<type>Analyzer</type>
+<short_name>WFMLRHA</short_name>
+<product_line>EBS</product_line>
+<product_family>EBS ATG</product_family>
+<product_area>EBS - Workflow and Integrations</product_area>
+<owner>WILLIAM.BURBAGE@ORACLE.COM</owner>
+<version>200.53</version>
+<last_generated>2026/02/23</last_generated>
+<description>Workflow Java Mailer Analyzer</description>
+<doc_id>2901874.1</doc_id>
+<file_name>wf_mailer_analyzer</file_name>
+<version_image_name>wf_mlr_latest_version.gif</version_image_name>
+<download_attachment_name>SCRIPT</download_attachment_name>
+<community_link><![CDATA[https://community.oracle.com/mosc/discussion/4530740]]></community_link>
+<whats_new><![CDATA[<p>Analyzer Framework Version 6.27<br>- Fixes an error in the Patch Wizard analyzer when there are no previous Patch Wizard request_set_id<br>- Adds tool tip to Arrow when expanding collapsing result data<br>- Updates Java requirement to ensure the analyzers still work on EBS servers with Java 1.7<br>- Fixed g_banner_message and g_banner_severity framework global variable handling nulls, which prevented these global variables to be populated in newer releases of EBS</p><p>Introducing the NEW Workflow Java Mailer Analyzer !!</p><p>v200.40 now includes both Office365 or GMAIL checks using OAUTH for SMTP and IMAP depending on your configuration.</p><p>v200.30 introduces a new SMTP OAUTH section to verify the setup for outbound processing using OAUTH 2.0 authentication.</p><p>v200.21 introduces a new <strong>Mailer Log Checks</strong> Section that parses the current Mailer Log for known errors and reports on them.<br>Due to the potential size and age of a mailer log, and finding old errors, we added new trimming parameters to restrict the size of mailer log collected to latest 24 hrs or 400,000 rows. These parameters can be adjusted as needed, as documented in the Workflow Java Mailer Analyzer Note 2901874.1.</p><p>The&nbsp;Workflow Java Mailer Analyzer is a self-service health-check script that validates Workflow Java Mailer connectivity for both SMTP and IMAP servers, using both BASIC or OAUTH authentication. It analyzes current configurations and settings for the environment and provides feedback and recommendations on best practices.</p><p>If having issues with Java Mailer starting, pass full list of inline parameters as documented in the Workflow Java Mailer Analyzer Note 2901874.1. &nbsp;These parameter values will be used in the analyzer to test connectivity and authentication, otherwise analyzer pulls the values from the values found in the mailer settings database tables.</p>]]></whats_new>
+<framework_version>6.27.1</framework_version>
+<analyzer_id>3435</analyzer_id>
+<apex_host>ASEPROD</apex_host>
+<apex_app_files>https://aseobs.oraclecorp.com/ords/r/ebsap_psd/303/files/static/v223/</apex_app_files>
+<apex_ws_files>https://aseobs.oraclecorp.com/ords/r/ebsap_psd/files/static/v46/</apex_ws_files>
+</ha_attributes>
+<ha_bundle>
+<condition/>
+<condition_fail/>
+</ha_bundle>
+<ha_init>
+<tier>CP|DB|MT</tier>
+<dbconn>YES</dbconn>
+<compatible_apps_release>12.0|12.1|12.2</compatible_apps_release>
+</ha_init>
+</hybrid_analyzer>

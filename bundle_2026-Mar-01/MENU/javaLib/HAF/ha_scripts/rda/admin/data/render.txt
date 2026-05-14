@@ -1,0 +1,11 @@
+# $Id: render.txt,v 1.1 2013/03/11 13:00:27 RDA Exp $
+# ARCS: $Header: /home/cvs/cvs/RDA_8/src/scripting/lib/admin/data/render.txt,v 1.1 2013/03/11 13:00:27 RDA Exp $
+DC=DC
+DOMAIN=domain
+GROUP=group
+HOST=host
+IP4=IPv4 address
+IP6=IPv6 address
+MASK=network mask
+PASSWORD=password
+USER=user

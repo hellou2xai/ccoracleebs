@@ -1,0 +1,35 @@
+<hybrid_analyzer><ha_attributes>
+<title>Applications Login Analyzer</title>
+<type>Analyzer</type>
+<short_name>FND_LOGIN_HA</short_name>
+<product_line>EBS</product_line>
+<product_family>EBS ATG</product_family>
+<product_area>EBS - Advanced Technologies</product_area>
+<owner>DAVID.HEISLER@ORACLE.COM</owner>
+<application>Application Object Library</application>
+<version>200.113</version>
+<last_generated>2026/02/23</last_generated>
+<description>The EBS Applications Login Analyzer (Note 2319360.1) is a self-service health-check script that reviews the overall footprint, analyzes current configurations and settings for the environment and provides feedback and recommendations on bes</description>
+<doc_id>2319360.1</doc_id>
+<single_all_mode>N</single_all_mode>
+<file_name>fnd_login_analyzer</file_name>
+<version_image_name>fnd_login_latest_version.gif</version_image_name>
+<download_attachment_name>Login_Hybrid</download_attachment_name>
+<community_link><![CDATA[https://community.oracle.com/mosc/discussion/4101508]]></community_link>
+<whats_new><![CDATA[<p>5/21/2025 - Analyzer Framework version 6.26.4</p><p>4/16/2025 - Analyzer Framework Version 6.26.3</p><ul><li>Fixes an error in the Patch Wizard analyzer when there are no previous Patch Wizard request_set_id</li><li>Adds tool tip to Arrow when expanding collapsing result data</li><li>Updates Java requirement to ensure the analyzers still work on EBS servers with Java 1.7</li><li>Fixed g_banner_message and g_banner_severity framework global variable handling nulls, which prevented these global variables to be populated in newer releases of EBS</li></ul><p>See Note 2319360.1 for detailed instructions.</p><p>Able to execute scripts, parse log files and collect their outputs</p><p>Able to collect logs and files for review, everything is collected and zipped into a single uploadable zip file.</p><p>Runs on our Framework version 6.26.1.</p>]]></whats_new>
+<framework_version>6.27.1</framework_version>
+<analyzer_id>2034</analyzer_id>
+<apex_host>ASEPROD</apex_host>
+<apex_app_files>https://aseobs.oraclecorp.com/ords/r/ebsap_psd/303/files/static/v223/</apex_app_files>
+<apex_ws_files>https://aseobs.oraclecorp.com/ords/r/ebsap_psd/files/static/v46/</apex_ws_files>
+</ha_attributes>
+<ha_bundle>
+<condition/>
+<condition_fail/>
+</ha_bundle>
+<ha_init>
+<tier>CP|DB|MT</tier>
+<dbconn>YES</dbconn>
+<compatible_apps_release>12.0|12.1|12.2</compatible_apps_release>
+</ha_init>
+</hybrid_analyzer>

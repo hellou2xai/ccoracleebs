@@ -1,0 +1,18 @@
+REM $Id: 200.0 7:49 AM 3/20/2018 kjharris bburbage$ 
+
+SPOOL "sql/PSD_BUNDLE_VERSION.lst"
+CREATE OR REPLACE FUNCTION PSD_BUNDLE_VERSION 
+RETURN VARCHAR2 
+IS
+
+v_version VARCHAR2(8);
+
+BEGIN
+  v_version := '200.170';
+  RETURN v_version;
+END PSD_BUNDLE_VERSION;
+
+/
+SPOOL OFF;
+show errors
+exit;

@@ -1,0 +1,49 @@
+# Code Page to Character Set Mapping
+#
+# $Id: cp.txt,v 1.2 2013/05/08 06:43:31 RDA Exp $
+# $Header: /home/cvs/cvs/RDA_8/src/scripting/lib/admin/data/cp.txt,v 1.2 2013/05/08 06:43:31 RDA Exp $
+#
+437    windows-1252  USA PC-Data (DOS)
+850    ibm-850       Western European (DOS)
+852    ibm-852       Central European (DOS)
+855    ibm-855       Cyrillic Alphabet (DOS)
+857    ibm-857       Turkish Alphabet (DOS)
+862    ibm-862       Hebrew Alphabet (DOS)
+866    ibm-866       Cyrillic Alphabet (DOS)
+874    windows-874   Thai (Windows)
+932    shift-jis     Japanese
+936    gb2312        Chinese Simplified (GB2312)
+949    euc-kr        Korean
+950    big5          Chinese Traditional
+1250   windows-1250  Central European Alphabet (Windows)
+1251   windows-1251  Cyrillic Alphabet (Windows)
+1252   windows-1252  Western Alphabet (Windows)
+1253   windows-1253  Greek Alphabet (Windows)
+1254   windows-1254  Turkish Alphabet (Windows)
+1255   windows-1255  Hebrew Alphabet (Windows)
+1256   windows-1256  Arabic Alphabet (Windows)
+1257   windows-1257  Baltic Alphabet (Windows)
+1258   windows-1258  Vietnamese Alphabet (Windows)
+28591  iso-8859-1    Western Alphabet (ISO)
+28592  iso-8859-2    Central European Alphabet (ISO)
+28593  iso-8859-3    South European Alphabet (ISO)
+28594  iso-8859-4    Baltic Alphabet (ISO)
+28595  iso-8859-5    Cyrillic Alphabet (ISO)
+28596  iso-8859-6    Arabic Alphabet (ISO)
+28597  iso-8859-7    Greek Alphabet (ISO)
+28598  iso-8859-8    Hebrew Alphabet (ISO)
+28599  iso-8859-9    Turkish Alphabet (ISO)
+28600  iso-8859-10   Nordic Alphabet (ISO)
+28601  iso-8859-11   Thai Alphabet (ISO)
+28603  iso-8859-13   Baltic Alphabet (ISO)
+28604  iso-8859-14   Celtic Alphabet (ISO)
+28605  iso-8859-15   Western Alphabet (ISO)
+28606  iso-8859-16   Romanian Alphabet (ISO)
+38596  iso-8859-6    Arabic Alphabet (ISO)
+38598  iso-8859-8    Hebrew Alphabet (ISO)
+50220  iso-2022-jp   Japanese (JIS)
+50222  iso-2022-jp   Japanese (JIS-Allow 1 byte Kana)
+50225  iso-2022-kr   Korean (ISO)
+51949  euc-kr        Korean (EUC)
+52936  hz            Chinese Simplified (HZ)
+65001  utf-8         Unicode

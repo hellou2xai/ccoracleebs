@@ -1,0 +1,33 @@
+<hybrid_analyzer><ha_attributes>
+<title>Database Performance and Statistics Analyzer</title>
+<type>Analyzer</type>
+<short_name>FNDPERF</short_name>
+<product_line>EBS</product_line>
+<product_family>EBS ATG</product_family>
+<product_area>EBS - Advanced Technologies</product_area>
+<owner>OLCAY.SARIOGLU@ORACLE.COM</owner>
+<version>200.75</version>
+<last_generated>2026/01/28</last_generated>
+<description>EBS Performance and Database Statistics Analyzer</description>
+<doc_id>2126712.1</doc_id>
+<file_name>fndperf_analyzer</file_name>
+<version_image_name>db_stats_latest_version.gif</version_image_name>
+<download_attachment_name>SCRIPT</download_attachment_name>
+<community_link><![CDATA[https://community.oracle.com/mosc/discussion/4068361]]></community_link>
+<whats_new><![CDATA[<p>4/16/2025 - Analyzer Framework Version 6.26.4</p><ul><li>Fixes an error in the Patch Wizard analyzer when there are no previous Patch Wizard request_set_id</li><li>Adds tool tip to Arrow when expanding collapsing result data</li><li>Updates Java requirement to ensure the analyzers still work on EBS servers with Java 1.7</li><li>Fixed g_banner_message and g_banner_severity framework global variable handling nulls, which prevented these global variables to be populated in newer releases of EBS</li></ul><p>v200.65 added additional Technical Requirement to set up SSH connectivity between your application (Apps) and database (DB) nodes. for SSH to connect Apps to DB Tiers to run special RDBMS collection scripts</p><p>v200.51 has a new GRANTS requirement to include ExaData. &nbsp;Please ensure you have added the following : &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</p><p><span style="background-color:#f8f8f8;color:#1d1c1d;"><span style="font-family:Slack-Lato,appleLogo,sans-serif;font-size:15px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; grant select on sys.V_$cell_state to apps;</span></span></p>]]></whats_new>
+<framework_version>6.27.1</framework_version>
+<analyzer_id>8614</analyzer_id>
+<apex_host>ASEPROD</apex_host>
+<apex_app_files>https://aseobs.oraclecorp.com/ords/r/ebsap_psd/303/files/static/v223/</apex_app_files>
+<apex_ws_files>https://aseobs.oraclecorp.com/ords/r/ebsap_psd/files/static/v46/</apex_ws_files>
+</ha_attributes>
+<ha_bundle>
+<condition/>
+<condition_fail/>
+</ha_bundle>
+<ha_init>
+<tier>CP|MT</tier>
+<dbconn>YES</dbconn>
+<compatible_apps_release>12.0|12.1|12.2</compatible_apps_release>
+</ha_init>
+</hybrid_analyzer>

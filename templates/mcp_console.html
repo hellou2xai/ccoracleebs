@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}MCP Console — EBS P2P{% endblock %}
+
+{% block head_extra %}
+<style>
+  .mcp-layout { padding: 18px 22px 60px; max-width: 1500px; margin: 0 auto; }
+
+  .mcp-hero {
+    background: linear-gradient(135deg, #14213d 0%, #2d5d9c 100%);
+    border-radius: var(--radius-lg);
+    padding: 18px 22px;
+    margin-bottom: 14px;
+    color: #fff;
+    display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;
+  }
+  .mcp-hero h1 { font-size: 19px; font-weight: 700; margin: 0; }
+  .mcp-hero p  { font-size: 12px; opacity: .85; margin: 2px 0 0; }
+  .mcp-hero-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .mcp-tag {
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .mcp-tabbar {
+    display: flex; gap: 4px; border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+  .mcp-tab {
+    background: none; border: none;
+    padding: 8px 14px; font-size: 13px; font-weight: 600;
+    color: var(--text-muted); cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+  .mcp-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .mcp-pane { display: none; }
+  .mcp-pane.active { display: block; }
+
+  /* Tools tab — split layout */
+  .mcp-tools-grid { display: grid; grid-template-columns: 360px 1fr; gap: 14px; }
+  .mcp-tool-list {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 10px;
+    max-height: 78vh; overflow: auto;
+  }
+  .mcp-search {
+    width: 100%; padding: 6px 10px;
+    background: var(--bg-card-2); border: 1px solid var(--border);
+    border-radius: 6px; font-size: 12px; color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+  .mcp-group-header {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    color: var(--text-muted); padding: 8px 6px 4px;
+    border-bottom: 1px solid var(--border); margin-bottom: 4px;
+    letter-spacing: .04em;
+  }
+  .mcp-tool-item {
+    padding: 7px 10px; font-size: 12px;
+    cursor: pointer; border-radius: 6px;
+    border: 1px solid transparent;
+    margin-bottom: 2px;
+  }
+  .mcp-tool-item:hover { background: var(--bg-card-2); }
+  .mcp-tool-item.active { background: var(--bg-card-2); border-color: var(--accent); }
+  .mcp-tool-name { font-family: ui-monospace, monospace; font-weight: 600; }
+  .mcp-tool-desc { color: var(--text-muted); font-size: 10.5px; margin-top: 2px; line-height: 1.4; }
+  .mcp-tool-tags { margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap; }
+  .mcp-tool-tag {
+    font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 8px;
+    background: var(--bg-card); color: var(--text-muted); border: 1px solid var(--border);
+    text-transform: uppercase; letter-spacing: .03em;
+  }
+
+  /* Tool detail panel */
+  .mcp-tool-panel {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 18px;
+    display: flex; flex-direction: column; gap: 10px; max-height: 78vh; overflow: auto;
+  }
+  .mcp-tool-title {
+    font-family: ui-monospace, monospace;
+    font-size: 16px; font-weight: 700; color: var(--text-primary);
+  }
+  .mcp-tool-section {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    color: var(--text-muted); margin-top: 8px; letter-spacing: .04em;
+  }
+  .mcp-form-row { display: grid; grid-template-columns: 160px 1fr; gap: 8px; align-items: center; margin-bottom: 6px; }
+  .mcp-form-row label { font-size: 12px; font-family: ui-monospace, monospace; }
+  .mcp-form-row input {
+    background: var(--bg-card-2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 9px; font-size: 12px; color: var(--text-primary);
+  }
+  .mcp-form-hint { font-size: 10.5px; color: var(--text-muted); padding-left: 168px; }
+  .mcp-buttons { display: flex; gap: 6px; align-items: center; }
+  .mcp-btn-primary {
+    background: var(--accent); color: #fff;
+    border: none; border-radius: 6px; padding: 6px 14px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .mcp-btn-primary:hover { opacity: .9; }
+  .mcp-btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .mcp-btn-ghost {
+    background: transparent; border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 12px; font-size: 11.5px;
+    color: var(--text-muted); cursor: pointer;
+  }
+  .mcp-btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .mcp-result {
+    background: var(--bg-card-2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px; margin-top: 6px;
+    font-family: ui-monospace, monospace; font-size: 11px;
+    max-height: 360px; overflow: auto;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .mcp-result-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+
+  /* Resources / Prompts tab */
+  .mcp-list-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .mcp-list-table th, .mcp-list-table td {
+    padding: 8px 10px; border-bottom: 1px solid var(--border);
+    text-align: left; vertical-align: top;
+  }
+  .mcp-list-table th { background: var(--bg-card-2); font-weight: 600; color: var(--text-muted); }
+  .mcp-list-table tbody tr:hover { background: var(--bg-card-2); }
+  .mcp-list-table .uri-pattern, .mcp-list-table .prompt-name {
+    font-family: ui-monospace, monospace; color: var(--accent);
+  }
+
+  /* Setup tab */
+  .mcp-code {
+    background: #0e1626; color: #e1e7ef;
+    padding: 14px; border-radius: 6px;
+    font-family: ui-monospace, monospace; font-size: 11.5px;
+    white-space: pre; overflow: auto;
+    max-height: 360px; line-height: 1.55;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mcp-layout">
+
+  <div class="mcp-hero">
+    <div>
+      <h1><i class="fa-solid fa-plug-circle-bolt me-2"></i>EBS P2P MCP Server</h1>
+      <p>{{ tools | length }} tools, {{ resources | length }} resources, {{ prompts | length }} prompts. Same surface available over stdio (Claude Desktop / Code) and HTTP REST.</p>
+    </div>
+    <div class="mcp-hero-tags">
+      {% for g in groups %}<span class="mcp-tag">{{ g }}</span>{% endfor %}
+    </div>
+  </div>
+
+  <div class="mcp-tabbar">
+    <button class="mcp-tab active" onclick="mcpTab('tools', this)">Tools</button>
+    <button class="mcp-tab" onclick="mcpTab('resources', this)">Resources</button>
+    <button class="mcp-tab" onclick="mcpTab('prompts', this)">Prompts</button>
+    <button class="mcp-tab" onclick="mcpTab('setup', this)">Setup</button>
+  </div>
+
+  <!-- Tools -->
+  <div class="mcp-pane active" id="mcp-pane-tools">
+    <div class="mcp-tools-grid">
+      <div class="mcp-tool-list">
+        <input type="text" class="mcp-search" id="mcpSearch" placeholder="Search tools…" oninput="mcpFilterTools()" />
+        <div id="mcpToolsContainer"></div>
+      </div>
+      <div class="mcp-tool-panel" id="mcpToolPanel">
+        <div class="text-muted small">Pick a tool on the left.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resources -->
+  <div class="mcp-pane" id="mcp-pane-resources">
+    <table class="mcp-list-table">
+      <thead><tr><th>URI Template</th><th>Description</th><th>Backed by</th><th>Read</th></tr></thead>
+      <tbody>
+        {% for r in resources %}
+        <tr>
+          <td class="uri-pattern">{{ r.uri }}</td>
+          <td>{{ r.description }}</td>
+          <td><code>{{ r.tool }}</code></td>
+          <td>
+            <input type="text" placeholder="id"
+                   id="resInput_{{ loop.index0 }}"
+                   style="width:120px; background:var(--bg-card-2); border:1px solid var(--border); border-radius:5px; padding:3px 7px; font-size:11px; color: var(--text-primary);" />
+            <button class="mcp-btn-ghost" onclick="mcpReadResource('{{ r.uri }}', '{{ r.key }}', {{ loop.index0 }})">Read</button>
+            <pre class="mcp-result" id="resResult_{{ loop.index0 }}" style="display:none; max-height:160px; margin-top:6px;"></pre>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Prompts -->
+  <div class="mcp-pane" id="mcp-pane-prompts">
+    <table class="mcp-list-table">
+      <thead><tr><th>Name</th><th>Description</th><th>Arguments</th><th>Render</th></tr></thead>
+      <tbody>
+        {% for p in prompts %}
+        <tr>
+          <td class="prompt-name">{{ p.name }}</td>
+          <td>{{ p.description }}</td>
+          <td>
+            {% for a in p.arguments %}
+              <div style="margin-bottom:3px;">
+                <code>{{ a.name }}</code>
+                {% if a.required %}<span style="color:#d12f2f;font-size:10px;">required</span>{% endif %}
+                <input type="text" id="pa_{{ loop.index0 }}_{{ p.name }}" placeholder="{{ a.description }}"
+                       style="width:160px; background:var(--bg-card-2); border:1px solid var(--border); border-radius:5px; padding:3px 7px; font-size:11px; margin-left:6px; color: var(--text-primary);" />
+              </div>
+            {% else %}
+              <span class="text-muted small">no args</span>
+            {% endfor %}
+          </td>
+          <td>
+            <button class="mcp-btn-ghost" onclick='mcpRenderPrompt({{ p | tojson }})'>Render</button>
+            <pre class="mcp-result" id="pr_{{ p.name }}" style="display:none; max-height:200px; margin-top:6px;"></pre>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Setup -->
+  <div class="mcp-pane" id="mcp-pane-setup">
+    <h6 class="mcp-tool-section">Run as stdio MCP server</h6>
+    <pre class="mcp-code">cd "{{ request.host_url[:-1] }}"   # project root
+python -m mcp_servers.ebs_p2p</pre>
+
+    <h6 class="mcp-tool-section">Claude Desktop / Claude Code config</h6>
+    <pre class="mcp-code" id="claudeCfg">{
+  "mcpServers": {
+    "ebs-p2p": {
+      "command": "python",
+      "args": ["-m", "mcp_servers.ebs_p2p"],
+      "cwd": "&lt;absolute path to EBS project&gt;",
+      "env": {
+        "EBS_DEMO_MODE": "true"
+      }
+    }
+  }
+}</pre>
+
+    <h6 class="mcp-tool-section">Curl (REST)</h6>
+    <pre class="mcp-code">curl -sS -X POST http://localhost:8000/api/mcp/call \
+  -H "Content-Type: application/json" \
+  -d '{"name":"payables_list_holds","arguments":{"days_back":30}}' | jq .</pre>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const MCP_TOOLS = {{ tools | tojson }};
+  const MCP_GROUPS = {{ groups | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/mcp_console.js') }}"></script>
+{% endblock %}

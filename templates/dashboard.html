@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Agent Browser — Oracle EBS Support Agent{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h2 class="page-title"><i class="fa-solid fa-grid-2 me-2 text-accent"></i>Agent Browser</h2>
+      <p class="page-subtitle">{{ analyzers | length }} agents available across {{ modules | length }} modules</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+      <span class="badge-count" id="filteredCount">{{ analyzers | length }} shown</span>
+    </div>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <div class="dashboard-controls">
+    <div class="search-bar-wrap">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input
+        type="text"
+        id="analyzerSearch"
+        class="search-input"
+        placeholder="Search agents by name, keyword, or module..."
+        autocomplete="off"
+      />
+      <button class="btn btn-xs btn-icon search-clear d-none" id="searchClear" title="Clear search">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- Module Filter Tabs -->
+    <div class="module-tabs" id="moduleTabs" role="tablist">
+      <button class="module-tab active" data-module="ALL" role="tab">
+        All <span class="tab-count" id="countAll">{{ analyzers | length }}</span>
+      </button>
+      {% for mod in modules %}
+      <button class="module-tab" data-module="{{ mod }}" role="tab">
+        {{ mod }}
+        <span class="tab-count" id="count{{ mod }}">
+          {{ analyzers | selectattr('module', 'equalto', mod) | list | length }}
+        </span>
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Agent Grid -->
+  <div class="analyzer-grid" id="analyzerGrid">
+    {% for analyzer in analyzers %}
+    <div
+      class="analyzer-card"
+      data-id="{{ analyzer.id }}"
+      data-module="{{ analyzer.module }}"
+      data-name="{{ analyzer.name | lower }}"
+      data-keywords="{{ analyzer.keywords | join(' ') | lower }}"
+      data-description="{{ analyzer.description | lower }}"
+    >
+      <div class="analyzer-card-header">
+        <span class="analyzer-name">{{ analyzer.name }}</span>
+        <span class="module-badge module-{{ analyzer.module | lower }}">{{ analyzer.module }}</span>
+      </div>
+
+      {% if analyzer.sub_module %}
+      <div class="analyzer-submodule text-muted small mb-1">
+        <i class="fa-solid fa-layer-group fa-xs me-1"></i>{{ analyzer.sub_module }}
+      </div>
+      {% endif %}
+
+      <p class="analyzer-description">{{ analyzer.description[:140] }}{% if analyzer.description | length > 140 %}…{% endif %}</p>
+
+      <!-- Keywords -->
+      {% if analyzer.keywords %}
+      <div class="keyword-tags">
+        {% for kw in analyzer.keywords[:5] %}
+        <span class="keyword-tag">{{ kw }}</span>
+        {% endfor %}
+        {% if analyzer.keywords | length > 5 %}
+        <span class="keyword-tag keyword-more">+{{ (analyzer.keywords | length) - 5 }}</span>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- MOS Doc -->
+      {% if analyzer.mos_doc_id %}
+      <div class="mos-ref small text-muted mt-1">
+        <i class="fa-solid fa-file-circle-info fa-xs me-1"></i>
+        MOS Doc: <a href="https://support.oracle.com/rs?type=doc&id={{ analyzer.mos_doc_id }}"
+                    target="_blank" class="mos-link">{{ analyzer.mos_doc_id }}</a>
+      </div>
+      {% endif %}
+
+      <div class="analyzer-card-footer">
+        <button
+          class="btn btn-sm btn-run-now"
+          data-analyzer-id="{{ analyzer.id }}"
+          data-analyzer-name="{{ analyzer.name }}"
+        >
+          <i class="fa-solid fa-play fa-xs me-1"></i>Run Now
+        </button>
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- No results -->
+    <div class="no-results d-none col-span-3" id="noResults">
+      <i class="fa-solid fa-search fa-2x text-muted mb-3"></i>
+      <p class="text-muted">No agents match your search.</p>
+    </div>
+  </div>
+
+</div><!-- /.dashboard-layout -->
+
+<!-- ─── Run Agent Modal ────────────────────────────────────────────────── -->
+<div class="modal fade" id="runModal" tabindex="-1" aria-labelledby="runModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content modal-dark">
+      <div class="modal-header">
+        <h5 class="modal-title" id="runModalLabel">
+          <i class="fa-solid fa-play-circle me-2 text-accent"></i>
+          <span id="modalAnalyzerName">Run Agent</span>
+        </h5>
+        <div class="d-flex align-items-center gap-3 ms-auto">
+          <span class="exec-time-badge d-none" id="execTimeBadge">
+            <i class="fa-regular fa-clock me-1"></i><span id="execTimeVal">0</span> ms
+          </span>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+      </div>
+      <div class="modal-body" id="runModalBody">
+
+        <!-- Loading state -->
+        <div id="runModalLoading" class="text-center py-5">
+          <div class="spinner-border text-accent" role="status"></div>
+          <p class="text-muted mt-3 mb-0">Running analyzer against EBS instance…</p>
+          <p class="text-muted small" id="runModalStatusText">Executing SQL…</p>
+        </div>
+
+        <!-- Results state (hidden until loaded) -->
+        <div id="runModalResults" class="d-none">
+
+          <!-- Findings Table -->
+          <div id="modalFindingsSection">
+            <h6 class="results-section-title">
+              <i class="fa-solid fa-triangle-exclamation me-2"></i>Findings
+              <span class="finding-total-badge" id="modalFindingCount">0</span>
+            </h6>
+            <div id="modalFindingsContent">
+              <p class="text-muted small">No findings.</p>
+            </div>
+          </div>
+
+          <!-- Raw Output -->
+          <div class="mt-4">
+            <h6 class="results-section-title">
+              <i class="fa-solid fa-terminal me-2"></i>Raw Output
+              <button class="btn btn-xs btn-outline-secondary ms-2" id="toggleRawBtn">Show</button>
+            </h6>
+            <pre class="raw-output d-none" id="rawOutputPre"><code id="rawOutputCode"></code></pre>
+          </div>
+        </div>
+
+        <!-- Error state -->
+        <div id="runModalError" class="d-none">
+          <div class="alert alert-danger">
+            <i class="fa-solid fa-circle-exclamation me-2"></i>
+            <span id="runModalErrorText">An error occurred.</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        <button class="btn btn-sm btn-outline-accent d-none" id="modalViewReportBtn">
+          <i class="fa-solid fa-file-lines me-1"></i>View Session Report
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.EBS_PAGE = 'dashboard';
+  window.EBS_ANALYZERS = {{ analyzers | tojson }};
+  {% if recent_sessions %}
+  window.EBS_RECENT_SESSIONS = {{ recent_sessions | tojson }};
+  {% else %}
+  window.EBS_RECENT_SESSIONS = [];
+  {% endif %}
+</script>
+{% endblock %}

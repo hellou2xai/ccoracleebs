@@ -1,0 +1,283 @@
+## $Header: inputFile.txt $
+## Version: 1.0
+## Date: 10-Dec-2024
+##
+## +===========================================================================+
+## |  Copyright (c) 2024 Oracle Corporation, Redwood Shores, California, USA   |
+## |                        All rights reserved                                |
+## |                       Applications  Division                              |
+## +===========================================================================+
+## |
+## | FILENAME
+## |   inputFile.txt
+## |
+## | DESCRIPTION
+## |   This is the input file for the initParamValidation.pl script. This file must not be altered manually. 
+#
+## | VERSION HISTORY:
+## |       VER                  CHANGED BY                    DATE                  COMMENT
+## | ==============================================================================================================
+## |       1.0              debasmis adssriva               10 Dec 2024         parameters for  db23 and db19
+## |                        
+EBSVER|DBVER|PLATFORM|PARAMETER|VALUE|MANDATORY|TYPE|SCOPE|ACTION
+12.2|db23|GEN|db_name|prodr12|Y|OTHER|CDB|Specifies a database identifier
+12.2|db23|GEN|control_files|('/disk1/prodr12_DB/cntrlprodr12_1.dbf')|Y|OTHER|CDB|specifies a filesystem path where a copy of critical database control files will reside.
+12.2|db23|GEN|db_block_size|8192|Y|FIXSP|CDB|The required block size for Oracle E-Business Suite is 8192 bytes. No other value may be used.
+12.2|db23|GEN|_system_trig_enabled|TRUE|Y|FIX|ANY|Parameter value must be set to TRUE. If _system_trig_enabled parameter is set to FALSE it will prevent system triggers from being executed.
+12.2|db23|GEN|nls_language|american|N|OTHER|ANY|NLS and character set parameter.
+12.2|db23|GEN|nls_territory|america|N|OTHER|ANY|NLS and character set parameter.
+12.2|db23|GEN|nls_numeric_characters|.,|N|OTHER|ANY|NLS and character set parameter.
+12.2|db23|GEN|nls_comp|binary|Y|FIXSP|ANY|NLS and character set parameter. Mandatory parameter and value  must be set to a specific setting.
+12.2|db23|GEN|nls_sort|binary|Y|FIXSP|ANY|NLS and character set parameter. Mandatory parameter and value  must be set to a specific setting.
+12.2|db23|GEN|nls_date_format|DD-MON-RR|Y|FIXSP|ANY|NLS and character set parameter. Mandatory parameter and value  must be set to a specific setting.
+12.2|db23|GEN|nls_length_semantics|BYTE|Y|FIXSP|ANY|NLS and character set parameter. Mandatory parameter and value  must be set to a specific setting.
+12.2|db23|GEN|audit_trail|TRUE|N|OTHER|CDB|There is a performance overhead for enabling the Database audit_trail  parameter. Remove/unset or comment (# audit_trail)  this parameter if you want to disable audit_trail.
+12.2|db23|GEN|diagnostic_dest|?/prod12|N|OTHER|ANY|For the database, the Automatic Diagnostic Repository (ADR) will be created as <diagnostic_dest>/diag/rdbms/<dbname>/<instname>, directory Files located in the ADR include : Trace files, Alert logs, Core files, Incident files
+12.2|db23|GEN|max_dump_file_size|20480|N|OTHER|ANY|Specifies the maximum size of trace files (excluding the alert file). Limit the size, if you are concerned that trace files may use too much space.
+12.2|db23|GEN|undo_management|AUTO|Y|FIXSP|ANY|System-Managed Undo Parameter. Oracle E-Business Suite requires the use of System Managed Undo (SMU). You must first create an undo tablespace and then set the UNDO_MANAGEMENT initialization parameter to AUTO
+12.2|db23|GEN|undo_tablespace|APPS_UNDOTS1|N|OTHER|ANY|System-Managed Undo Parameter. undo_tablespace must be created when you are in automatic undo management mode (undo_management=auto)
+12.2|db23|GEN|plsql_code_type|NATIVE|N|OTHER|ANY|It is used to enable the PL/SQL global optimizer as well as native compilation. PL/SQL native compilation is recommended for Oracle Database 11g or 12c or 19c or 23ai based Oracle E-Business Suite environments.
+12.2|db23|GEN|_trace_files_public|FALSE|N|OTHER|CDB|Trace file accessibility parameter. Setting this parameter to FALSE is recommended, but it can be enabled on non-production databases to facilitate easier trace file analysis. Warning: Consider the security implications of setting this to TRUE as trace files may include secure data in BIND variables. 
+12.2|db23|GEN|processes|200|Y|SIZING|ANY|Specifies the maximum number of operating system user processes that can simultaneously connect to Oracle. Its value should allow for all background processes such as locks, job queue processes, and parallel execution processes.
+12.2|db23|GEN|sessions|400|Y|SIZING|ANY|Specifies the maximum number of sessions that can be created in the system. The sessions parameter should be set to twice the value of the processes parameter.
+12.2|db23|GEN|db_files|512|Y|SIZING|ANY|Specifies the maximum number of database files that can be opened for this database.
+12.2|db23|GEN|dml_locks|10000|Y|SIZING|ANY|Specifies the maximum number of DML locks obtained on a table that is undergoing a DML operation.
+12.2|db23|GEN|cursor_sharing|EXACT|Y|FIX|ANY|Allows existing applications to improve SQL reuse. EXACT allows statements with identical text to share the same cursor and it is recommended.
+12.2|db23|GEN|open_cursors|600|Y|SIZING|ANY|Specifies the number of cursors a session can have open at any one time.
+12.2|db23|GEN|session_cached_cursors|500|Y|SIZING|ANY|Specifies the number of session cursors to cache. Repeated parse calls of the same SQL (including recursive SQL) or PL/SQL statement cause the session cursor for that statement to be moved into the session cursor cache. 
+12.2|db23|GEN|sga_target|2G|Y|SIZING|ANY|Refers to the total size of the SGA. This includes all the sub-caches, such as the buffer cache, log buffer, shared pool, and large pool. Refer MOS Doc 396009.1 for the sizing table in the section Database Initialization Parameter Sizing and Footnote 1 contains sizing recommendations for sga_target.
+12.2|db23|GEN|db_block_checking|FALSE|N|FIX|ANY|Specifies whether Oracle Database performs block checking for database blocks. This can be enabled and set to LOW, MEDIUM or FULL Note that this may incur an overhead of 1% - 10%.
+12.2|db23|GEN|db_block_checksum|TRUE|N|FIX|CDB|Checksums allow Oracle to detect corruption caused by underlying disks, storage systems, or I/O systems. 
+12.2|db23|GEN|log_checkpoint_timeout|1200|N|OTHER|CDB|The checkpoint interval and timeout control the frequency of checkpoints.
+12.2|db23|GEN|log_checkpoint_interval|100000|N|OTHER|CDB|The checkpoint interval and timeout control the frequency of checkpoints.
+12.2|db23|GEN|log_buffer|10485760|N|OTHER|CDB|A size of 10MB for the log buffer is a reasonable value for Oracle EBS. This represents a balance between concurrent programs and online users. The value of log_buffer must be a multiple of redo block size (normally 512 bytes)
+12.2|db23|GEN|log_checkpoints_to_alert|TRUE|N|OTHER|CDB|Llog_checkpoints_to_alert lets you log your checkpoints to the alert file. Doing so is useful for determining whether checkpoints are occurring at the desired frequency.
+12.2|db23|GEN|shared_pool_size|600M|Y|SIZING|CDB|The shared pool should be tuned to minimize contention for SQL and PL/SQL objects. For Release 12, a reasonable starting point is a size of 600M, shared_pool_size parameter must be set at CDB level only. Remove shared_pool_size from the PDB parameter file if it is set.
+12.2|db23|GEN|shared_pool_reserved_size|60M|Y|SIZING|CDB|The shared pool should be tuned to minimize contention for SQL and PL/SQL objects. For Release 12, a reasonable 60M reserved area (10% of shared pool size)
+12.2|db23|GEN|aq_tm_processes|1|N|OTHER|ANY|AQ requires the TM process to handle delayed messages. A number of Application modules use AQ, including Workflow. The minimum required value is 1 and should be increased to resolve lengthy queues.
+12.2|db23|GEN|job_queue_processes|#cpu_count * 0.5|Y|DERIVED|ANY|Specifies the maximum number of job queue processes that can be created for the execution of DBMS_JOB jobs and DBMS_SCHEDULER jobs. This should typically be set to a value of 2 for optimal performance. However, the value can be tuned to meet the specific requirements of the Workflow module and customer needs, based on the number of job queue processes needed to handle AQ event messages and for Workflow notification mailers.
+12.2|db23|GEN|log_archive_dest_1|'LOCATION=/disk1/arc'|N|OTHER|CDB|Archiving parameters, including destination (optionally, multiple destinations in 11g and later) may be specified.
+12.2|db23|GEN|log_archive_dest_2|'SERVICE=standby1'|N|OTHER|CDB|Archiving parameters, including destination (optionally, multiple destinations in 11g and later) may be specified.
+12.2|db23|GEN|_sort_elimination_cost_ratio|5|Y|FIX|ANY|Optimizer parameter - This parameter must be set as 5, and may not be changed. No other values are supported.
+12.2|db23|GEN|_like_with_bind_as_equality|TRUE|Y|FIX|ANY|Optimizer parameter - This parameter must be set as TRUE, and may not be changed. No other values are supported.
+12.2|db23|GEN|_fast_full_scan_enabled|FALSE|Y|FIX|ANY|Optimizer parameter - This parameter must be set as FALSE, and may not be changed. No other values are supported.
+12.2|db23|GEN|_b_tree_bitmap_plans|FALSE|Y|FIX|ANY|Optimizer parameter. This parameter must be set as FALSE, and may not be changed. No other values are supported.
+12.2|db23|GEN|optimizer_secure_view_merging|FALSE|Y|FIX|ANY|Optimizer parameter - This parameter must be set as FALSE, and may not be changed. No other values are supported.
+12.2|db23|GEN|_optimizer_autostats_job|FALSE|Y|FIX|ANY|Optimizer parameter - This parameter must be set as FALSE, and may not be changed. No other values are supported.
+12.2|db23|GEN|parallel_max_servers|8|N|SIZING|ANY|Specifies the maximum number of parallel execution processes and parallel recovery processes for an instance.Parallel execution is used by some Oracle EBS concurrent programs such as Gather Statistcs, AD when creating large indexes. Parallel Max servers value should be 2 x no. of CPUs.
+12.2|db23|GEN|parallel_min_servers|0|N|OTHER|CDB|Specifies the number of parallel execution processes Oracle creates when the instance is started. These processes will be kept alive to service parallel statements.
+12.2|db23|GEN|parallel_degree_policy|MANUAL|Y|FIX|ANY|Specifies whether automatic degree of parallelism, statement queuing, and in-memory parallel execution will be enabled. It is recommended to set the parameter parallel_degree_policy to MANUAL, the default value. This disables automatic degree of parallelism.
+12.2|db23|GEN|parallel_force_local|TRUE|Y|FIX|ANY|Specifies whether a SQL statement executed in parallel is restricted to a single instance in an Oracle RAC environment. It is recommended to set the parameters PARALLEL_FORCE_LOCAL on each instance, to ensure that parallel requests do not span instances.
+12.2|db23|RAC|cluster_database|TRUE|Y|OTHER|CDB|The following Oracle RAC related parameters should be set when running E-Business Suite in an Oracle RAC environment. Set cluster_database = FALSE if not using RAC.
+12.2|db23|GEN|pga_aggregate_target|1G|Y|SIZING|ANY|Specifies the target aggregate PGA memory available to all server processes attached to the instance.
+12.2|db23|GEN|workarea_size_policy|AUTO|Y|FIX|ANY|Specifies the policy for sizing work areas. The automatic memory manager is used to manage the PGA memory. This avoids the need to manually tune the settings of sort_area_size and hash_area_size.
+12.2|db23|GEN|filesystemio_options|SETALL|Y|FIXSP|CDB|Specifies I/O operations for file system files.Direct I/O bypasses OS layer caching. If Direct I/O and asynchronous are enabled on your OS, and your Linux kernel version is uek-2.6.39-200.29.3.el6uek or later (see Doc ID 1487957.1), use SETALL for optimal performance. Otherwise, use the value that matches your system: none /  directIO /  asynch. Note: SETALL is mandatory for Oracle E-Business Suite on Oracle Public Cloud.
+12.2|db23|GEN|_disable_actualization_for_grant|TRUE|Y|FIX|ANY|For all database versions, set the _disable_actualization_for_grant parameter to TRUE. Refer to MOS Doc 396009.1 for more details.
+12.2|db23|GEN|compatible|23.0.0|Y|FIXSP|CDB|DB compatibility should be set to the current release.
+12.2|db23|GEN|optimizer_adaptive_plans|TRUE|Y|FIX|ANY|Adaptive plans are execution plans built with alternative choices that are decided at run time based on statistics collected as the query executes. Default (TRUE) enables adaptive plans, star transformation bitmap pruning and the adaptive parallel distribution method.
+12.2|db23|GEN|optimizer_adaptive_statistics|FALSE|Y|FIX|ANY|When set to FALSE (Default), it disables SQL plan directives, statistics feedback for joins, performance feedback and adaptive dynamic sampling for parallel execution.
+12.2|db23|GEN|pga_aggregate_limit|0|Y|FIX|ANY|pga_aggregate_limit is a hard limit on the PGA memory usage. If this limit is reached or exceeded, Oracle will terminates the sessions. When value of 0 is specified, it means there is no limit to the aggregate PGA memory consumed by the instance.
+12.2|db23|GEN|temp_undo_enabled|FALSE|Y|FIX|ANY|TEMP_UNDO_ENABLED helps to reduce the amount of redo caused by DML on global temporary tables. Setting to TRUE may cause serious issues, such as ORA-55526, for distributed transactions (Ref. Bug 20712819). The recommended value for systems using distributed transactions is currently FALSE (Pending ER 24286334).
+12.2|db23|GEN|event|10946 trace name context forever, level 8388608|Y|EVENT|CDB|This parameter needs to be set at the CDB level. When this event is set, it will allow utl_file functions to accept a directory path as input on 23ai.
+12.2|db23|GEN|_optimizer_gather_stats_on_conventional_dml|FALSE|Y|OTHER|ANY|Real Time Statistics for On-Premise Exadata and Exadata Cloud Service environments. Refer to MOS Doc 396009.1 for more details.
+12.2|db23|GEN|_optimizer_use_stats_on_conventional_dml|FALSE|Y|OTHER|ANY|Real Time Statistics for On-Premise Exadata and Exadata Cloud Service environments. Refer to MOS Doc 396009.1 for more details.
+12.2|db23|GEN|optimizer_real_time_statistics|FALSE|Y|FIX|ANY|Real Time Statistics for On-Premise Exadata and Exadata Cloud Service environments. Refer to MOS Doc 396009.1 for more details.
+12.2|db23|GEN|permit_92_wrap_format|TRUE|Y|FIXSP|CDB|When permit_92_wrap_format is set to true, it allows Oracle Database release 9.2 wrapped versions of PL/SQL source text to be used in Oracle Database releases 11g, and 12c, 19c and 23ai.
+12.2|db23|GEN|container_data|CURRENT_DICTIONARY|N|FIXSP|PDB|It is recommended to set the parameter container_data = CURRENT_DICTIONARY, when this parameter is set, it will handle queries on extended data-linked objects within the PDB return rows from the PDB only. This parameter needs to be set at the PDB level only.
+12.2|db23|GEN|_ub4_audit_sessionid|TRUE|Y|FIXSP|PDB|This parameter is required by Oracle E-Business Suite for Unified Auditing. When this parameter is set,it will allow Unified Audit Trail with UB4 type session ID for Oracle E-Business Suite. This parameter needs to be set at the PDB level only.
+12.2|db23|GEN|recyclebin|off|Y|FIXSP|ANY|The database recyclebin must be turned off to allow the cleanup phase of the nline patching cycle to be performed without having to connect as SYS.
+12.2|db23|GEN|service_names|%s_dbSid%, <s_patch_service_name or ebs_patch>|N|OTHER|CDB|To support online patching, Oracle E-Business Suite Release 12.2 introduces a new database service.
+12.2|db23|GEN|local_listener|%s_dbSid%_LOCAL|N|OTHER|ANY|The local_listener setting is part of the AutoConfig templates, and required for listener registration of any non-default (1521) ports.
+12.2|db23|GEN|result_cache_max_size|600M|YW|SIZING|ANY|For Oracle E-Business Suite 12.2.x, set the result_cache_max_size parameter to make optimal use of result cache memory.The value of result_cache_max_size is the maximum amount of memory taken from the shared pool, so it should be set in consideration with the setting of the shared_pool_size parameter.For higher concurrency environments that have more than 2000 active Oracle E-Business Suite user accounts, a setting of 600M is recommended.
+12.2|db23|GEN|_kks_use_mutex_pin|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|_pdb_name_case_sensitive|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|_shared_pool_reserved_min_alloc|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|_sqlexec_progression_cost|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|always_anti_join|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|always_semi_join|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|background_dump_dest|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|core_dump_dest|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|db_block_buffers|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|db_cache_size|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|db_file_multiblock_read_count|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|drs_start|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|enqueue_resources|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|event|10932 trace name context level 32768|Y|REMOVE|NA|NA
+12.2|db23|GEN|event|10933 trace name context level 512|Y|REMOVE|NA|NA
+12.2|db23|GEN|event|10943 trace name context forever, level 2|Y|REMOVE|NA|NA
+12.2|db23|GEN|event|10943 trace name context level 16384|Y|REMOVE|NA|NA
+12.2|db23|GEN|event|10946 trace name context forever, level 8454144|Y|REMOVE|NA|NA
+12.2|db23|GEN|event|38004 trace name context forever, level 1|Y|REMOVE|NA|NA
+12.2|db23|GEN|exafusion_enabled|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|exclude_seed_cdb_view|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|global_context_pool_size|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|hash_area_size|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|instance_groups|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|java_pool_size|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|job_queue_interval|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|large_pool_size|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|max_enabled_roles|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|o7_dictionary_accessibility|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|olap_page_pool_size|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|optimizer_adaptive_features|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|optimizer_dynamic_sampling|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|optimizer_features_enable|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|optimizer_index_caching|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|optimizer_index_cost_adj|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|optimizer_max_permutations|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|optimizer_mode|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|optimizer_percent_parallel|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|parallel_automatic_tuning|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|parallel_instance_group|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|parallel_degree_level|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|parallel_io_cap_enabled|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|parallel_server|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|parallel_server_instances|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|plsql_compiler_flags|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|plsql_native_library_dir|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|plsql_native_library_subdir_count|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|plsql_optimize_level|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|query_rewrite_enabled|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|rollback_segments|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|row_locking|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|sec_case_sensitive_logon|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|sort_area_size|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|standby_archive_dest|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|sql_trace|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|sql_version|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|timed_statistics|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|undo_retention|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|undo_suppress_errors|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|use_indirect_data_buffers|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|user_dump_dest|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|utl_file_dir|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|DBFIPS_140|NA|Y|REMOVE|NA|NA
+12.2|db23|GEN|FIPS_140|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|db_name|prodr12|Y|OTHER|CDB|Specifies a database identifier
+12.2|db19|GEN|control_files|('/disk1/prodr12_DB/cntrlprodr12_1.dbf')|Y|OTHER|CDB|specifies a filesystem path where a copy of critical database control files will reside.
+12.2|db19|GEN|db_block_size|8192|Y|FIXSP|CDB|The required block size for Oracle E-Business Suite is 8192 bytes. No other value may be used.
+12.2|db19|GEN|_system_trig_enabled|TRUE|Y|FIX|ANY|Parameter value must be set to TRUE. If _system_trig_enabled parameter is set to FALSE it will prevent system triggers from being executed.
+12.2|db19|GEN|nls_language|american|N|OTHER|ANY|NLS and character set parameter.
+12.2|db19|GEN|nls_territory|america|N|OTHER|ANY|NLS and character set parameter.
+12.2|db19|GEN|nls_numeric_characters|.,|N|OTHER|ANY|NLS and character set parameter.
+12.2|db19|GEN|nls_comp|binary|Y|FIXSP|ANY|NLS and character set parameter. Mandatory parameter and value  must be set to a specific setting.
+12.2|db19|GEN|nls_sort|binary|Y|FIXSP|ANY|NLS and character set parameter. Mandatory parameter and value  must be set to a specific setting.
+12.2|db19|GEN|nls_date_format|DD-MON-RR|Y|FIXSP|ANY|NLS and character set parameter. Mandatory parameter and value  must be set to a specific setting.
+12.2|db19|GEN|nls_length_semantics|BYTE|Y|FIXSP|ANY|NLS and character set parameter. Mandatory parameter and value  must be set to a specific setting.
+12.2|db19|GEN|audit_trail|TRUE|N|OTHER|CDB|There is a performance overhead for enabling the Database audit_trail  parameter. Remove/unset or comment (# audit_trail)  this parameter if you want to disable audit_trail.
+12.2|db19|GEN|diagnostic_dest|?/prod12|N|OTHER|ANY|For the database, the Automatic Diagnostic Repository (ADR) will be created as <diagnostic_dest>/diag/rdbms/<dbname>/<instname>, directory Files located in the ADR include : Trace files, Alert logs, Core files, Incident files
+12.2|db19|GEN|max_dump_file_size|20480|N|OTHER|ANY|Specifies the maximum size of trace files (excluding the alert file). Limit the size, if you are concerned that trace files may use too much space.
+12.2|db19|GEN|undo_management|AUTO|Y|FIXSP|ANY|System-Managed Undo Parameter. Oracle E-Business Suite requires the use of System Managed Undo (SMU). You must first create an undo tablespace and then set the UNDO_MANAGEMENT initialization parameter to AUTO
+12.2|db19|GEN|undo_tablespace|APPS_UNDOTS1|N|OTHER|ANY|System-Managed Undo Parameter. undo_tablespace must be created when you are in automatic undo management mode (undo_management=auto)
+12.2|db19|GEN|plsql_code_type|NATIVE|N|FIX|ANY|It is used to enable the PL/SQL global optimizer as well as native compilation. PL/SQL native compilation is recommended for Oracle Database 11g or 12c or 19c or 23ai based Oracle E-Business Suite environments.
+12.2|db19|GEN|_trace_files_public|FALSE|N|OTHER|CDB|Trace file accessibility parameter. Setting this parameter to FALSE is recommended, but it can be enabled on non-production databases to facilitate easier trace file analysis. Warning: Consider the security implications of setting this to TRUE as trace files may include secure data in BIND variables. 
+12.2|db19|GEN|processes|200|Y|SIZING|ANY|Specifies the maximum number of operating system user processes that can simultaneously connect to Oracle. Its value should allow for all background processes such as locks, job queue processes, and parallel execution processes.
+12.2|db19|GEN|sessions|400|Y|SIZING|ANY|Specifies the maximum number of sessions that can be created in the system. The sessions parameter should be set to twice the value of the processes parameter.
+12.2|db19|GEN|db_files|512|Y|SIZING|ANY|Specifies the maximum number of database files that can be opened for this database.
+12.2|db19|GEN|dml_locks|10000|Y|SIZING|ANY|Specifies the maximum number of DML locks obtained on a table that is undergoing a DML operation.
+12.2|db19|GEN|cursor_sharing|EXACT|Y|FIX|ANY|Allows existing applications to improve SQL reuse. EXACT allows statements with identical text to share the same cursor and it is recommended.
+12.2|db19|GEN|open_cursors|600|Y|SIZING|ANY|Specifies the number of cursors a session can have open at any one time.
+12.2|db19|GEN|session_cached_cursors|500|Y|SIZING|ANY|Specifies the number of session cursors to cache. Repeated parse calls of the same SQL (including recursive SQL) or PL/SQL statement cause the session cursor for that statement to be moved into the session cursor cache. 
+12.2|db19|GEN|sga_target|2G|Y|SIZING|ANY|Refers to the total size of the SGA. This includes all the sub-caches, such as the buffer cache, log buffer, shared pool, and large pool. Refer MOS Doc 396009.1 for the sizing table in the section Database Initialization Parameter Sizing and Footnote 1 contains sizing recommendations for sga_target.
+12.2|db19|GEN|db_block_checking|FALSE|N|FIX|ANY|Specifies whether Oracle Database performs block checking for database blocks. This can be enabled and set to LOW, MEDIUM or FULL Note that this may incur an overhead of 1% - 10%.
+12.2|db19|GEN|db_block_checksum|TRUE|N|FIX|CDB|Checksums allow Oracle to detect corruption caused by underlying disks, storage systems, or I/O systems. 
+12.2|db19|GEN|log_checkpoint_timeout|1200|N|OTHER|CDB|The checkpoint interval and timeout control the frequency of checkpoints.
+12.2|db19|GEN|log_checkpoint_interval|100000|N|OTHER|CDB|The checkpoint interval and timeout control the frequency of checkpoints.
+12.2|db19|GEN|log_buffer|10485760|N|OTHER|CDB|A size of 10MB for the log buffer is a reasonable value for Oracle EBS. This represents a balance between concurrent programs and online users. The value of log_buffer must be a multiple of redo block size (normally 512 bytes)
+12.2|db19|GEN|log_checkpoints_to_alert|TRUE|N|OTHER|CDB|Llog_checkpoints_to_alert lets you log your checkpoints to the alert file. Doing so is useful for determining whether checkpoints are occurring at the desired frequency.
+12.2|db19|GEN|shared_pool_size|600M|Y|SIZING|CDB|The shared pool should be tuned to minimize contention for SQL and PL/SQL objects. For Release 12, a reasonable starting point is a size of 600M, shared_pool_size parameter must be set at CDB level only. Remove shared_pool_size from the PDB parameter file if it is set.
+12.2|db19|GEN|shared_pool_reserved_size|60M|Y|SIZING|CDB|The shared pool should be tuned to minimize contention for SQL and PL/SQL objects. For Release 12, a reasonable 60M reserved area (10% of shared pool size)
+12.2|db19|GEN|aq_tm_processes|1|N|OTHER|ANY|AQ requires the TM process to handle delayed messages. A number of Application modules use AQ, including Workflow. The minimum required value is 1 and should be increased to resolve lengthy queues.
+12.2|db19|GEN|job_queue_processes|#cpu_count * 0.5|Y|DERIVED|ANY|Specifies the maximum number of job queue processes that can be created for the execution of DBMS_JOB jobs and DBMS_SCHEDULER jobs. This should typically be set to a value of 2 for optimal performance. However, the value can be tuned to meet the specific requirements of the Workflow module and customer needs, based on the number of job queue processes needed to handle AQ event messages and for Workflow notification mailers.
+12.2|db19|GEN|log_archive_dest_1|'LOCATION=/disk1/arc'|N|OTHER|CDB|Archiving parameters, including destination (optionally, multiple destinations in 11g and later) may be specified.
+12.2|db19|GEN|log_archive_dest_2|'SERVICE=standby1'|N|OTHER|CDB|Archiving parameters, including destination (optionally, multiple destinations in 11g and later) may be specified.
+12.2|db19|GEN|_sort_elimination_cost_ratio|5|Y|FIX|ANY|Optimizer parameter - This parameter must be set as 5, and may not be changed. No other values are supported.
+12.2|db19|GEN|_like_with_bind_as_equality|TRUE|Y|FIX|ANY|Optimizer parameter - This parameter must be set as TRUE, and may not be changed. No other values are supported.
+12.2|db19|GEN|_fast_full_scan_enabled|FALSE|Y|FIX|ANY|Optimizer parameter - This parameter must be set as FALSE, and may not be changed. No other values are supported.
+12.2|db19|GEN|_b_tree_bitmap_plans|FALSE|Y|FIX|ANY|Optimizer parameter. This parameter must be set as FALSE, and may not be changed. No other values are supported.
+12.2|db19|GEN|optimizer_secure_view_merging|FALSE|Y|FIX|ANY|Optimizer parameter - This parameter must be set as FALSE, and may not be changed. No other values are supported.
+12.2|db19|GEN|_optimizer_autostats_job|FALSE|Y|FIX|ANY|Optimizer parameter - This parameter must be set as FALSE, and may not be changed. No other values are supported.
+12.2|db19|GEN|parallel_max_servers|8|N|SIZING|ANY|Specifies the maximum number of parallel execution processes and parallel recovery processes for an instance.Parallel execution is used by some Oracle EBS concurrent programs such as Gather Statistcs, AD when creating large indexes. Parallel Max servers value should be 2 x no. of CPUs.
+12.2|db19|GEN|parallel_min_servers|0|N|OTHER|CDB|Specifies the number of parallel execution processes Oracle creates when the instance is started. These processes will be kept alive to service parallel statements.
+12.2|db19|GEN|parallel_degree_policy|MANUAL|Y|FIX|ANY|Specifies whether automatic degree of parallelism, statement queuing, and in-memory parallel execution will be enabled. It is recommended to set the parameter parallel_degree_policy to MANUAL, the default value. This disables automatic degree of parallelism.
+12.2|db19|GEN|parallel_force_local|TRUE|Y|FIX|ANY|Specifies whether a SQL statement executed in parallel is restricted to a single instance in an Oracle RAC environment. It is recommended to set the parameters PARALLEL_FORCE_LOCAL on each instance, to ensure that parallel requests do not span instances.
+12.2|db19|RAC|cluster_database|TRUE|Y|OTHER|CDB|The following Oracle RAC related parameters should be set when running E-Business Suite in an Oracle RAC environment. Set cluster_database = FALSE if not using RAC.
+12.2|db19|GEN|pga_aggregate_target|1G|Y|SIZING|ANY|Specifies the target aggregate PGA memory available to all server processes attached to the instance.
+12.2|db19|GEN|workarea_size_policy|AUTO|Y|FIX|ANY|Specifies the policy for sizing work areas. The automatic memory manager is used to manage the PGA memory. This avoids the need to manually tune the settings of sort_area_size and hash_area_size.
+12.2|db19|GEN|filesystemio_options|SETALL|Y|FIXSP|CDB|Specifies I/O operations for file system files.Direct I/O bypasses OS layer caching. If Direct I/O and asynchronous are enabled on your OS, and your Linux kernel version is uek-2.6.39-200.29.3.el6uek or later (see Doc ID 1487957.1), use SETALL for optimal performance. Otherwise, use the value that matches your system: none /  directIO /  asynch. Note: SETALL is mandatory for Oracle E-Business Suite on Oracle Public Cloud.
+12.2|db19|GEN|sec_case_sensitive_logon|FALSE|Y|FIX|CDB|Enables or disables password case sensitivity in the database. The default value of this parameter is TRUE, i.e. passwords are case-sensitive at the database level. Although the parameter is deprecated in Oracle Database 12c and 19c, it still needs to be set explicitly set for Oracle E-Business Suite. Refer to MOS Doc 396009.1 for more details.
+12.2|db19|GEN|_disable_actualization_for_grant|TRUE|Y|FIX|ANY|For all database versions, set the _disable_actualization_for_grant parameter to TRUE. Refer to MOS Doc 396009.1 for more details.
+12.2|db19|GEN|compatible|19.0.0|Y|FIXSP|CDB|DB compatibility should be set to the current release.
+12.2|db19|GEN|optimizer_adaptive_plans|TRUE|Y|FIX|ANY|Adaptive plans are execution plans built with alternative choices that are decided at run time based on statistics collected as the query executes. Default (TRUE) enables adaptive plans, star transformation bitmap pruning and the adaptive parallel distribution method.
+12.2|db19|GEN|optimizer_adaptive_statistics|FALSE|Y|FIX|ANY|When set to FALSE (Default), it disables SQL plan directives, statistics feedback for joins, performance feedback and adaptive dynamic sampling for parallel execution.
+12.2|db19|GEN|pga_aggregate_limit|0|Y|FIX|ANY|pga_aggregate_limit is a hard limit on the PGA memory usage. If this limit is reached or exceeded, Oracle will terminates the sessions. When value of 0 is specified, it means there is no limit to the aggregate PGA memory consumed by the instance.
+12.2|db19|GEN|temp_undo_enabled|FALSE|Y|FIX|ANY|TEMP_UNDO_ENABLED helps to reduce the amount of redo caused by DML on global temporary tables. Setting to TRUE may cause serious issues, such as ORA-55526, for distributed transactions (Ref. Bug 20712819). The recommended value for systems using distributed transactions is currently FALSE (Pending ER 24286334).
+12.2|db19|GEN|_pdb_name_case_sensitive|TRUE|N|FIXSP|CDB|This parameter must be set to TRUE when the non-CDB name is in either lowercase or mixed case. This ensures that the PDB will then be created with the same case. Otherwise, for an uppercase PDB name, the default value of FALSE can be retained. This parameter must be set to the correct value at CDB level before a PDB is created. Once the PDB has been created, the value must not be changed unless specifically directed by Oracle, for example in My Oracle Support Knowledge Document 2782130.1, "Implementing Case-Insensitive Pluggable Database Names with Oracle E-Business Suite Release 12.2 on Oracle Database 19c Multitenant Architecture".
+12.2|db19|GEN|event|10946 trace name context forever, level 8454144|Y|EVENT|CDB|This parameter needs to be set at the CDB level. When this event is set, it will allow utl_file functions to accept a directory path as input and enable backward compatibility of user/all/dba_arguments behavior on 19c.
+12.2|db19|GEN|_optimizer_gather_stats_on_conventional_dml|FALSE|Y|OTHER|ANY|Real Time Statistics for On-Premise Exadata and Exadata Cloud Service environments. Refer to MOS Doc 396009.1 for more details.
+12.2|db19|GEN|_optimizer_use_stats_on_conventional_dml|FALSE|Y|OTHER|ANY|Real Time Statistics for On-Premise Exadata and Exadata Cloud Service environments. Refer to MOS Doc 396009.1 for more details.
+12.2|db19|GEN|optimizer_real_time_statistics|FALSE|Y|FIX|ANY|Real Time Statistics for On-Premise Exadata and Exadata Cloud Service environments. Refer to MOS Doc 396009.1 for more details.
+12.2|db19|GEN|recyclebin|off|Y|FIXSP|ANY|The database recyclebin must be turned off to allow the cleanup phase of the nline patching cycle to be performed without having to connect as SYS.
+12.2|db19|GEN|service_names|%s_dbSid%, <s_patch_service_name or ebs_patch>|N|OTHER|CDB|To support online patching, Oracle E-Business Suite Release 12.2 introduces a new database service.
+12.2|db19|GEN|local_listener|%s_dbSid%_LOCAL|N|OTHER|ANY|The local_listener setting is part of the AutoConfig templates, and required for listener registration of any non-default (1521) ports.
+12.2|db19|GEN|result_cache_max_size|600M|YW|SIZING|ANY|For Oracle E-Business Suite 12.2.x, set the result_cache_max_size parameter to make optimal use of result cache memory.The value of result_cache_max_size is the maximum amount of memory taken from the shared pool, so it should be set in consideration with the setting of the shared_pool_size parameter.For higher concurrency environments that have more than 2000 active Oracle E-Business Suite user accounts, a setting of 600M is recommended.
+12.2|db19|GEN|_kks_use_mutex_pin|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|_shared_pool_reserved_min_alloc|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|_sqlexec_progression_cost|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|always_anti_join|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|always_semi_join|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|background_dump_dest|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|core_dump_dest|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|db_block_buffers|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|db_cache_size|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|db_file_multiblock_read_count|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|drs_start|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|enqueue_resources|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|event|10932 trace name context level 32768|Y|REMOVE|NA|NA
+12.2|db19|GEN|event|10933 trace name context level 512|Y|REMOVE|NA|NA
+12.2|db19|GEN|event|10943 trace name context forever, level 2|Y|REMOVE|NA|NA
+12.2|db19|GEN|event|10943 trace name context level 16384|Y|REMOVE|NA|NA
+12.2|db19|GEN|event|38004 trace name context forever, level 1|Y|REMOVE|NA|NA
+12.2|db19|GEN|exafusion_enabled|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|exclude_seed_cdb_view|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|global_context_pool_size|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|hash_area_size|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|instance_groups|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|java_pool_size|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|job_queue_interval|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|large_pool_size|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|max_enabled_roles|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|o7_dictionary_accessibility|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|olap_page_pool_size|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|optimizer_adaptive_features|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|optimizer_dynamic_sampling|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|optimizer_features_enable|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|optimizer_index_caching|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|optimizer_index_cost_adj|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|optimizer_max_permutations|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|optimizer_mode|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|optimizer_percent_parallel|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|parallel_automatic_tuning|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|parallel_instance_group|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|parallel_degree_level|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|parallel_io_cap_enabled|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|parallel_server|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|parallel_server_instances|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|plsql_compiler_flags|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|plsql_native_library_dir|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|plsql_native_library_subdir_count|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|plsql_optimize_level|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|query_rewrite_enabled|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|rollback_segments|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|row_locking|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|sort_area_size|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|standby_archive_dest|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|sql_trace|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|sql_version|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|timed_statistics|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|undo_retention|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|undo_suppress_errors|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|use_indirect_data_buffers|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|user_dump_dest|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|utl_file_dir|NA|Y|REMOVE|NA|NA
+12.2|db19|GEN|DBFIPS_140|NA|Y|REMOVE|NA|NA
