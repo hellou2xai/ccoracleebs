@@ -385,7 +385,13 @@ class OracleDB:
                     "host": h,
                     "service_name": sn,
                 }
-            raise  # re-raise for the outer handler
+            return {
+                    "success": False,
+                    "mode": "demo",
+                    "error": f"Connection failed: {err_msg}",
+                    "host": h,
+                    "service_name": sn,
+                }
 
         try:
             # Quick smoke-test

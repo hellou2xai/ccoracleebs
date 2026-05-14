@@ -7,15 +7,16 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends wget unzip \
         $(apt-cache show libaio1t64 >/dev/null 2>&1 && echo libaio1t64 || echo libaio1) && \
     mkdir -p /opt/oracle && \
-    wget -q https://download.oracle.com/otn_software/linux/instantclient/2340000/instantclient-basiclite-linux.x64-23.4.0.24.05.zip \
+    wget -q https://download.oracle.com/otn_software/linux/instantclient/2380000/instantclient-basiclite-linux.x64-23.8.0.25.04.zip \
          -O /tmp/instantclient.zip && \
     unzip -q /tmp/instantclient.zip -d /opt/oracle && \
     rm /tmp/instantclient.zip && \
+    ln -s /opt/oracle/instantclient_* /opt/oracle/instantclient && \
     apt-get purge -y wget unzip && apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
-ENV ORACLE_CLIENT_DIR=/opt/oracle/instantclient_23_4
-ENV LD_LIBRARY_PATH=/opt/oracle/instantclient_23_4:${LD_LIBRARY_PATH}
+ENV ORACLE_CLIENT_DIR=/opt/oracle/instantclient
+ENV LD_LIBRARY_PATH=/opt/oracle/instantclient:${LD_LIBRARY_PATH}
 
 # Install Python dependencies
 COPY requirements.txt .

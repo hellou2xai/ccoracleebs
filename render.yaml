@@ -21,7 +21,7 @@ services:
       - key: ORACLE_PASSWORD
         sync: false
       - key: ORACLE_CLIENT_DIR
-        value: /opt/oracle/instantclient_23_4
+        value: /opt/oracle/instantclient
       # Application
       - key: DEMO_MODE
         value: "false"
