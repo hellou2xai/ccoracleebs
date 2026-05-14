@@ -2,20 +2,28 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies and Oracle Instant Client (thick mode for NNE)
+# Install system dependencies for Oracle Instant Client
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends wget unzip \
-        $(apt-cache show libaio1t64 >/dev/null 2>&1 && echo libaio1t64 || echo libaio1) && \
-    mkdir -p /opt/oracle && \
+    apt-get install -y --no-install-recommends wget unzip && \
+    apt-get install -y --no-install-recommends libaio1t64 || \
+    apt-get install -y --no-install-recommends libaio1 && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create libaio.so.1 symlink (Bookworm ships libaio.so.1t64)
+RUN if [ -f /usr/lib/x86_64-linux-gnu/libaio.so.1t64 ] && [ ! -e /usr/lib/x86_64-linux-gnu/libaio.so.1 ]; then \
+        ln -sf /usr/lib/x86_64-linux-gnu/libaio.so.1t64 /usr/lib/x86_64-linux-gnu/libaio.so.1; \
+    fi && ldconfig
+
+# Download and install Oracle Instant Client 23
+RUN mkdir -p /opt/oracle && \
     wget -q https://download.oracle.com/otn_software/linux/instantclient/2380000/instantclient-basiclite-linux.x64-23.8.0.25.04.zip \
          -O /tmp/instantclient.zip && \
     unzip -q /tmp/instantclient.zip -d /opt/oracle && \
     rm /tmp/instantclient.zip && \
-    ln -s /opt/oracle/instantclient_* /opt/oracle/instantclient && \
-    if [ ! -e /usr/lib/x86_64-linux-gnu/libaio.so.1 ]; then \
-        ln -s /usr/lib/x86_64-linux-gnu/libaio.so.1t64 /usr/lib/x86_64-linux-gnu/libaio.so.1; \
-    fi && \
-    apt-get purge -y wget unzip && apt-get autoremove -y && \
+    ln -sf /opt/oracle/instantclient_* /opt/oracle/instantclient && \
+    echo /opt/oracle/instantclient > /etc/ld.so.conf.d/oracle-instantclient.conf && \
+    ldconfig && \
+    apt-get purge -y wget unzip && \
     rm -rf /var/lib/apt/lists/*
 
 ENV ORACLE_CLIENT_DIR=/opt/oracle/instantclient
