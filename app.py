@@ -141,6 +141,8 @@ def require_login():
     if request.endpoint in allowed:
         return
     if not session.get("logged_in"):
+        if request.path.startswith("/api/"):
+            return jsonify({"error": "Not authenticated"}), 401
         return redirect(url_for("login"))
 
 
