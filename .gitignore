@@ -1,6 +1,8 @@
 # Secrets
 .env
 .env_1
+.env.render
+render/.env.render
 JIRA Key.txt
 
 # Python
