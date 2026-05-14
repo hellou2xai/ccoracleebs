@@ -22,7 +22,9 @@ class OracleDB:
     """
 
     def __init__(self):
-        self.host = os.environ.get("ORACLE_HOST", "apps.example.com")
+        # Use ORACLE_HOST_IP if available (bypasses DNS/hosts file issues)
+        self.host = os.environ.get("ORACLE_HOST_IP") or os.environ.get("ORACLE_HOST", "apps.example.com")
+        self.host_label = os.environ.get("ORACLE_HOST", self.host)
         self.port = int(os.environ.get("ORACLE_PORT", "1521"))
         self.sid = os.environ.get("ORACLE_SID", "EBSDB")
         self.service_name = os.environ.get("ORACLE_SERVICE_NAME", "EBSDB")
@@ -323,7 +325,10 @@ class OracleDB:
         Attempt a real Oracle connection with the provided (or env-default) credentials.
         Does NOT fall back to demo mode on failure — returns a detailed status dict.
         """
+        # Prefer IP over hostname to avoid DNS/hosts file issues
         h  = host         or self.host
+        if h == os.environ.get("ORACLE_HOST") and os.environ.get("ORACLE_HOST_IP"):
+            h = os.environ.get("ORACLE_HOST_IP")
         p  = int(port)    if port else self.port
         sn = service_name or self.service_name
         u  = user         or self.user
