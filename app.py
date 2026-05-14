@@ -2075,9 +2075,10 @@ def api_jira_add_comment(key: str):
 
 @app.errorhandler(500)
 def server_error(e):
+    logger.error("500 error on %s: %s", request.path, e)
     if request.path.startswith("/api/"):
-        return jsonify({"error": "Internal server error"}), 500
-    return render_template("index.html"), 500
+        return jsonify({"error": str(e)}), 500
+    return render_template("index.html", error=str(e)), 500
 
 
 # ─── Entry Point ──────────────────────────────────────────────────────────────
