@@ -697,6 +697,53 @@ def api_oracle_connect():
     return jsonify(result)
 
 
+@app.route("/api/oracle/nettest")
+def api_oracle_nettest():
+    """Quick TCP connectivity test to the Oracle host — no credentials needed."""
+    import socket
+    host = os.environ.get("ORACLE_HOST", "apps.example.com")
+    port = int(os.environ.get("ORACLE_PORT", "1521"))
+    ip = os.environ.get("ORACLE_HOST_IP", "")
+
+    results = {"host": host, "port": port, "oracle_host_ip_env": ip}
+
+    # DNS resolution
+    try:
+        addrs = socket.getaddrinfo(host, port)
+        results["dns_resolved"] = [a[4][0] for a in addrs]
+    except Exception as e:
+        results["dns_resolved"] = None
+        results["dns_error"] = str(e)
+
+    # TCP connect
+    try:
+        sock = socket.create_connection((host, port), timeout=5)
+        sock.close()
+        results["tcp_reachable"] = True
+    except Exception as e:
+        results["tcp_reachable"] = False
+        results["tcp_error"] = str(e)
+
+    # Also test raw IP if provided
+    if ip:
+        try:
+            sock = socket.create_connection((ip, port), timeout=5)
+            sock.close()
+            results["ip_tcp_reachable"] = True
+        except Exception as e:
+            results["ip_tcp_reachable"] = False
+            results["ip_tcp_error"] = str(e)
+
+    # Check /etc/hosts entry
+    try:
+        with open("/etc/hosts") as f:
+            results["etc_hosts"] = [l.strip() for l in f if host in l]
+    except Exception:
+        pass
+
+    return jsonify(results)
+
+
 @app.route("/api/fusion/apps")
 def api_fusion_apps():
     """List all EBS Agentic Apps."""
