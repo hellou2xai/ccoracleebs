@@ -2,9 +2,10 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies (libaio1t64 for Debian Bookworm+)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends libaio1 && \
+    apt-get install -y --no-install-recommends libaio1t64 || \
+    apt-get install -y --no-install-recommends libaio1; \
     rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
