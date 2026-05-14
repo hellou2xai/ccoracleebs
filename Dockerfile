@@ -12,6 +12,9 @@ RUN apt-get update && \
     unzip -q /tmp/instantclient.zip -d /opt/oracle && \
     rm /tmp/instantclient.zip && \
     ln -s /opt/oracle/instantclient_* /opt/oracle/instantclient && \
+    if [ ! -e /usr/lib/x86_64-linux-gnu/libaio.so.1 ]; then \
+        ln -s /usr/lib/x86_64-linux-gnu/libaio.so.1t64 /usr/lib/x86_64-linux-gnu/libaio.so.1; \
+    fi && \
     apt-get purge -y wget unzip && apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
