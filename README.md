@@ -1,8 +1,68 @@
 # Oracle EBS Support Agent
 
+> **Built by [U2xAI](mailto:hello@u2xai.com)** — Specialists in Claude Code + Oracle ERP Integration
+
+---
+
+## About U2xAI
+
+**U2xAI** is a technology consulting firm that specializes in integrating **Anthropic's Claude Code** with enterprise Oracle ERP systems. We bring deep expertise across the full Oracle stack — E-Business Suite, Fusion Cloud, and database technologies — combined with cutting-edge AI to transform how organizations manage, troubleshoot, and operate their mission-critical ERP platforms.
+
+### What We Do
+
+```
++-----------------------------------------------------------------------+
+|                           U2xAI Expertise                              |
+|-----------------------------------------------------------------------|
+|                                                                        |
+|   +------------------+    +-------------------+    +-----------------+ |
+|   | Claude Code      |    | Oracle ERP        |    | AI-Powered      | |
+|   | Integration      |    | Deep Knowledge    |    | Automation      | |
+|   |                  |    |                   |    |                 | |
+|   | - Claude API     |    | - EBS R12 / 12.2  |    | - Intelligent   | |
+|   | - Tool Use       |    | - Fusion Cloud    |    |   diagnostics   | |
+|   | - Agent SDK      |    | - Oracle DB 19c+  |    | - Auto triage   | |
+|   | - MCP Servers    |    | - PL/SQL & Forms  |    | - Self-healing  | |
+|   | - Multi-agent    |    | - OAF & Workflow  |    |   runbooks      | |
+|   |   orchestration  |    | - Concurrent Mgr  |    | - Predictive    | |
+|   |                  |    | - ADOP & Patching |    |   issue detect  | |
+|   +------------------+    +-------------------+    +-----------------+ |
+|                                                                        |
++-----------------------------------------------------------------------+
+```
+
+### Our Expertise
+
+| Domain | Capabilities |
+|--------|-------------|
+| **Oracle EBS R12** | Full-stack support — Financials (AP, AR, GL, FA), Manufacturing (INV, BOM, WIP, ASCP), HCM (HR, Payroll), CRM, and Core ATG (Concurrent Processing, Workflow, OAF) |
+| **Oracle Fusion Cloud** | Supply Chain Planning, Financials, Procurement, HCM — diagnostics, integration, and migration from EBS |
+| **Claude Code / AI** | Custom AI agents using Anthropic's Claude API with tool_use, multi-agent orchestration, MCP server development, and agentic workflows for ERP operations |
+| **Database & Infrastructure** | Oracle DB 19c/23ai, RAC, Data Guard, ADOP, patching automation, performance tuning, and cloud migration (OCI, AWS, Render) |
+| **Integration** | JIRA, ServiceNow, Slack, and custom ticketing system integration with AI-powered triage and resolution |
+
+### Why U2xAI?
+
+- **20+ years of Oracle ERP experience** combined with AI-first engineering
+- **Production-proven** — our agents handle real EBS environments with 370+ diagnostic analyzers
+- **End-to-end delivery** — from architecture to deployment on cloud platforms (Render, OCI, AWS)
+- **Not just chatbots** — we build agents that *execute*, *diagnose*, and *fix* real ERP issues with live database connectivity
+- **Enterprise-ready** — demo mode for safe evaluation, full audit trails, JIRA integration, and PDF reporting
+
+### Get in Touch
+
+| | |
+|---|---|
+| **Email** | [hello@u2xai.com](mailto:hello@u2xai.com) |
+| **Services** | Claude Code + Oracle ERP Integration, AI Agent Development, EBS/Fusion Support Automation, Cloud Migration |
+
+---
+
+## Oracle EBS Support Agent
+
 **AI-powered support agent for Oracle E-Business Suite R12** built with Claude AI, Flask, and 370+ diagnostic SQL analyzers.
 
-This application provides an intelligent conversational interface for diagnosing, analyzing, and resolving Oracle EBS issues across all major modules — Financials, Manufacturing, HCM, CRM, and Core ATG.
+This application provides an intelligent conversational interface for diagnosing, analyzing, and resolving Oracle EBS issues across all major modules — Financials, Manufacturing, HCM, CRM, and Core ATG. It is a showcase of what U2xAI delivers — production-grade AI agents that connect directly to your Oracle environment and deliver actionable insights in seconds.
 
 ```
 +------------------------------------------------------------------+
@@ -524,10 +584,36 @@ ccoracleebs/
 
 ---
 
+---
+
+## Want This for Your Organization?
+
+U2xAI builds custom AI agents tailored to your Oracle ERP environment. Whether you're running EBS R12, Fusion Cloud, or planning a migration — we can help you:
+
+- **Reduce L1/L2 support costs** by automating diagnostic triage with AI
+- **Cut mean-time-to-resolution (MTTR)** from hours to minutes
+- **Empower your support team** with an AI copilot that knows your EBS inside out
+- **Integrate with your workflow** — JIRA, ServiceNow, Slack, or your custom ticketing system
+- **Deploy anywhere** — on-prem, OCI, AWS, Render, or air-gapped environments
+
+```
++-------------------------------------------------------------------+
+|                     Ready to get started?                          |
+|                                                                    |
+|   Email:  hello@u2xai.com                                         |
+|                                                                    |
+|   We offer:                                                        |
+|   - Free demo with your EBS environment (demo mode available)      |
+|   - Proof of concept in 2 weeks                                    |
+|   - Full production deployment with custom agent development       |
+|   - Ongoing support and agent training                             |
++-------------------------------------------------------------------+
+```
+
 ## License
 
 Proprietary - U2xAI. All rights reserved.
 
 ---
 
-Built by [U2xAI](mailto:hello@u2xai.com)
+Built with Claude Code by [U2xAI](mailto:hello@u2xai.com) | Specialists in AI + Oracle ERP
