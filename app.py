@@ -1788,10 +1788,36 @@ def _get_jira():
 @app.route("/jira")
 def jira_page():
     """JIRA ticket search workspace."""
-    jc = _get_jira()
-    return render_template("jira.html",
-                           jira_base_url=jc.base_url,
-                           jira_configured=jc.is_configured())
+    try:
+        jc = _get_jira()
+        return render_template("jira.html",
+                               jira_base_url=jc.base_url,
+                               jira_configured=jc.is_configured())
+    except Exception as e:
+        logger.error("JIRA page error: %s", e, exc_info=True)
+        return render_template("jira.html",
+                               jira_base_url="",
+                               jira_configured=False)
+
+
+@app.route("/api/jira/debug")
+def api_jira_debug():
+    """Diagnose JIRA import/init issues."""
+    result = {}
+    try:
+        from tools.jira_client import JiraClient
+        result["import"] = "ok"
+    except Exception as e:
+        result["import"] = str(e)
+        return jsonify(result)
+    try:
+        jc = JiraClient()
+        result["init"] = "ok"
+        result["base_url"] = jc.base_url
+        result["configured"] = jc.is_configured()
+    except Exception as e:
+        result["init"] = str(e)
+    return jsonify(result)
 
 
 @app.route("/api/jira/status", methods=["GET"])
