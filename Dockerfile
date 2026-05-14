@@ -2,11 +2,20 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies (libaio1t64 for Debian Bookworm+)
+# Install system dependencies and Oracle Instant Client (thick mode for NNE)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends libaio1t64 || \
-    apt-get install -y --no-install-recommends libaio1; \
+    apt-get install -y --no-install-recommends wget unzip \
+        $(apt-cache show libaio1t64 >/dev/null 2>&1 && echo libaio1t64 || echo libaio1) && \
+    mkdir -p /opt/oracle && \
+    wget -q https://download.oracle.com/otn_software/linux/instantclient/2340000/instantclient-basiclite-linux.x64-23.4.0.24.05.zip \
+         -O /tmp/instantclient.zip && \
+    unzip -q /tmp/instantclient.zip -d /opt/oracle && \
+    rm /tmp/instantclient.zip && \
+    apt-get purge -y wget unzip && apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
+
+ENV ORACLE_CLIENT_DIR=/opt/oracle/instantclient_23_4
+ENV LD_LIBRARY_PATH=/opt/oracle/instantclient_23_4:${LD_LIBRARY_PATH}
 
 # Install Python dependencies
 COPY requirements.txt .
