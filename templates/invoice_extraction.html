@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Invoice Extraction — Oracle EBS{% endblock %}
+
+{% block head_extra %}
+<style>
+  .ix-layout { padding: 20px 24px 60px; max-width: 1200px; margin: 0 auto; }
+
+  .ix-hero {
+    background: linear-gradient(135deg, #0969da 0%, #1a7f37 100%);
+    border-radius: var(--radius-lg);
+    padding: 22px 26px;
+    margin-bottom: 22px;
+    color: #fff;
+  }
+  .ix-hero h1 { font-size: 20px; font-weight: 700; margin: 0 0 4px; }
+  .ix-hero p  { font-size: 13px; opacity: .85; margin: 0; }
+
+  .ix-run-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    margin-bottom: 22px;
+    display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;
+  }
+  .ix-field { flex: 1; min-width: 260px; }
+  .ix-field label {
+    display: block; font-size: 11px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px;
+  }
+  .ix-field input {
+    width: 100%; border: 1px solid var(--border); border-radius: 8px;
+    padding: 9px 12px; font-size: 13px; background: var(--bg-card-2); color: var(--text-primary);
+  }
+  .ix-field input:focus { outline: none; border-color: var(--accent); }
+  .ix-hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
+  .btn-ix-run {
+    background: var(--accent); color: #fff; border: none; border-radius: 8px;
+    padding: 10px 20px; font-weight: 700; font-size: 13px; cursor: pointer;
+    display: flex; align-items: center; gap: 8px; white-space: nowrap;
+  }
+  .btn-ix-run:hover { opacity: .9; }
+  .btn-ix-run:disabled { opacity: .5; cursor: not-allowed; }
+
+  .ix-summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+  .ix-summary-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+  .ix-summary-card .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+  .ix-summary-card .value { font-size: 20px; font-weight: 700; margin-top: 4px; }
+  .ix-summary-card.ok .value  { color: #1a7f37; }
+  .ix-summary-card.err .value { color: #d12f2f; }
+
+  .ix-alert { display: none; font-size: 12px; padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; }
+  .ix-alert.show { display: block; }
+  .ix-alert-error { background: rgba(209,47,47,.10); color: #d12f2f; border: 1px solid rgba(209,47,47,.25); }
+
+  .ix-table { width: 100%; font-size: 12px; border-collapse: collapse; }
+  .ix-table th, .ix-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+  .ix-table th { background: var(--bg-card-2); font-weight: 600; color: var(--text-muted); }
+  .ix-table td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ix-status-pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+  .ix-status-ok    { background: rgba(26,127,55,.10); color: #1a7f37; }
+  .ix-status-error { background: rgba(209,47,47,.10); color: #d12f2f; }
+  .ix-empty { font-size: 12px; color: var(--text-muted); padding: 30px; text-align: center; }
+  .ix-path { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px; color: var(--text-muted); }
+  .ix-table-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: auto; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ix-layout">
+
+  <div class="ix-hero">
+    <h1><i class="fa-solid fa-file-invoice me-2"></i>Invoice Extraction</h1>
+    <p>Point the Invoice Extraction agent at a folder of invoices (PDF, PNG, JPG). It reads each one with AI, and writes structured data as Excel and JSON alongside the source files.</p>
+  </div>
+
+  <div class="ix-run-card">
+    <div class="ix-field">
+      <label for="ixFolderPath">Invoice folder path</label>
+      <input type="text" id="ixFolderPath" placeholder="e.g. C:\Invoices\Batch1" autocomplete="off" />
+      <div class="ix-hint">
+        Scans the top level of this folder for .pdf, .png, .jpg, .jpeg files, then writes
+        <span class="ix-path">excel/</span> and <span class="ix-path">json/</span> subfolders inside it, one output file per invoice.
+      </div>
+    </div>
+    <button class="btn-ix-run" id="btnIxRun" onclick="ixRun()">
+      <i class="fa-solid fa-play"></i> Run Invoice Extraction Agent
+      <span class="spinner-border spinner-border-sm d-none" id="ixSpinner"></span>
+    </button>
+  </div>
+
+  <div class="ix-alert ix-alert-error" id="ixAlert"></div>
+
+  <div class="ix-summary-row" id="ixSummaryRow" style="display:none;">
+    <div class="ix-summary-card"><div class="label">Files Found</div><div class="value" id="ixSumTotal">—</div></div>
+    <div class="ix-summary-card ok"><div class="label">Processed</div><div class="value" id="ixSumOk">—</div></div>
+    <div class="ix-summary-card err"><div class="label">Failed</div><div class="value" id="ixSumErr">—</div></div>
+    <div class="ix-summary-card"><div class="label">Output Folders</div><div class="value" style="font-size:11px; font-weight:600;" id="ixSumOutput">—</div></div>
+  </div>
+
+  <div class="ix-table-wrap" id="ixResultsWrap">
+    <div class="ix-empty">Enter a folder path and run the agent to see extracted invoice data here.</div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/invoice_extraction.js') }}"></script>
+{% endblock %}

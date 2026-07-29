@@ -34,6 +34,12 @@ app.secret_key = os.environ.get("SECRET_KEY", "u2xai-ebs-default-secret-key-chan
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=8)
 app.config["JSON_SORT_KEYS"] = False
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
+# Flask 2.3+ moved JSON config to app.json; keep query/tab order = agent's
+# configured (purpose) order rather than alphabetical.
+try:
+    app.json.sort_keys = False
+except Exception:
+    pass
 
 CORS(app)
 
@@ -1623,8 +1629,40 @@ def api_payables_agents_run(agent_id):
     except (TypeError, ValueError):
         days_back = 30
     source = body.get("source", "ui")
-    result = run_agent(agent_id, days_back, oracle_db, source=source)
+    result = run_agent(agent_id, days_back, oracle_db, source=source,
+                       refresh=bool(body.get("refresh", False)))
     return jsonify(result)
+
+
+@app.route("/api/payables_agents/invoice/<int:invoice_id>", methods=["GET"])
+def api_payables_agents_invoice(invoice_id: int):
+    """Invoice 360 for drilldown: header, lines and GL-coded distributions."""
+    from agents.payables_agents import invoice_detail
+    oracle_db, _, _, _ = get_singletons()
+    return jsonify(invoice_detail(invoice_id, oracle_db))
+
+
+@app.route("/api/payables_agents/drill/<query_id>", methods=["POST"])
+def api_payables_agents_drill(query_id: str):
+    """Drill an aggregate row down to its underlying records."""
+    from agents.payables_agents import drill_query
+    oracle_db, _, _, _ = get_singletons()
+    body = request.get_json(silent=True) or {}
+    return jsonify(drill_query(query_id, body.get("key"), oracle_db))
+
+
+@app.route("/api/payables_agents/run_trio", methods=["POST"])
+def api_payables_agents_run_trio():
+    """Run the AP trio pipeline: Invoice Capture -> 3-Way Match -> GL Auto-Coder."""
+    from agents.payables_agents import run_ap_trio
+    oracle_db, _, _, _ = get_singletons()
+    body = request.get_json(silent=True) or {}
+    try:
+        days_back = max(1, min(365, int(body.get("days_back", 30))))
+    except (TypeError, ValueError):
+        days_back = 30
+    return jsonify(run_ap_trio(days_back, oracle_db, source=body.get("source", "ui_trio"),
+                               refresh=bool(body.get("refresh", False))))
 
 
 @app.route("/api/payables_agents/run_all", methods=["POST"])
@@ -1637,7 +1675,8 @@ def api_payables_agents_run_all():
     except (TypeError, ValueError):
         days_back = 30
     source = body.get("source", "ui_run_all")
-    return jsonify(run_all(days_back, oracle_db, source=source))
+    return jsonify(run_all(days_back, oracle_db, source=source,
+                           refresh=bool(body.get("refresh", False))))
 
 
 @app.route("/api/observability/recent", methods=["GET"])
@@ -1681,6 +1720,31 @@ def api_observability_events():
     resp.headers["Cache-Control"] = "no-cache"
     resp.headers["X-Accel-Buffering"] = "no"
     return resp
+
+
+# ─── Invoice Extraction (folder scan -> AI structured Excel/JSON) ────────────
+
+@app.route("/invoice_extraction")
+def invoice_extraction_page():
+    """Invoice Extraction — read invoices from a folder and produce structured Excel/JSON."""
+    return render_template("invoice_extraction.html")
+
+
+@app.route("/api/invoice_extraction/run", methods=["POST"])
+def api_invoice_extraction_run():
+    """Scan a folder for invoices and extract each into json/ and excel/ subfolders.
+
+    Same entry point whether triggered from the page or run as the
+    Invoice Extraction agent — both call agents.invoice_extraction.run_capture().
+    """
+    from agents.invoice_extraction import run_capture
+    body = request.get_json(silent=True) or {}
+    folder = (body.get("folder") or "").strip()
+    if not folder:
+        return jsonify({"error": "folder is required"}), 400
+    result = run_capture(folder)
+    status = 400 if result.get("error") else 200
+    return jsonify(result), status
 
 
 # ─── MCP server (REST surface + console) ──────────────────────────────────────
