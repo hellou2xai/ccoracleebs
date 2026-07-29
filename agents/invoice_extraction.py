@@ -13,6 +13,7 @@ import base64
 import json
 import logging
 import os
+import re
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -48,6 +49,14 @@ EXTRACTION_TOOL = {
     "input_schema": {
         "type": "object",
         "properties": {
+            "language_code": {
+                "type": "string",
+                "description": "ISO 639-1 code of the invoice's primary language, e.g. 'en', 'fr', 'de', 'zh'.",
+            },
+            "language_name": {
+                "type": "string",
+                "description": "English name of that language, e.g. 'English', 'French', 'German', 'Chinese'.",
+            },
             "invoice_number": {"type": "string"},
             "invoice_date": {"type": "string", "description": "ISO 8601 date (YYYY-MM-DD) if determinable"},
             "due_date": {"type": "string"},
@@ -62,12 +71,20 @@ EXTRACTION_TOOL = {
             "shipping_amount": {"type": "number"},
             "total_amount": {"type": "number"},
             "payment_terms": {"type": "string"},
+            "payment_terms_en": {
+                "type": "string",
+                "description": "English translation of payment_terms. Only needed if the invoice is not in English.",
+            },
             "line_items": {
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
                         "description": {"type": "string"},
+                        "description_en": {
+                            "type": "string",
+                            "description": "English translation of description. Only needed if the invoice is not in English.",
+                        },
                         "quantity": {"type": "number"},
                         "unit_price": {"type": "number"},
                         "amount": {"type": "number"},
@@ -77,10 +94,10 @@ EXTRACTION_TOOL = {
             },
             "notes": {
                 "type": "string",
-                "description": "Anything ambiguous, missing, or low-confidence about the extraction.",
+                "description": "Anything ambiguous, missing, or low-confidence about the extraction. Always in English.",
             },
         },
-        "required": ["invoice_number", "vendor_name", "total_amount", "line_items"],
+        "required": ["language_code", "invoice_number", "vendor_name", "total_amount", "line_items"],
     },
 }
 
@@ -121,7 +138,12 @@ def extract_invoice_file(file_path: Path) -> Dict[str, Any]:
                     "text": (
                         "Extract the structured invoice data from this document using the "
                         "record_invoice_data tool. Use null for any field you cannot determine "
-                        "from the document. Do not guess numbers you cannot read."
+                        "from the document. Do not guess numbers you cannot read. Identify the "
+                        "invoice's primary language. If it is not English, also fill in "
+                        "payment_terms_en and each line item's description_en with English "
+                        "translations, and leave those fields empty if the invoice is already "
+                        "in English. Do not translate vendor_name or any address field, keep "
+                        "those exactly as printed since they are identifiers, not content."
                     ),
                 },
             ],
@@ -146,26 +168,73 @@ def write_json(json_dir: Path, stem: str, data: Dict[str, Any]) -> Path:
     return out
 
 
-def write_excel(excel_dir: Path, stem: str, data: Dict[str, Any]) -> Path:
-    wb = Workbook()
-    summary = wb.active
-    summary.title = "Summary"
-    summary.append(["Field", "Value"])
-    for key, label in SUMMARY_FIELDS:
-        summary.append([label, data.get(key)])
-    summary.column_dimensions["A"].width = 20
-    summary.column_dimensions["B"].width = 50
+_INVALID_SHEET_CHARS = re.compile(r"[\\/*?:\[\]]")
 
-    lines = wb.create_sheet("Line Items")
-    lines.append(["Description", "Quantity", "Unit Price", "Amount"])
+
+def _safe_sheet_name(name: str) -> str:
+    cleaned = _INVALID_SHEET_CHARS.sub("-", name).strip("'") or "Sheet"
+    return cleaned[:31]
+
+
+def _populate_invoice_sheet(ws, data: Dict[str, Any], translated: bool) -> None:
+    """Fill one sheet with the summary block followed by the line items table.
+
+    translated=True swaps in the English translations (payment_terms_en,
+    line_items[].description_en) where available, falling back to the
+    original text if no translation was produced.
+    """
+    ws.append(["Field", "Value"])
+    for key, label in SUMMARY_FIELDS:
+        if translated and key == "payment_terms":
+            value = data.get("payment_terms_en") or data.get("payment_terms")
+        else:
+            value = data.get(key)
+        ws.append([label, value])
+    ws.column_dimensions["A"].width = 20
+    ws.column_dimensions["B"].width = 50
+
+    ws.append([])
+    ws.append(["Description", "Quantity", "Unit Price", "Amount"])
     for item in data.get("line_items") or []:
-        lines.append([
-            item.get("description"),
-            item.get("quantity"),
-            item.get("unit_price"),
-            item.get("amount"),
-        ])
-    lines.column_dimensions["A"].width = 50
+        description = item.get("description")
+        if translated:
+            description = item.get("description_en") or description
+        ws.append([description, item.get("quantity"), item.get("unit_price"), item.get("amount")])
+
+
+def write_excel(excel_dir: Path, stem: str, data: Dict[str, Any]) -> Path:
+    lang_code = (data.get("language_code") or "en").strip().lower()
+    is_non_english = bool(lang_code) and not lang_code.startswith("en")
+
+    wb = Workbook()
+
+    if is_non_english:
+        native_name = _safe_sheet_name(data.get("language_name") or lang_code.upper())
+        native_ws = wb.active
+        native_ws.title = native_name
+        _populate_invoice_sheet(native_ws, data, translated=False)
+
+        english_ws = wb.create_sheet("English")
+        _populate_invoice_sheet(english_ws, data, translated=True)
+    else:
+        summary = wb.active
+        summary.title = "Summary"
+        summary.append(["Field", "Value"])
+        for key, label in SUMMARY_FIELDS:
+            summary.append([label, data.get(key)])
+        summary.column_dimensions["A"].width = 20
+        summary.column_dimensions["B"].width = 50
+
+        lines = wb.create_sheet("Line Items")
+        lines.append(["Description", "Quantity", "Unit Price", "Amount"])
+        for item in data.get("line_items") or []:
+            lines.append([
+                item.get("description"),
+                item.get("quantity"),
+                item.get("unit_price"),
+                item.get("amount"),
+            ])
+        lines.column_dimensions["A"].width = 50
 
     out = excel_dir / f"{stem}.xlsx"
     wb.save(out)
