@@ -142,7 +142,7 @@ def list_invoice_files(folder: Path) -> List[Path]:
 
 def write_json(json_dir: Path, stem: str, data: Dict[str, Any]) -> Path:
     out = json_dir / f"{stem}.json"
-    out.write_text(json.dumps(data, indent=2, default=str), encoding="utf-8")
+    out.write_text(json.dumps(data, indent=2, default=str, ensure_ascii=False), encoding="utf-8")
     return out
 
 
