@@ -97,7 +97,7 @@ EXTRACTION_TOOL = {
                 "description": "Anything ambiguous, missing, or low-confidence about the extraction. Always in English.",
             },
         },
-        "required": ["language_code", "invoice_number", "vendor_name", "total_amount", "line_items"],
+        "required": ["language_code", "line_items"],
     },
 }
 
@@ -137,13 +137,18 @@ def extract_invoice_file(file_path: Path) -> Dict[str, Any]:
                     "type": "text",
                     "text": (
                         "Extract the structured invoice data from this document using the "
-                        "record_invoice_data tool. Use null for any field you cannot determine "
-                        "from the document. Do not guess numbers you cannot read. Identify the "
-                        "invoice's primary language. If it is not English, also fill in "
-                        "payment_terms_en and each line item's description_en with English "
-                        "translations, and leave those fields empty if the invoice is already "
-                        "in English. Do not translate vendor_name or any address field, keep "
-                        "those exactly as printed since they are identifiers, not content."
+                        "record_invoice_data tool. Use null for any field that is not actually "
+                        "printed on the document, including vendor_name, invoice_number, or "
+                        "total_amount if they are genuinely absent. Do not guess numbers you "
+                        "cannot read, and never invent a placeholder value such as 'Unknown', "
+                        "'N/A', or '<UNKNOWN>', or reuse the document's title/heading as a "
+                        "stand-in for a missing field, null is always correct when a field is "
+                        "not present. Identify the invoice's primary language. If it is not "
+                        "English, also fill in payment_terms_en and each line item's "
+                        "description_en with English translations, and leave those fields "
+                        "empty if the invoice is already in English. Do not translate "
+                        "vendor_name or any address field, keep those exactly as printed since "
+                        "they are identifiers, not content."
                     ),
                 },
             ],
