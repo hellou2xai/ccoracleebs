@@ -6,10 +6,10 @@ services:
     envVars:
       # Oracle EBS Database
       - key: ORACLE_HOST
-        sync: false
+        value: apps.example.com
       # Real IP for the Oracle host (added to /etc/hosts at startup)
       - key: ORACLE_HOST_IP
-        sync: false
+        value: "161.118.179.55"
       - key: ORACLE_PORT
         value: "1521"
       - key: ORACLE_SID
