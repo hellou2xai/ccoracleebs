@@ -1,8 +1,8 @@
 -- ============================================================================
 -- U2xAI EBS Agentic Apps — APEX Master Install Script
 -- ============================================================================
--- Run as the application schema owner:
---   sqlplus apps/apps@EBSDB @install.sql
+-- Run as the IZU schema owner (registered with EBS for APEX):
+--   sqlplus IZU/IZU1001u@//140.245.24.128:1521/EBSDB @install.sql
 -- ============================================================================
 
 SET SERVEROUTPUT ON

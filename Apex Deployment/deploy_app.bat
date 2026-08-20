@@ -14,9 +14,9 @@ echo.
 set DB_HOST=140.245.24.128
 set DB_PORT=1521
 set DB_SERVICE=EBSDB
-set DB_USER=apps
+set DB_USER=IZU
 
-set /p DB_PASS=Enter password for %DB_USER%@%DB_SERVICE%:
+set /p DB_PASS=Enter password for %DB_USER%@%DB_SERVICE% (default: IZU1001u):
 
 echo.
 echo Connecting to %DB_USER%@//%DB_HOST%:%DB_PORT%/%DB_SERVICE%...
