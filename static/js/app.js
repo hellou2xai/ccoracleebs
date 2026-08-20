@@ -362,11 +362,11 @@ function resetQuickActions() {
 
 const SEV_ORDER = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO'];
 const SEV_COLORS = {
-  CRITICAL: '#f85149',
-  HIGH:     '#d29922',
-  MEDIUM:   '#388bfd',
-  LOW:      '#3fb950',
-  INFO:     '#8b949e',
+  CRITICAL: '#D64550',
+  HIGH:     '#E0A138',
+  MEDIUM:   '#4C8DD6',
+  LOW:      '#4FA678',
+  INFO:     '#98A2B3',
 };
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -922,33 +922,61 @@ function renderFindingsChart() {
       datasets: [{
         data,
         backgroundColor: colors,
-        borderColor: '#161b22',
-        borderWidth: 2,
-        hoverOffset: 4,
+        borderColor: '#ffffff',
+        borderWidth: 3,
+        borderRadius: 4,
+        hoverOffset: 6,
+        spacing: 1,
       }],
     },
     options: {
-      cutout: '65%',
+      cutout: '72%',
+      layout: { padding: 6 },
       plugins: {
         legend: {
           position: 'bottom',
           labels: {
-            color: '#8b949e',
-            font: { size: 10 },
-            padding: 8,
-            boxWidth: 10,
+            color: '#475467',
+            font: { size: 11, weight: '600' },
+            padding: 14,
+            usePointStyle: true,
+            pointStyle: 'circle',
+            boxWidth: 8,
+            boxHeight: 8,
           },
         },
         tooltip: {
-          backgroundColor: '#21262d',
-          titleColor: '#c9d1d9',
-          bodyColor: '#8b949e',
-          borderColor: '#30363d',
-          borderWidth: 1,
+          backgroundColor: '#101828',
+          titleColor: '#ffffff',
+          bodyColor: '#D0D5DD',
+          padding: 10,
+          cornerRadius: 6,
+          displayColors: true,
+          boxPadding: 4,
         },
       },
-      animation: { animateRotate: true, duration: 400 },
+      animation: { animateRotate: true, duration: 500, easing: 'easeOutQuart' },
     },
+    plugins: [{
+      id: 'severityCenterText',
+      afterDraw(chart) {
+        const total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+        if (!total) return;
+        const { ctx, chartArea: { left, right, top, bottom } } = chart;
+        const cx = (left + right) / 2;
+        const cy = (top + bottom) / 2;
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#101828';
+        ctx.font = '700 26px Arial, sans-serif';
+        ctx.fillText(String(total), cx, cy - 7);
+        ctx.fillStyle = '#667085';
+        ctx.font = '600 10px Arial, sans-serif';
+        ctx.fillText('FINDINGS', cx, cy + 15);
+        ctx.restore();
+      },
+    }],
   });
 }
 

@@ -369,7 +369,476 @@ PAYABLES_QUERIES = {
         """,
     },
 
+    # ── AP trio: Invoice Capture ────────────────────────────────────────────────
+    "cap_channels": {
+        "label": "Capture Channels",
+        "sql": """
+            SELECT source,
+                   COUNT(*)                          invoice_count,
+                   ROUND(SUM(invoice_amount), 0)     total_amount,
+                   CASE WHEN source IN ('ERS','SelfService','External')
+                        THEN 'TOUCHLESS' ELSE 'MANUAL' END capture_mode
+            FROM   ap_invoices_all
+            WHERE  creation_date >= TRUNC(SYSDATE) - {days_back}
+              AND  cancelled_date IS NULL
+            GROUP  BY source
+            ORDER  BY invoice_count DESC
+            FETCH FIRST 15 ROWS ONLY
+        """,
+    },
+    "cap_rejections": {
+        "label": "Interface Rejections",
+        "sql": """
+            SELECT reject_lookup_code   reject_reason,
+                   COUNT(*)             reject_count
+            FROM   ap_interface_rejections
+            GROUP  BY reject_lookup_code
+            ORDER  BY COUNT(*) DESC
+            FETCH FIRST 20 ROWS ONLY
+        """,
+    },
+
+    # ── AP trio: GL Auto-Coder (coding-pattern consistency) ─────────────────────
+    "gl_coding_spread": {
+        "label": "GL Coding Spread",
+        "sql": """
+            SELECT i.vendor_id,
+                   s.vendor_name,
+                   COUNT(DISTINCT d.dist_code_combination_id) distinct_accounts,
+                   COUNT(*)                                   dist_lines,
+                   ROUND(SUM(d.amount), 0)                    total_amount
+            FROM   ap_invoice_distributions_all d
+            JOIN   ap_invoices_all i ON i.invoice_id = d.invoice_id
+            JOIN   ap_suppliers    s ON s.vendor_id  = i.vendor_id
+            WHERE  i.creation_date >= TRUNC(SYSDATE) - {days_back}
+            GROUP  BY i.vendor_id, s.vendor_name
+            HAVING COUNT(DISTINCT d.dist_code_combination_id) > 1
+            ORDER  BY distinct_accounts DESC
+            FETCH FIRST 25 ROWS ONLY
+        """,
+    },
+
+    # ── Month-end: AR Period Close ──────────────────────────────────────────────
+    "ar_open_periods": {
+        "label": "AR Open Periods",
+        "sql": """
+            SELECT DISTINCT period_name, closing_status, start_date
+            FROM   gl_period_statuses
+            WHERE  application_id = 222 AND closing_status = 'O'
+            ORDER  BY start_date DESC
+            FETCH FIRST 20 ROWS ONLY
+        """,
+    },
+    "ar_incomplete": {
+        "label": "Incomplete Transactions",
+        "sql": """
+            SELECT complete_flag, COUNT(*) trx_count
+            FROM   ra_customer_trx_all
+            WHERE  complete_flag = 'N'
+            GROUP  BY complete_flag
+        """,
+    },
+
+    # ── Month-end: GL Period Close ──────────────────────────────────────────────
+    "gl_open_periods": {
+        "label": "GL Open Periods",
+        "sql": """
+            SELECT DISTINCT period_name, closing_status, start_date
+            FROM   gl_period_statuses
+            WHERE  application_id = 101 AND closing_status IN ('O','F')
+            ORDER  BY start_date DESC
+            FETCH FIRST 20 ROWS ONLY
+        """,
+    },
+    "gl_unposted": {
+        "label": "Unposted Journal Batches",
+        "sql": """
+            SELECT status, COUNT(*) batch_count
+            FROM   gl_je_batches
+            GROUP  BY status
+            ORDER  BY COUNT(*) DESC
+            FETCH FIRST 10 ROWS ONLY
+        """,
+    },
+
+    # ── Month-end: FA Period Close ──────────────────────────────────────────────
+    "fa_open_periods": {
+        "label": "FA Open Depreciation Periods",
+        "sql": """
+            SELECT book_type_code, period_name
+            FROM   fa_deprn_periods
+            WHERE  period_close_date IS NULL
+            ORDER  BY book_type_code
+            FETCH FIRST 20 ROWS ONLY
+        """,
+    },
+    "fa_books": {
+        "label": "Asset Books",
+        "sql": """
+            SELECT book_type_code
+            FROM   fa_book_controls
+            ORDER  BY book_type_code
+            FETCH FIRST 25 ROWS ONLY
+        """,
+    },
+
+    # ── R12 Support: Error Diagnostician ────────────────────────────────────────
+    "cc_failures": {
+        "label": "Concurrent Request Failures",
+        "sql": """
+            SELECT status_code, phase_code, COUNT(*) request_count
+            FROM   fnd_concurrent_requests
+            WHERE  status_code IN ('E','G','W')
+            GROUP  BY status_code, phase_code
+            ORDER  BY COUNT(*) DESC
+            FETCH FIRST 10 ROWS ONLY
+        """,
+    },
+    "cc_errors": {
+        "label": "Recent Errored Requests",
+        "sql": """
+            SELECT p.user_concurrent_program_name       program,
+                   r.request_id,
+                   SUBSTR(r.completion_text, 1, 200)     completion_text
+            FROM   fnd_concurrent_requests r
+            JOIN   fnd_concurrent_programs_tl p
+                     ON  p.concurrent_program_id = r.concurrent_program_id
+                     AND p.language = 'US'
+            WHERE  r.status_code = 'E'
+              AND  r.completion_text IS NOT NULL
+            FETCH FIRST 15 ROWS ONLY
+        """,
+    },
+
+    # ── R12 Support: Help Desk Assistant (triage board) ─────────────────────────
+    "hd_triage": {
+        "label": "Routed Triage Board",
+        "sql": """
+            SELECT 'AP Invoices on Hold' area, COUNT(*) open_count, 'AP Team / Buyers' owner
+            FROM   ap_holds_all WHERE release_lookup_code IS NULL
+            UNION ALL SELECT 'AP Interface Rejections', COUNT(*), 'AP Integration' FROM ap_interface_rejections
+            UNION ALL SELECT 'Concurrent Request Errors', COUNT(*), 'Apps DBA'
+              FROM fnd_concurrent_requests WHERE status_code = 'E'
+            UNION ALL SELECT 'Unapplied AR Receipts', COUNT(*), 'AR / Cash Application'
+              FROM ar_cash_receipts_all WHERE status = 'UNAPP'
+            UNION ALL SELECT 'GL Unposted Journals', COUNT(*), 'GL Accountant'
+              FROM gl_je_headers WHERE status = 'U'
+            UNION ALL SELECT 'FA Mass Additions Pending', COUNT(*), 'Fixed Assets'
+              FROM fa_mass_additions WHERE posting_status IN ('NEW','ON HOLD')
+            UNION ALL SELECT 'AR Open Periods', COUNT(DISTINCT period_name), 'AR Close Owner'
+              FROM gl_period_statuses WHERE application_id = 222 AND closing_status = 'O'
+            UNION ALL SELECT 'GL Open Periods', COUNT(DISTINCT period_name), 'GL Close Owner'
+              FROM gl_period_statuses WHERE application_id = 101 AND closing_status = 'O'
+        """,
+    },
+    "hd_holds_by_type": {
+        "label": "AP Holds by Owner",
+        "sql": """
+            SELECT hold_lookup_code hold_type, COUNT(*) hold_count,
+                   CASE WHEN hold_lookup_code IN ('PRICE','QTY ORDERED','AMOUNT ORDERED','MAX QTY ORD','MAX AMOUNT') THEN 'Buyer'
+                        WHEN hold_lookup_code IN ('QTY RECEIVED','MAX QTY REC') THEN 'Receiving'
+                        WHEN hold_lookup_code LIKE '%TAX%' THEN 'Tax Team'
+                        WHEN hold_lookup_code LIKE '%DIST%' OR hold_lookup_code LIKE '%ACCT%' THEN 'AP Manager'
+                        ELSE 'AP Clerk' END owner
+            FROM   ap_holds_all WHERE release_lookup_code IS NULL
+            GROUP  BY hold_lookup_code ORDER BY COUNT(*) DESC
+            FETCH FIRST 15 ROWS ONLY
+        """,
+    },
+    "cc_by_program": {
+        "label": "Top Failing Programs",
+        "sql": """
+            SELECT p.user_concurrent_program_name program, COUNT(*) failures
+            FROM   fnd_concurrent_requests r
+            JOIN   fnd_concurrent_programs_tl p
+                     ON p.concurrent_program_id = r.concurrent_program_id AND p.language = 'US'
+            WHERE  r.status_code = 'E'
+            GROUP  BY p.user_concurrent_program_name ORDER BY COUNT(*) DESC
+            FETCH FIRST 15 ROWS ONLY
+        """,
+    },
+    "cc_error_signatures": {
+        "label": "Error Signatures",
+        "sql": """
+            SELECT SUBSTR(TRIM(completion_text), 1, 70) error_signature, COUNT(*) occurrences
+            FROM   fnd_concurrent_requests
+            WHERE  status_code = 'E' AND completion_text IS NOT NULL
+            GROUP  BY SUBSTR(TRIM(completion_text), 1, 70) ORDER BY COUNT(*) DESC
+            FETCH FIRST 15 ROWS ONLY
+        """,
+    },
+
+    # ── Expert period-close: Receivables ────────────────────────────────────────
+    "ar_unapplied_receipts": {
+        "label": "Cash Receipts by Status",
+        "sql": """
+            SELECT status receipt_status, COUNT(*) receipt_count,
+                   ROUND(SUM(amount), 0) total_amount
+            FROM   ar_cash_receipts_all
+            GROUP  BY status ORDER BY COUNT(*) DESC
+            FETCH FIRST 15 ROWS ONLY
+        """,
+    },
+
+    # ── Expert period-close: General Ledger ─────────────────────────────────────
+    "gl_unposted_source": {
+        "label": "Unposted by Sub-Ledger",
+        "sql": """
+            SELECT je_source source, COUNT(*) unposted_journals
+            FROM   gl_je_headers WHERE status = 'U'
+            GROUP  BY je_source ORDER BY COUNT(*) DESC
+            FETCH FIRST 15 ROWS ONLY
+        """,
+    },
+    "gl_unposted_category": {
+        "label": "Unposted by Category",
+        "sql": """
+            SELECT je_category category, COUNT(*) unposted_journals
+            FROM   gl_je_headers WHERE status = 'U'
+            GROUP  BY je_category ORDER BY COUNT(*) DESC
+            FETCH FIRST 15 ROWS ONLY
+        """,
+    },
+
+    # ── Expert period-close: Fixed Assets ───────────────────────────────────────
+    "fa_mass_additions": {
+        "label": "Mass Additions Pending",
+        "sql": """
+            SELECT posting_status, COUNT(*) addition_count
+            FROM   fa_mass_additions
+            GROUP  BY posting_status ORDER BY COUNT(*) DESC
+            FETCH FIRST 15 ROWS ONLY
+        """,
+    },
+    "fa_pending_txns": {
+        "label": "Asset Transactions",
+        "sql": """
+            SELECT transaction_type_code txn_type, COUNT(*) txn_count
+            FROM   fa_transaction_headers
+            GROUP  BY transaction_type_code ORDER BY COUNT(*) DESC
+            FETCH FIRST 15 ROWS ONLY
+        """,
+    },
+
 }
+
+
+# ─── Drilldown: aggregate row → underlying records ───────────────────────────
+# Each entry maps a query id to the column the user clicks (key) and a detail
+# SQL that returns the actual records behind that group, filtered by :key.
+# Detail rows that carry invoice_id are themselves invoice-drillable in the UI.
+DRILL_QUERIES = {
+    "cap_rejections": {
+        "key": "reject_reason",
+        "title": "Rejected interface records",
+        "sql": """
+            SELECT parent_table, parent_id, reject_lookup_code reason,
+                   TO_CHAR(last_update_date,'YYYY-MM-DD') rejected_on
+            FROM   ap_interface_rejections
+            WHERE  reject_lookup_code = :key
+            FETCH FIRST 100 ROWS ONLY
+        """,
+    },
+    "cap_channels": {
+        "key": "source",
+        "title": "Invoices captured via this channel",
+        "sql": """
+            SELECT i.invoice_num, s.vendor_name, i.invoice_amount,
+                   i.invoice_currency_code, TO_CHAR(i.invoice_date,'YYYY-MM-DD') invoice_date,
+                   i.wfapproval_status, i.invoice_id
+            FROM   ap_invoices_all i JOIN ap_suppliers s ON s.vendor_id = i.vendor_id
+            WHERE  i.source = :key
+              AND  i.creation_date >= TRUNC(SYSDATE) - 365
+              AND  i.cancelled_date IS NULL
+            ORDER  BY i.creation_date DESC
+            FETCH FIRST 100 ROWS ONLY
+        """,
+    },
+    "gl_coding_spread": {
+        "key": "vendor_id",
+        "title": "GL-coded distributions for this supplier",
+        "sql": """
+            SELECT i.invoice_num, d.amount,
+                   (SELECT gcc.concatenated_segments FROM gl_code_combinations_kfv gcc
+                     WHERE gcc.code_combination_id = d.dist_code_combination_id) gl_account,
+                   i.invoice_id
+            FROM   ap_invoice_distributions_all d
+            JOIN   ap_invoices_all i ON i.invoice_id = d.invoice_id
+            WHERE  i.vendor_id = :key
+              AND  i.creation_date >= TRUNC(SYSDATE) - 365
+            ORDER  BY d.amount DESC
+            FETCH FIRST 100 ROWS ONLY
+        """,
+    },
+    "supplier_aging": {
+        "key": "vendor_id",
+        "title": "Open invoices for this supplier",
+        "sql": """
+            SELECT i.invoice_num, ps.amount_remaining,
+                   TO_CHAR(ps.due_date,'YYYY-MM-DD') due_date,
+                   i.invoice_currency_code, i.invoice_id
+            FROM   ap_payment_schedules_all ps
+            JOIN   ap_invoices_all i ON i.invoice_id = ps.invoice_id
+            WHERE  i.vendor_id = :key AND ps.payment_status_flag = 'N'
+            ORDER  BY ps.due_date
+            FETCH FIRST 100 ROWS ONLY
+        """,
+    },
+    "approvers": {
+        "key": "hold_type",
+        "title": "Invoices with this hold type",
+        "sql": """
+            SELECT i.invoice_num, s.vendor_name, i.invoice_amount,
+                   i.invoice_currency_code, h.hold_reason, i.invoice_id
+            FROM   ap_holds_all h
+            JOIN   ap_invoices_all i ON i.invoice_id = h.invoice_id
+            JOIN   ap_suppliers s ON s.vendor_id = i.vendor_id
+            WHERE  h.hold_lookup_code = :key AND h.release_lookup_code IS NULL
+            FETCH FIRST 100 ROWS ONLY
+        """,
+    },
+    "ar_incomplete": {
+        "key": "complete_flag",
+        "title": "AR transactions",
+        "sql": """
+            SELECT trx_number, TO_CHAR(trx_date,'YYYY-MM-DD') trx_date,
+                   complete_flag, invoice_currency_code
+            FROM   ra_customer_trx_all
+            WHERE  complete_flag = :key
+            FETCH FIRST 100 ROWS ONLY
+        """,
+    },
+    "gl_unposted": {
+        "key": "status",
+        "title": "Journal batches with this status",
+        "sql": """
+            SELECT name batch_name, status,
+                   TO_CHAR(creation_date,'YYYY-MM-DD') created_on
+            FROM   gl_je_batches
+            WHERE  status = :key
+            FETCH FIRST 100 ROWS ONLY
+        """,
+    },
+    "cc_failures": {
+        "key": "status_code",
+        "title": "Concurrent requests with this status",
+        "sql": """
+            SELECT r.request_id, p.user_concurrent_program_name program,
+                   r.status_code, SUBSTR(r.completion_text, 1, 120) completion
+            FROM   fnd_concurrent_requests r
+            JOIN   fnd_concurrent_programs_tl p
+                     ON p.concurrent_program_id = r.concurrent_program_id AND p.language = 'US'
+            WHERE  r.status_code = :key
+            FETCH FIRST 100 ROWS ONLY
+        """,
+    },
+    "ar_unapplied_receipts": {
+        "key": "receipt_status",
+        "title": "Cash receipts with this status",
+        "sql": """
+            SELECT receipt_number, TO_CHAR(receipt_date,'YYYY-MM-DD') receipt_date,
+                   amount, currency_code
+            FROM   ar_cash_receipts_all WHERE status = :key
+            ORDER  BY receipt_date DESC FETCH FIRST 100 ROWS ONLY
+        """,
+    },
+    "gl_unposted_source": {
+        "key": "source",
+        "title": "Unposted journals from this sub-ledger",
+        "sql": """
+            SELECT name journal_name, je_category, period_name, currency_code
+            FROM   gl_je_headers WHERE je_source = :key AND status = 'U'
+            FETCH FIRST 100 ROWS ONLY
+        """,
+    },
+    "gl_unposted_category": {
+        "key": "category",
+        "title": "Unposted journals in this category",
+        "sql": """
+            SELECT name journal_name, je_source, period_name, currency_code
+            FROM   gl_je_headers WHERE je_category = :key AND status = 'U'
+            FETCH FIRST 100 ROWS ONLY
+        """,
+    },
+    "fa_mass_additions": {
+        "key": "posting_status",
+        "title": "Mass additions with this status",
+        "sql": """
+            SELECT asset_number, description, fixed_assets_cost cost, queue_name
+            FROM   fa_mass_additions WHERE posting_status = :key
+            FETCH FIRST 100 ROWS ONLY
+        """,
+    },
+    "cc_by_program": {
+        "key": "program",
+        "title": "Failed requests for this program",
+        "sql": """
+            SELECT r.request_id, SUBSTR(r.completion_text, 1, 140) completion,
+                   TO_CHAR(r.actual_completion_date,'YYYY-MM-DD HH24:MI') completed_on
+            FROM   fnd_concurrent_requests r
+            JOIN   fnd_concurrent_programs_tl p
+                     ON p.concurrent_program_id = r.concurrent_program_id AND p.language = 'US'
+            WHERE  p.user_concurrent_program_name = :key AND r.status_code = 'E'
+            ORDER  BY r.actual_completion_date DESC FETCH FIRST 100 ROWS ONLY
+        """,
+    },
+    "hd_holds_by_type": {
+        "key": "hold_type",
+        "title": "Invoices with this hold type",
+        "sql": """
+            SELECT i.invoice_num, s.vendor_name, i.invoice_amount,
+                   i.invoice_currency_code, h.hold_reason, i.invoice_id
+            FROM   ap_holds_all h
+            JOIN   ap_invoices_all i ON i.invoice_id = h.invoice_id
+            JOIN   ap_suppliers s ON s.vendor_id = i.vendor_id
+            WHERE  h.hold_lookup_code = :key AND h.release_lookup_code IS NULL
+            FETCH FIRST 100 ROWS ONLY
+        """,
+    },
+}
+
+# Invoice 360: header, lines and GL-coded distributions for one invoice.
+INVOICE_HEADER_SQL = """
+    SELECT i.invoice_num, s.vendor_name, i.invoice_amount, i.invoice_currency_code,
+           TO_CHAR(i.invoice_date,'YYYY-MM-DD') invoice_date, i.source,
+           i.wfapproval_status, TO_CHAR(i.gl_date,'YYYY-MM-DD') gl_date,
+           i.invoice_type_lookup_code invoice_type
+    FROM   ap_invoices_all i JOIN ap_suppliers s ON s.vendor_id = i.vendor_id
+    WHERE  i.invoice_id = :id
+"""
+INVOICE_LINES_SQL = """
+    SELECT line_number, line_type_lookup_code line_type, amount, description
+    FROM   ap_invoice_lines_all WHERE invoice_id = :id
+    ORDER  BY line_number FETCH FIRST 50 ROWS ONLY
+"""
+INVOICE_DIST_SQL = """
+    SELECT d.distribution_line_number line_no, d.amount,
+           (SELECT gcc.concatenated_segments FROM gl_code_combinations_kfv gcc
+             WHERE gcc.code_combination_id = d.dist_code_combination_id) gl_account
+    FROM   ap_invoice_distributions_all d WHERE d.invoice_id = :id
+    ORDER  BY d.distribution_line_number FETCH FIRST 50 ROWS ONLY
+"""
+
+
+# ─── Demo-data date anchor ────────────────────────────────────────────────────
+# The Vision AP dataset ends 2010-12-01, but the database/OS clock runs years
+# ahead (currently 2026), so every SYSDATE-relative filter returns zero rows.
+# Anchor all time-relative logic to the data's own "today" instead of the real
+# clock. Override with PAYABLES_ANCHOR_DATE, or set it to 'SYSDATE' to restore
+# live-clock behaviour on an instance whose data is genuinely current.
+import os
+
+# 2010-10-13 = day after the last invoice creation_date (2010-10-12). Sits just
+# before the tail of discount dates (max 2010-10-27) so the forward-looking
+# discount window catches rows, while every creation_date window still fills.
+_ANCHOR_DATE = os.environ.get("PAYABLES_ANCHOR_DATE", "2010-10-13").strip()
+if _ANCHOR_DATE.upper() != "SYSDATE":
+    _ANCHOR_SQL = "TO_DATE('%s','YYYY-MM-DD')" % _ANCHOR_DATE
+    for _q in PAYABLES_QUERIES.values():
+        _q["sql"] = _q["sql"].replace("SYSDATE", _ANCHOR_SQL)
+    for _d in DRILL_QUERIES.values():
+        _d["sql"] = _d["sql"].replace("SYSDATE", _ANCHOR_SQL)
+
 
 # ─── Hold type → action recommendation mapping ────────────────────────────────
 

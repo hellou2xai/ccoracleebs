@@ -107,6 +107,82 @@ PAYABLES_AGENTS: List[Dict[str, Any]] = [
         "queries": ["match_exceptions", "cycle_time"],
         "tables": ["AP_HOLDS_ALL", "AP_INVOICES_ALL"],
     },
+
+    # ── AP trio (Invoice Capture → 3-Way Match → GL Auto-Coder) ─────────────────
+    {
+        "id": "invoice_capture",
+        "label": "Invoice Capture",
+        "icon": "fa-file-import",
+        "color": "#0969da",
+        "group": "Invoice Processing",
+        "purpose": "Classifies inbound invoices by capture channel, measures touchless vs manual rate, and surfaces interface rejections blocking capture.",
+        "queries": ["cap_channels", "cap_rejections"],
+        "tables": ["AP_INVOICES_ALL", "AP_INTERFACE_REJECTIONS"],
+    },
+    {
+        "id": "gl_auto_coder",
+        "label": "GL Auto-Coder",
+        "icon": "fa-wand-magic-sparkles",
+        "color": "#1a7f37",
+        "group": "Invoice Processing",
+        "purpose": "Learns each supplier's GL coding pattern, flags distributions scattered across accounts, and recommends the standard code combination.",
+        "queries": ["gl_coding_spread"],
+        "tables": ["AP_INVOICE_DISTRIBUTIONS_ALL", "GL_CODE_COMBINATIONS", "AP_SUPPLIERS"],
+    },
+
+    # ── Month-End Close (AP already covered by period_close) ─────────────────────
+    {
+        "id": "ar_period_close",
+        "label": "AR Period Close",
+        "icon": "fa-file-invoice-dollar",
+        "color": "#a04ad6",
+        "group": "Month-End Close",
+        "purpose": "Receivables close readiness: open AR periods, incomplete transactions, and unapplied cash blocking the sub-ledger close and AR-to-GL reconciliation.",
+        "queries": ["ar_open_periods", "ar_incomplete", "ar_unapplied_receipts"],
+        "tables": ["GL_PERIOD_STATUSES", "RA_CUSTOMER_TRX_ALL", "AR_CASH_RECEIPTS_ALL"],
+    },
+    {
+        "id": "gl_period_close",
+        "label": "GL Period Close",
+        "icon": "fa-book",
+        "color": "#0969da",
+        "group": "Month-End Close",
+        "purpose": "General Ledger close readiness: open GL periods and unposted journals broken down by sub-ledger source and category, so you know which feeders still need posting.",
+        "queries": ["gl_open_periods", "gl_unposted_source", "gl_unposted_category"],
+        "tables": ["GL_PERIOD_STATUSES", "GL_JE_HEADERS"],
+    },
+    {
+        "id": "fa_period_close",
+        "label": "FA Period Close",
+        "icon": "fa-building",
+        "color": "#e65100",
+        "group": "Month-End Close",
+        "purpose": "Fixed Assets close readiness: open depreciation periods, mass additions still pending posting, and asset transactions to account before running depreciation and transferring to GL.",
+        "queries": ["fa_open_periods", "fa_mass_additions", "fa_pending_txns"],
+        "tables": ["FA_DEPRN_PERIODS", "FA_MASS_ADDITIONS", "FA_TRANSACTION_HEADERS"],
+    },
+
+    # ── R12 Support ─────────────────────────────────────────────────────────────
+    {
+        "id": "error_diagnostician",
+        "label": "Error Diagnostician",
+        "icon": "fa-triangle-exclamation",
+        "color": "#d12f2f",
+        "group": "R12 Support",
+        "purpose": "Diagnoses EBS failures: ranks the top failing concurrent programs, clusters errors by ORA signature, and surfaces interface rejections, with the root cause and fix for each.",
+        "queries": ["cc_by_program", "cc_error_signatures", "cc_errors", "cap_rejections"],
+        "tables": ["FND_CONCURRENT_REQUESTS", "FND_CONCURRENT_PROGRAMS_TL", "AP_INTERFACE_REJECTIONS"],
+    },
+    {
+        "id": "help_desk_assistant",
+        "label": "Help Desk Assistant",
+        "icon": "fa-headset",
+        "color": "#1a7f37",
+        "group": "R12 Support",
+        "purpose": "Triages the whole open EBS backlog into a routed board (each queue mapped to an owning team), breaks AP holds down by responsible party, and lists the live errors to action.",
+        "queries": ["hd_triage", "hd_holds_by_type", "cc_errors"],
+        "tables": ["AP_HOLDS_ALL", "AR_CASH_RECEIPTS_ALL", "GL_JE_HEADERS", "FA_MASS_ADDITIONS", "FND_CONCURRENT_REQUESTS"],
+    },
 ]
 
 
@@ -282,12 +358,12 @@ def _rule_period_close(results: Dict[str, Any]) -> Dict[str, Any]:
     sev = "CRITICAL" if unposted > 50 else "HIGH" if unposted > 10 else "MEDIUM"
     return {
         "severity": sev,
-        "summary": f"{unposted} unposted, {pending} pending approval, avg cycle {avg_cycle:.1f}d, {len(prepay)} open prepayments.",
+        "summary": f"{unposted} unaccounted invoices · {pending} pending approval · avg cycle {avg_cycle:.1f}d · {len(prepay)} open prepayments.",
         "actions": [
-            "Sweep unposted invoices and resolve before period close.",
-            "Run mass-validate to clear validation holds.",
-            "Apply or refund prepayments to clean AP sub-ledger.",
-            "Post accruals for received-not-invoiced before final journal.",
+            "Validate all invoices and release resolvable holds (Invoice Validation) so they can be accounted.",
+            "Run Create Accounting (Payables) in Final mode, then Transfer Journal Entries to GL.",
+            "Apply or refund open prepayments to clean the AP sub-ledger.",
+            "Confirm outstanding payment batches and reconcile with the Open Account AP Balances Listing, then sweep any remaining unaccounted transactions to the next period.",
         ],
     }
 
@@ -310,6 +386,168 @@ def _rule_tax_wht_validator(results: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _rule_invoice_capture(results: Dict[str, Any]) -> Dict[str, Any]:
+    ch = results.get("cap_channels", {}).get("rows", [])
+    rej = results.get("cap_rejections", {}).get("rows", [])
+    total = sum(int(r.get("invoice_count") or 0) for r in ch)
+    touchless = sum(int(r.get("invoice_count") or 0) for r in ch if r.get("capture_mode") == "TOUCHLESS")
+    rej_total = sum(int(r.get("reject_count") or 0) for r in rej)
+    if total == 0:
+        return {"severity": "INFO", "summary": "No invoices captured in window."}
+    rate = round(touchless / total * 100, 1) if total else 0
+    sev = "HIGH" if (rate < 80 or rej_total > 5) else "MEDIUM" if rej_total > 0 else "INFO"
+    return {
+        "severity": sev,
+        "summary": f"{total:,} invoices captured, {rate}% touchless. {rej_total} rejected in interface.",
+        "actions": [
+            "Clear interface rejections before the period cut-off.",
+            "Convert top manual-entry suppliers to ERS / self-service.",
+            "Auto-match e-invoices to open POs to lift the touchless rate.",
+        ],
+    }
+
+
+def _rule_gl_auto_coder(results: Dict[str, Any]) -> Dict[str, Any]:
+    rows = results.get("gl_coding_spread", {}).get("rows", [])
+    count = len(rows)
+    if count == 0:
+        return {"severity": "INFO", "summary": "GL coding consistent across suppliers in window."}
+    worst = rows[0]
+    sev = "HIGH" if count > 10 else "MEDIUM"
+    return {
+        "severity": sev,
+        "summary": f"{count} suppliers with scattered GL coding. Worst: {worst.get('vendor_name')} ({worst.get('distinct_accounts')} accounts).",
+        "actions": [
+            "Derive a default GL code per supplier from the historical modal account.",
+            "Apply auto-coding rules to non-PO invoice distributions.",
+            "Review top-scatter suppliers for miscoded expense before posting.",
+        ],
+    }
+
+
+def _rule_ar_period_close(results: Dict[str, Any]) -> Dict[str, Any]:
+    periods = results.get("ar_open_periods", {}).get("rows", [])
+    inc = results.get("ar_incomplete", {}).get("rows", [])
+    receipts = results.get("ar_unapplied_receipts", {}).get("rows", [])
+    open_count = len(periods)
+    incomplete = sum(int(r.get("trx_count") or 0) for r in inc)
+    unapp = next((r for r in receipts if str(r.get("receipt_status")) == "UNAPP"), {})
+    unapp_cnt = int(unapp.get("receipt_count") or 0)
+    unapp_amt = float(unapp.get("total_amount") or 0)
+    if open_count == 0 and incomplete == 0 and unapp_cnt == 0:
+        return {"severity": "INFO", "summary": "Receivables ready to close."}
+    sev = "HIGH" if (open_count > 1 or incomplete > 50 or unapp_amt > 50000) else "MEDIUM"
+    return {
+        "severity": sev,
+        "summary": (f"{open_count} AR periods open · {incomplete} incomplete transactions · "
+                    f"{unapp_cnt} unapplied receipts (${unapp_amt:,.0f})."),
+        "actions": [
+            "Complete or void incomplete transactions in the Transactions workbench so they can be accounted.",
+            f"Apply or refund the {unapp_cnt} unapplied receipts (${unapp_amt:,.0f}) to clear on-account and suspense balances.",
+            "Run Revenue Recognition, then Create Accounting (Receivables) in Final mode and transfer to GL.",
+            "Run the AR Reconciliation and AR-to-GL Journal reports, then close the AR period in the Open/Close Periods form.",
+        ],
+    }
+
+
+def _rule_gl_period_close(results: Dict[str, Any]) -> Dict[str, Any]:
+    periods = results.get("gl_open_periods", {}).get("rows", [])
+    src = results.get("gl_unposted_source", {}).get("rows", [])
+    open_count = len(periods)
+    unposted = sum(int(r.get("unposted_journals") or 0) for r in src)
+    top = src[0] if src else {}
+    top_src = top.get("source", "n/a")
+    top_n = int(top.get("unposted_journals") or 0)
+    if open_count == 0 and unposted == 0:
+        return {"severity": "INFO", "summary": "General Ledger ready to close."}
+    sev = "HIGH" if unposted > 1000 else "MEDIUM"
+    return {
+        "severity": sev,
+        "summary": (f"{open_count} GL periods open/future · {unposted:,} unposted journals across "
+                    f"{len(src)} sub-ledgers. Largest: {top_src} ({top_n:,})."),
+        "actions": [
+            "Run Create Accounting and Transfer to GL from each sub-ledger (Payables, Receivables, Cost Management) in Final mode.",
+            "Post all unposted journal batches, then generate recurring journals and run allocations.",
+            "Clear suspense-account balances and run revaluation / translation for foreign-currency ledgers.",
+            "Close GL only after AP, AR, FA and Cost Management are closed and the trial balance reconciles.",
+        ],
+    }
+
+
+def _rule_fa_period_close(results: Dict[str, Any]) -> Dict[str, Any]:
+    periods = results.get("fa_open_periods", {}).get("rows", [])
+    mass = results.get("fa_mass_additions", {}).get("rows", [])
+    open_count = len(periods)
+    pending = sum(int(r.get("addition_count") or 0) for r in mass
+                  if str(r.get("posting_status")) in ("NEW", "ON HOLD", "POST"))
+    if open_count == 0 and pending == 0:
+        return {"severity": "INFO", "summary": "Fixed Assets ready to close."}
+    sev = "HIGH" if pending > 100 else "MEDIUM"
+    return {
+        "severity": sev,
+        "summary": (f"{open_count} depreciation periods open · {pending} mass additions pending posting."),
+        "actions": [
+            "Review and Post pending mass additions (Prepare Mass Additions, then Post Mass Additions) so new assets are capitalised.",
+            "Run Calculate Depreciation for every asset book and review the Depreciation Run and Journal Entry Reserve reports.",
+            "Create Accounting (Assets) in Final mode and transfer journals to GL.",
+            "Reconcile asset cost and accumulated depreciation to GL (Account Reconciliation Report), then close each book.",
+        ],
+    }
+
+
+def _rule_error_diagnostician(results: Dict[str, Any]) -> Dict[str, Any]:
+    progs = results.get("cc_by_program", {}).get("rows", [])
+    sigs = results.get("cc_error_signatures", {}).get("rows", [])
+    rej = results.get("cap_rejections", {}).get("rows", [])
+    fail_total = sum(int(r.get("failures") or 0) for r in progs)
+    rej_total = sum(int(r.get("reject_count") or 0) for r in rej)
+    if fail_total == 0 and rej_total == 0:
+        return {"severity": "INFO", "summary": "No errors detected."}
+    top_prog = progs[0].get("program") if progs else "n/a"
+    top_sig = sigs[0] if sigs else {}
+    top_sig_txt = (top_sig.get("error_signature") or "").strip()
+    top_sig_n = int(top_sig.get("occurrences") or 0)
+    sev = "CRITICAL" if fail_total > 25 else "HIGH" if (fail_total > 5 or rej_total > 5) else "MEDIUM"
+    return {
+        "severity": sev,
+        "summary": (f"{fail_total} failed requests across {len(progs)} programs · "
+                    f"{len(sigs)} distinct error signatures · {rej_total} interface rejections. "
+                    f"Top failing: {top_prog}."),
+        "actions": [
+            f"Fix the most common error first: \"{top_sig_txt[:60]}\" ({top_sig_n}x).",
+            f"Investigate the top failing program \"{top_prog}\" for a data or setup issue, then resubmit.",
+            "Correct FND_FILE temp-directory / log-out file permissions for ORA-20100 file errors, then bounce the affected managers.",
+            "Clear interface rejections and resubmit the AP Open Interface Import.",
+        ],
+    }
+
+
+def _rule_help_desk_assistant(results: Dict[str, Any]) -> Dict[str, Any]:
+    tri = results.get("hd_triage", {}).get("rows", [])
+    holds = results.get("hd_holds_by_type", {}).get("rows", [])
+    board = [(r.get("area"), int(r.get("open_count") or 0), r.get("owner")) for r in tri]
+    total = sum(v for _, v, _ in board)
+    if total == 0:
+        return {"severity": "INFO", "summary": "Issue backlog clear."}
+    top_area, top_n, top_owner = max(board, key=lambda x: x[1]) if board else ("", 0, "")
+    top_hold = holds[0] if holds else {}
+    hold_type = top_hold.get("hold_type", "n/a")
+    hold_owner = top_hold.get("owner", "AP")
+    cc = next((v for a, v, _ in board if "Concurrent" in str(a)), 0)
+    sev = "HIGH" if total > 100 else "MEDIUM"
+    return {
+        "severity": sev,
+        "summary": (f"{total:,} open items across {len(board)} queues. "
+                    f"Largest: {top_area} ({top_n:,}) → {top_owner}."),
+        "actions": [
+            f"Route the {top_area} backlog ({top_n:,} items) to {top_owner} first.",
+            f"Assign AP holds by type: {hold_type} → {hold_owner}, then work down by volume.",
+            f"Escalate the {cc} concurrent-request errors to the Apps DBA for root-cause fix.",
+            "Chase AR and GL open-period owners against the close calendar.",
+        ],
+    }
+
+
 SEVERITY_RULES: Dict[str, Callable[[Dict[str, Any]], Dict[str, Any]]] = {
     "hold_resolver":          _rule_hold_resolver,
     "three_way_match":        _rule_three_way_match,
@@ -321,12 +559,183 @@ SEVERITY_RULES: Dict[str, Callable[[Dict[str, Any]], Dict[str, Any]]] = {
     "supplier_risk":          _rule_supplier_risk,
     "period_close":           _rule_period_close,
     "tax_wht_validator":      _rule_tax_wht_validator,
+    "invoice_capture":        _rule_invoice_capture,
+    "gl_auto_coder":          _rule_gl_auto_coder,
+    "ar_period_close":        _rule_ar_period_close,
+    "gl_period_close":        _rule_gl_period_close,
+    "fa_period_close":        _rule_fa_period_close,
+    "error_diagnostician":    _rule_error_diagnostician,
+    "help_desk_assistant":    _rule_help_desk_assistant,
 }
 
 
 # ─── Demo data per agent (used when oracle_db.demo_mode) ─────────────────────
 
 DEMO_AGENT_RESULT: Dict[str, Dict[str, Any]] = {
+    "invoice_capture": {
+        "severity": "HIGH", "row_count": 8,
+        "summary": "15,551 invoices captured, 98.9% touchless. 9 rejected in interface.",
+        "actions": [
+            "Clear interface rejections before the period cut-off.",
+            "Convert top manual-entry suppliers to ERS / self-service.",
+            "Auto-match e-invoices to open POs to lift the touchless rate.",
+        ],
+        "query_rows": {
+            "cap_channels": [
+                {"source": "ERS", "invoice_count": 11433, "total_amount": 972740711, "capture_mode": "TOUCHLESS"},
+                {"source": "External", "invoice_count": 2224, "total_amount": 176142814, "capture_mode": "TOUCHLESS"},
+                {"source": "SelfService", "invoice_count": 1752, "total_amount": 2805299, "capture_mode": "TOUCHLESS"},
+                {"source": "Manual Invoice Entry", "invoice_count": 142, "total_amount": 18404355, "capture_mode": "MANUAL"},
+            ],
+            "cap_rejections": [
+                {"reject_reason": "INCONSISTENT SHIPMENT INFO", "reject_count": 3},
+                {"reject_reason": "DUPLICATE INVOICE NUMBER", "reject_count": 3},
+                {"reject_reason": "ZX_TAX_RATE_NOT_EFFECTIVE", "reject_count": 2},
+                {"reject_reason": "INVALID TAX REGION", "reject_count": 1},
+            ],
+        },
+    },
+    "gl_auto_coder": {
+        "severity": "HIGH", "row_count": 25,
+        "summary": "25 suppliers with scattered GL coding. Worst: Building Management Inc. (281 accounts).",
+        "actions": [
+            "Derive a default GL code per supplier from the historical modal account.",
+            "Apply auto-coding rules to non-PO invoice distributions.",
+            "Review top-scatter suppliers for miscoded expense before posting.",
+        ],
+        "query_rows": {
+            "gl_coding_spread": [
+                {"vendor_id": 209, "vendor_name": "Building Management Inc.", "distinct_accounts": 281, "dist_lines": 10576, "total_amount": 64713595},
+                {"vendor_id": 478, "vendor_name": "Bechtel", "distinct_accounts": 218, "dist_lines": 9358, "total_amount": 39499141},
+                {"vendor_id": 4, "vendor_name": "United Parcel Service", "distinct_accounts": 160, "dist_lines": 12762, "total_amount": 2735269},
+            ],
+        },
+    },
+    "ar_period_close": {
+        "severity": "HIGH", "row_count": 8,
+        "summary": "20 AR periods open · 196 incomplete transactions · 405 unapplied receipts ($95,468,323).",
+        "actions": [
+            "Complete or void incomplete transactions in the Transactions workbench so they can be accounted.",
+            "Apply or refund the 405 unapplied receipts ($95,468,323) to clear on-account and suspense balances.",
+            "Run Revenue Recognition, then Create Accounting (Receivables) in Final mode and transfer to GL.",
+            "Run the AR Reconciliation and AR-to-GL Journal reports, then close the AR period in the Open/Close Periods form.",
+        ],
+        "query_rows": {
+            "ar_open_periods": [
+                {"period_name": "DEC-16", "closing_status": "O"},
+                {"period_name": "NOV-16", "closing_status": "O"},
+            ],
+            "ar_incomplete": [{"complete_flag": "N", "trx_count": 196}],
+            "ar_unapplied_receipts": [
+                {"receipt_status": "APP", "receipt_count": 31445, "total_amount": 8130285073},
+                {"receipt_status": "UNAPP", "receipt_count": 405, "total_amount": 95468323},
+                {"receipt_status": "NSF", "receipt_count": 4, "total_amount": 395418},
+            ],
+        },
+    },
+    "gl_period_close": {
+        "severity": "HIGH", "row_count": 6,
+        "summary": "20 GL periods open/future · 8,330 unposted journals across 6 sub-ledgers. Largest: Payables (3,139).",
+        "actions": [
+            "Run Create Accounting and Transfer to GL from each sub-ledger (Payables, Receivables, Cost Management) in Final mode.",
+            "Post all unposted journal batches, then generate recurring journals and run allocations.",
+            "Clear suspense-account balances and run revaluation / translation for foreign-currency ledgers.",
+            "Close GL only after AP, AR, FA and Cost Management are closed and the trial balance reconciles.",
+        ],
+        "query_rows": {
+            "gl_open_periods": [{"period_name": "DEC-16", "closing_status": "F"}],
+            "gl_unposted_source": [
+                {"source": "Payables", "unposted_journals": 3139},
+                {"source": "Receivables", "unposted_journals": 2490},
+                {"source": "Cost Management", "unposted_journals": 1048},
+            ],
+            "gl_unposted_category": [
+                {"category": "Purchase Invoices", "unposted_journals": 2717},
+                {"category": "Sales Invoices", "unposted_journals": 1439},
+                {"category": "Receipts", "unposted_journals": 945},
+            ],
+        },
+    },
+    "fa_period_close": {
+        "severity": "MEDIUM", "row_count": 15,
+        "summary": "20 depreciation periods open · 298 mass additions pending posting.",
+        "actions": [
+            "Review and Post pending mass additions (Prepare Mass Additions, then Post Mass Additions) so new assets are capitalised.",
+            "Run Calculate Depreciation for every asset book and review the Depreciation Run and Journal Entry Reserve reports.",
+            "Create Accounting (Assets) in Final mode and transfer journals to GL.",
+            "Reconcile asset cost and accumulated depreciation to GL (Account Reconciliation Report), then close each book.",
+        ],
+        "query_rows": {
+            "fa_open_periods": [
+                {"book_type_code": "OPS CORP", "period_name": "Dec-16"},
+                {"book_type_code": "OPS TAX", "period_name": "Dec-16"},
+            ],
+            "fa_mass_additions": [
+                {"posting_status": "NEW", "addition_count": 286},
+                {"posting_status": "ON HOLD", "addition_count": 8},
+                {"posting_status": "POST", "addition_count": 4},
+            ],
+            "fa_pending_txns": [
+                {"txn_type": "ADDITION", "txn_count": 10844},
+                {"txn_type": "TRANSFER IN", "txn_count": 6964},
+                {"txn_type": "ADJUSTMENT", "txn_count": 346},
+            ],
+        },
+    },
+    "error_diagnostician": {
+        "severity": "CRITICAL", "row_count": 20,
+        "summary": "38 failed requests across 8 programs · 5 distinct error signatures · 9 interface rejections. Top failing: FNDIRLOAD.",
+        "actions": [
+            "Fix the most common error first: \"Concurrent Manager encountered an error while attempting to start your\" (27x).",
+            "Investigate the top failing program \"FNDIRLOAD\" for a data or setup issue, then resubmit.",
+            "Correct FND_FILE temp-directory / log-out file permissions for ORA-20100 file errors, then bounce the affected managers.",
+            "Clear interface rejections and resubmit the AP Open Interface Import.",
+        ],
+        "query_rows": {
+            "cc_by_program": [
+                {"program": "FNDIRLOAD", "failures": 25},
+                {"program": "OAM Applications Dashboard Collection", "failures": 4},
+                {"program": "Compile Security", "failures": 2},
+            ],
+            "cc_error_signatures": [
+                {"error_signature": "Concurrent Manager encountered an error while attempting to start your", "occurrences": 27},
+                {"error_signature": "ORA-20100: Temporary file creation for FND_FILE failed.", "occurrences": 2},
+            ],
+            "cc_errors": [
+                {"program": "Compile Security", "request_id": 7681697, "completion": "ORA-20100: Temporary file creation for FND_FILE failed. Directory &FILE_DIR is invalid.", "completed_on": "2010-10-11 22:14"},
+            ],
+            "cap_rejections": [
+                {"reject_reason": "DUPLICATE INVOICE NUMBER", "reject_count": 3},
+            ],
+        },
+    },
+    "help_desk_assistant": {
+        "severity": "HIGH", "row_count": 8,
+        "summary": "1,033 open items across 8 queues. Largest: AP Invoices on Hold (531) → AP Team / Buyers.",
+        "actions": [
+            "Route the AP Invoices on Hold backlog (531 items) to AP Team / Buyers first.",
+            "Assign AP holds by type: LINE VARIANCE → AP Clerk, then work down by volume.",
+            "Escalate the 38 concurrent-request errors to the Apps DBA for root-cause fix.",
+            "Chase AR and GL open-period owners against the close calendar.",
+        ],
+        "query_rows": {
+            "hd_triage": [
+                {"area": "AP Invoices on Hold", "open_count": 531, "owner": "AP Team / Buyers"},
+                {"area": "Unapplied AR Receipts", "open_count": 405, "owner": "AR / Cash Application"},
+                {"area": "Concurrent Request Errors", "open_count": 38, "owner": "Apps DBA"},
+                {"area": "AP Interface Rejections", "open_count": 9, "owner": "AP Integration"},
+                {"area": "GL Unposted Journals", "open_count": 8330, "owner": "GL Accountant"},
+            ],
+            "hd_holds_by_type": [
+                {"hold_type": "LINE VARIANCE", "hold_count": 407, "owner": "AP Clerk"},
+                {"hold_type": "DIST VARIANCE", "hold_count": 61, "owner": "AP Manager"},
+                {"hold_type": "QTY ORD", "hold_count": 25, "owner": "AP Clerk"},
+            ],
+            "cc_errors": [
+                {"program": "FNDIRLOAD", "request_id": 7681697, "completion": "Concurrent Manager encountered an error.", "completed_on": "2010-10-11 22:14"},
+            ],
+        },
+    },
     "hold_resolver": {
         "severity": "HIGH",
         "summary": "12 invoices on hold. Avg 5.4d, max 18d.",

@@ -152,11 +152,17 @@
     position: fixed; top: 0; right: 0; width: 540px; max-width: 90vw; height: 100vh;
     background: var(--bg-card); border-left: 1px solid var(--border);
     box-shadow: -8px 0 24px rgba(0,0,0,.10);
-    transform: translateX(110%); transition: transform .25s ease;
+    transform: translateX(110%); transition: transform .25s ease, width .2s ease;
     z-index: 1050;
     display: flex; flex-direction: column;
   }
   .ap-drawer.open { transform: translateX(0); }
+  .ap-drawer.maximized { width: 1180px; max-width: 96vw; }
+  .ap-drawer-actions { display: flex; align-items: center; gap: 14px; }
+  .ap-drawer-max {
+    background: none; border: none; font-size: 15px; color: var(--text-muted); cursor: pointer;
+  }
+  .ap-drawer-max:hover, .ap-drawer-close:hover { color: var(--text); }
   .ap-drawer-header {
     padding: 16px 18px;
     border-bottom: 1px solid var(--border);
@@ -170,6 +176,15 @@
   .ap-action-list { list-style: disc; padding-left: 18px; margin: 8px 0 0; }
   .ap-action-list li { font-size: 12px; line-height: 1.6; margin-bottom: 4px; }
 
+  .ap-tab-bar-wrap { display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px; flex-wrap: wrap; }
+  .ap-tab-bar-wrap .ap-tab-bar { border-bottom: none; margin-bottom: 0; flex: 1 1 auto; }
+  .ap-filter-box { display: flex; align-items: center; gap: 7px; padding-bottom: 4px; }
+  .ap-filter-ico { color: var(--text-muted); font-size: 11px; }
+  .ap-filter { border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px;
+    font-size: 12px; min-width: 240px; background: var(--bg-card); color: var(--text-primary); outline: none; }
+  .ap-filter:focus { border-color: var(--accent, #0969da); box-shadow: 0 0 0 2px rgba(9,105,218,.12); }
+  .ap-filter-hint { font-size: 10.5px; color: var(--text-muted); white-space: nowrap; }
   .ap-tab-bar { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 12px; flex-wrap: wrap; }
   .ap-tab {
     background: none; border: none;
@@ -185,11 +200,37 @@
     text-align: left; vertical-align: top;
   }
   .ap-table th { background: var(--bg-card-2); font-weight: 600; color: var(--text-muted); }
+  .ap-table th.num, .ap-table td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* Clickable result banner (after Run or Run All) */
+  .ap-status-click { cursor: pointer; display: flex; align-items: center;
+    justify-content: space-between; gap: 10px; transition: box-shadow .12s ease; }
+  .ap-status-click:hover { box-shadow: inset 0 0 0 1.5px rgba(0,0,0,.14); }
+  .ap-status-click .ap-status-text { flex: 1; }
+  .ap-status-view { font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .03em; opacity: .85; white-space: nowrap; }
+
+  /* Drilldown: clickable aggregate / invoice rows */
+  .ap-table tr.ap-drill { cursor: pointer; }
+  .ap-table tr.ap-drill:hover > td { background: #eef4ff; }
+  .ap-table tr.ap-drill.open > td { background: #e6efff; }
+  .ap-caret { color: var(--accent, #0969da); font-weight: 700; display: inline-block;
+    transition: transform .15s ease; font-size: 10px; }
+  .ap-table tr.ap-drill.open .ap-caret { transform: rotate(90deg); }
+  .ap-drill-detail > td { background: #f7f9fc; padding: 10px 12px !important; }
+  .ap-drill-inner { font-size: 11px; }
+  .ap-drill-inner h6 { font-size: 11px; margin: 10px 0 4px; color: var(--text-muted); font-weight: 700; }
+  .ap-drill-inner h6:first-child { margin-top: 0; }
+  .ap-kv { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-bottom: 6px; }
+  .ap-kv span { font-size: 11px; color: var(--text-muted); }
+  .ap-kv span b { color: var(--text); font-weight: 600; }
 
   /* Group color stripe on cards */
   .group-Invoice  { border-top: 3px solid #0969da; }
   .group-Payment  { border-top: 3px solid #1a7f37; }
   .group-Risk     { border-top: 3px solid #d12f2f; }
+  .group-Month-End { border-top: 3px solid #a04ad6; }
+  .group-R12      { border-top: 3px solid #e65100; }
 </style>
 {% endblock %}
 
@@ -221,7 +262,7 @@
     <div class="ap-summary-card"><div class="label">Total Time</div><div class="value" id="sumTime">—</div></div>
   </div>
 
-  {% set groups = ['Invoice Processing', 'Payment & Cash', 'Risk & Compliance'] %}
+  {% set groups = ['Invoice Processing', 'Payment & Cash', 'Risk & Compliance', 'Month-End Close', 'R12 Support'] %}
   {% for grp in groups %}
   <div class="ap-group-header">{{ grp }}</div>
   <div class="ap-grid">
@@ -260,7 +301,12 @@
 <div class="ap-drawer" id="apDrawer">
   <div class="ap-drawer-header">
     <div class="ap-drawer-title" id="drawerTitle">Agent results</div>
-    <button class="ap-drawer-close" onclick="apCloseDrawer()"><i class="fa-solid fa-xmark"></i></button>
+    <div class="ap-drawer-actions">
+      <button class="ap-drawer-max" onclick="apToggleMaximize()" title="Maximize / restore">
+        <i class="fa-solid fa-expand" id="drawerMaxIcon"></i>
+      </button>
+      <button class="ap-drawer-close" onclick="apCloseDrawer()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
   </div>
   <div class="ap-drawer-body" id="drawerBody"></div>
 </div>

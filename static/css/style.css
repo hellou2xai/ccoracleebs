@@ -515,12 +515,31 @@ a:hover { color: var(--text-bright); text-decoration: underline; }
   text-align: right;
 }
 
-.msg-bubble p:last-child { margin-bottom: 0; }
-.msg-bubble h1, .msg-bubble h2, .msg-bubble h3 { font-size: 14px; font-weight: 700; color: var(--text-bright); margin: 8px 0 4px; }
-.msg-bubble code { background: rgba(139,148,158,.15); border-radius: 3px; padding: 1px 5px; font-size: 12px; font-family: monospace; }
-.msg-bubble pre { background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; overflow-x: auto; }
-.msg-bubble ul, .msg-bubble ol { padding-left: 20px; margin: 6px 0; }
-.msg-bubble li { margin-bottom: 2px; }
+/* ── Professional formatting for AI answer output (rendered markdown) ── */
+.msg-bubble > *:first-child { margin-top: 0; }
+.msg-bubble > *:last-child { margin-bottom: 0; }
+.msg-bubble p { margin: 0 0 8px; line-height: 1.6; }
+.msg-bubble h1 { font-size: 16.5px; font-weight: 700; color: var(--text-bright); margin: 14px 0 7px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+.msg-bubble h2 { font-size: 15px; font-weight: 700; color: var(--text-bright); margin: 13px 0 6px; }
+.msg-bubble h3 { font-size: 13.5px; font-weight: 700; color: var(--text-bright); margin: 12px 0 5px; }
+.msg-bubble h4, .msg-bubble h5, .msg-bubble h6 { font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin: 10px 0 4px; text-transform: none; }
+.msg-bubble strong, .msg-bubble b { font-weight: 700; color: var(--text-bright); }
+.msg-bubble em, .msg-bubble i { font-style: italic; }
+.msg-bubble a { color: var(--accent, #1f6feb); text-decoration: none; border-bottom: 1px solid transparent; }
+.msg-bubble a:hover { border-bottom-color: currentColor; }
+.msg-bubble ul, .msg-bubble ol { padding-left: 22px; margin: 6px 0 10px; }
+.msg-bubble li { margin-bottom: 4px; line-height: 1.55; }
+.msg-bubble li > ul, .msg-bubble li > ol { margin: 4px 0 2px; }
+.msg-bubble li::marker { color: var(--text-muted); }
+.msg-bubble code { background: rgba(139,148,158,.16); border-radius: 4px; padding: 1.5px 5px; font-size: 12px; font-family: 'SFMono-Regular', Consolas, monospace; color: var(--text-bright); }
+.msg-bubble pre { background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; overflow-x: auto; margin: 8px 0 12px; }
+.msg-bubble pre code { background: none; padding: 0; font-size: 12px; color: var(--text-primary); }
+.msg-bubble blockquote { margin: 8px 0 12px; padding: 4px 0 4px 12px; border-left: 3px solid var(--accent, #1f6feb); color: var(--text-muted); }
+.msg-bubble hr { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+.msg-bubble table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 12.5px; }
+.msg-bubble th, .msg-bubble td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; vertical-align: top; }
+.msg-bubble th { background: var(--bg-card-2); font-weight: 600; color: var(--text-bright); white-space: nowrap; }
+.msg-bubble tbody tr:nth-child(even) td { background: rgba(139,148,158,.05); }
 
 .msg-time { font-size: 10px; color: var(--text-muted); padding: 0 4px; }
 
