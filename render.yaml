@@ -7,9 +7,12 @@ services:
       # Oracle EBS Database
       - key: ORACLE_HOST
         value: apps.example.com
-      # Real IP for the Oracle host (added to /etc/hosts at startup)
+      # Optional IP override for the Oracle host (added to /etc/hosts at startup).
+      # Leave unset so DNS resolves apps.example.com. The host runs on a dynamic
+      # IP, so a pinned value goes stale and the app silently falls back to demo
+      # mode. Only set this in the Render dashboard if DNS is unavailable.
       - key: ORACLE_HOST_IP
-        value: "161.118.179.55"
+        sync: false
       - key: ORACLE_PORT
         value: "1521"
       - key: ORACLE_SID
